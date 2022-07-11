@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+#SBATCH --job-name=align
+#SBATCH --output=align.out
+#
+#SBATCH -c 8
+#
+#SBATCH --time=48:00:00
+#SBATCH --mem=32G
+#16G and 24 hrs was not sufficient fot ClpC-core
+#
+#SBATCH --no-requeue
+#SBATCH --export=NONE
+unset SLURM_EXPORT_ENV
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+#
+module load mafft
+#
+cd /nfs/scistore08/kondrgrp/sovchinn/PEGP/projects/$1/
+pwd
+
+srun --cpu_bind=verbose linsi --thread -1 clustered90-gc.faa > aligned.fa

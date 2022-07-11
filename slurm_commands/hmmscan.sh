@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+#SBATCH --job-name=hmmscan
+#SBATCH --output=hmmscan.out
+#
+#SBATCH --time=4:00:00
+#SBATCH --mem=16G
+#
+#SBATCH --no-requeue
+#SBATCH --export=NONE
+unset SLURM_EXPORT_ENV
+export OMP_NUM_THREADS=1
+#
+
+ml load hmmer
+
+srun hmmscan --domtblout projects/$1/hmmscan.tbl --cut_ga Pfam-A.hmm projects/$1/clustered_full.faa

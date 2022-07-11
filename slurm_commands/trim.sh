@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+#SBATCH --job-name=trim
+#SBATCH --output=trim.out
+#
+#SBATCH --time=0:15:00
+#SBATCH --mem=1G
+#
+#SBATCH --no-requeue
+#SBATCH --export=NONE
+unset SLURM_EXPORT_ENV
+export OMP_NUM_THREADS=1
+#
+srun /nfs/scistore08/kondrgrp/sovchinn/PEGP/trimAl/source/trimal -in projects/$1/aligned.fa -out projects/$1/trimed80.fa -htmlout trim80.html -gt 0.8
