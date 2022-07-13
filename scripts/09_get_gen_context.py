@@ -4,6 +4,9 @@
 - output:  `genome_context.csv`
 
 - Step 7b in the pipeline
+
+TODO: revise the way the paths are formed
+
 """
 
 import sys
@@ -16,9 +19,9 @@ project = sys.argv[1]
 database = sys.argv[2]
 
 # construct input and output paths
-in_path = Path('projects') / project / 'filtered_clustered.csv'
-data_path = Path('databases') / database / 'annotation.csv'
-out_path = Path('projects') / project / 'genome_context.csv'
+in_path = Path('../projects') / project / 'filtered_clustered.csv'
+data_path = Path('../databases') / database / 'annotation.csv'
+out_path = Path('../projects') / project / 'genome_context.csv'
 
 annotation_db = pd.read_csv(data_path, index_col=0)
 clustered_db = pd.read_csv(in_path)

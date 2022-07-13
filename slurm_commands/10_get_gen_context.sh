@@ -19,5 +19,5 @@ export OMP_NUM_THREADS=1
 ml load python/3.9.5
 pip install pandas
 
-cd /nfs/scistore08/kondrgrp/sovchinn/PEGP
-srun --cpu_bind=verbose python3 get-genome-context.py $1 $2
+cd /nfs/scistore08/kondrgrp/sovchinn/PEGP/scripts
+srun --cpu_bind=verbose python3 09_get_gen_context.py $1 $2
