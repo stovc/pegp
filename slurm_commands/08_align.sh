@@ -16,7 +16,7 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 #
 module load mafft
 #
-cd /nfs/scistore08/kondrgrp/sovchinn/PEGP/projects/$1/
+cd /nfs/scistore08/kondrgrp/sovchinn/pegp/projects/$1/
 pwd
 
 srun --cpu_bind=verbose linsi --thread -1 clustered90-gc.faa > aligned.fa
