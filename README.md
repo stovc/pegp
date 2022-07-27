@@ -1,3 +1,5 @@
+WORK IN PROGRESS
+
 # pegp
 
 PEGP (protein evolutionary genomics pipeline). A software tool for
