@@ -3,7 +3,7 @@
 #SBATCH --job-name=blastp
 #SBATCH --output=blastp.out
 #
-#SBATCH --time=24:00:00
+#SBATCH --time=1:00:00
 #SBATCH --mem=64G
 #
 #SBATCH --no-requeue
@@ -13,3 +13,4 @@ export OMP_NUM_THREADS=1
 #
 
 srun bash scripts/01_blastp.sh $1 $2
+echo 1 $? >> projects/$1/exit_log.txt
