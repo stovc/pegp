@@ -33,9 +33,9 @@ def update_status():
                 elif step_status.isnumeric():
                     if step_status == '0':
                         status.at[step, project] = 'done'
-                        print('should make it done!')
                         for i in UNLOCKS[step]:
-                            status.at[i, project] = 'ready'
+                            if status.at[i, project] == '-':
+                                status.at[i, project] = 'ready'
                         print('should make it ready!')
 
                     else:
