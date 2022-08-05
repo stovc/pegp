@@ -197,21 +197,21 @@ def quitx():
 # constants
 PROJECTS_PATH = Path("projects/")
 BATCH_SCRIPTS_PATH = Path("batch_scripts/")
-SCRIPTS = {1: '01_blastp.sh',
-           2: '02_mk_blastp_df.sh',
-           3: '03_plot_blastp.sh',
-           4: '04_filter_blastp.sh',
-           5: '05_cdhit.sh',
-           6: '06_mk_gen_consistent.sh',
-           7: '07_cluster_dict.sh',
-           8: '08_align.sh',
-           9: '09_get_translations.sh',
-           10: '10_get_gen_context.sh',
-           11: '11_trim.sh',
-           12: '12_hmmscan.sh',
-           13: '13_prottest.sh',
-           14: '14_get_domains.sh',
-           15: '15_raxml.sh'
+SCRIPTS = {1: '01_blastp.batch',
+           2: '02_mk_blastp_df.batch',
+           3: '03_plot_blastp.batch',
+           4: '04_filter_blastp.batch',
+           5: '05_cdhit.batch',
+           6: '06_mk_gen_consistent.batch',
+           7: '07_cluster_dict.batch',
+           8: '08_align.batch',
+           9: '09_get_translations.batch',
+           10: '10_get_gen_context.batch',
+           11: '11_trim.batch',
+           12: '12_hmmscan.batch',
+           13: '13_prottest.batch',
+           14: '14_get_domains.batch',
+           15: '15_raxml.batch'
            }
 
 PROMPT = highlight('q') + \
