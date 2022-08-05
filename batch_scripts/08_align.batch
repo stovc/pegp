@@ -20,3 +20,4 @@ cd /nfs/scistore08/kondrgrp/sovchinn/pegp/projects/$1/
 pwd
 
 srun --cpu_bind=verbose linsi --thread -1 clustered90-gc.faa > aligned.fa
+echo 8 $? >> projects/$1/exit_log.txt

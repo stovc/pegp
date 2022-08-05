@@ -12,5 +12,9 @@ unset SLURM_EXPORT_ENV
 export OMP_NUM_THREADS=1
 #
 
+module purge
+module load cdhit/4.8.1
+module list
+
 srun bash scripts/05_cluster.sh $1
 echo 5 $? >> projects/$1/exit_log.txt
