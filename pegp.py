@@ -18,11 +18,11 @@ def update_status():
 
     for project in projects:
 
-        status_path = PROJECTS_LOCATION / project / 'status.txt'
+        status_path = PROJECTS_PATH / project / 'status.txt'
         status = pd.read_csv(status_path, sep='\t', index_col=0)
 
         try:
-            exit_log = open(PROJECTS_LOCATION / project / 'exit_log.txt', 'r')
+            exit_log = open(PROJECTS_PATH / project / 'exit_log.txt', 'r')
             new_exit_log = ''
 
             for line in exit_log:
@@ -44,7 +44,7 @@ def update_status():
                     new_exit_log += line
             exit_log.close()
 
-            exit_log = open(PROJECTS_LOCATION / project / 'exit_log.txt', 'w')
+            exit_log = open(PROJECTS_PATH / project / 'exit_log.txt', 'w')
             exit_log.write(new_exit_log)
             exit_log.close()
 
@@ -101,8 +101,8 @@ class Log:
 # Start process
 def start_process(step, project, database, *args):
     script = SCRIPTS[step]
-    path = SLURM_SCRIPTS_LOCATION / script
-    status_path = PROJECTS_LOCATION / project / 'status.txt'
+    path = BATCH_SCRIPTS_PATH / script
+    status_path = PROJECTS_PATH / project / 'status.txt'
     process = subprocess.run(["sbatch", path, project, database] + list(args), capture_output=True)
 
     status = pd.read_csv(status_path, sep='\t', index_col=0)
@@ -151,7 +151,7 @@ def start_step(project, step, *args):
 @call
 def create_project(project, inp_path):
 
-    new_project_path = PROJECTS_LOCATION / project
+    new_project_path = PROJECTS_PATH / project
     new_inp_path = new_project_path / 'input.faa'
     if not os.path.exists(new_project_path):
         os.mkdir(new_project_path)
@@ -171,7 +171,7 @@ def create_project(project, inp_path):
 
 @call
 def delete_project(project):
-    delete_project_path = PROJECTS_LOCATION / project
+    delete_project_path = PROJECTS_PATH / project
     if os.path.exists(delete_project_path):
         os.system(f'rm -R {delete_project_path}')
 
@@ -195,8 +195,8 @@ def quitx():
 
 
 # constants
-PROJECTS_LOCATION = Path("projects/")
-SLURM_SCRIPTS_LOCATION = Path("slurm_commands/")
+PROJECTS_PATH = Path("projects/")
+BATCH_SCRIPTS_PATH = Path("batch_scripts/")
 SCRIPTS = {1: '01_blastp.sh',
            2: '02_mk_blastp_df.sh',
            3: '03_plot_blastp.sh',
@@ -276,7 +276,7 @@ UNLOCKS = {
 
 # init
 database = 'base1'
-projects = os.listdir(PROJECTS_LOCATION)
+projects = os.listdir(PROJECTS_PATH)
 
 command = ''
 log = Log()
