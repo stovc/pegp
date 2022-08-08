@@ -10,6 +10,7 @@ from Bio import SeqFeature
 from Bio.Blast import NCBIXML
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 import gc
+import subprocess
 
 import numpy as np
 import pandas as pd
@@ -18,7 +19,7 @@ if __name__ == '__main__':
     for i in sys.argv:
         print(i)
     project = sys.argv[1]
-    IDENT_THRESHOLD = float(sys.argv[2])  # 0.15
+    IDENT_THRESHOLD = float(sys.argv[2])  # 0.15             # TODO: these are not constants. refactor
     OVERLAP_THRESHOLD = float(sys.argv[3])  # 115
     EVALUE_THRESHOLD = float(sys.argv[4])  # 0.05
 
@@ -27,6 +28,12 @@ if __name__ == '__main__':
     df_path = Path('projects') / project / 'blastp_df.csv'
     out_df_path = Path('projects') / project / 'filtered_hits.csv'
     out_faa_path = Path('projects') / project / 'filtered_hits.faa'
+
+    # logging to exit log
+    exitlog_path = Path('projects') / project / 'exit_log.txt'
+
+    with open(exitlog_path, 'a') as outfile:
+        subprocess.run(["echo", '4 started'], stdout=outfile)
 
     result_handle = open(in_path)
     blast_records = NCBIXML.parse(result_handle)

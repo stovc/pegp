@@ -50,6 +50,8 @@ if __name__ == '__main__':
     project = sys.argv[1]
     database = sys.argv[2]
     data_path = Path('databases') / database / 'annotation.csv'  # will be stored in analysis configs
+
+    # logging to exit log
     exitlog_path = Path('projects') / project / 'exit_log.txt'
 
     with open(exitlog_path, 'a') as outfile:
