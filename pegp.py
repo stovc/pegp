@@ -34,9 +34,9 @@ def update_status():
                     if step_status == '0':
                         status.at[step, project] = 'done'
                         for i in UNLOCKS[step]:
+                            print(status.at[i, project], type(status.at[i, project]))
                             if status.at[i, project] == '-':
                                 status.at[i, project] = 'ready'
-                        print('should make it ready!')
 
                     else:
                         status.at[step, project] = f'failed {step_status}'
