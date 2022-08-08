@@ -1,7 +1,7 @@
 """Ensure that all filtered hits that are present with clustered hits in the same genome are kept for the analysis.
 
 - `clustered.faa` file is updated with sequences from `filtered_fits.faa`
-if they are present in the same genome according to `filtered_hits_data.csv`
+if they are present in the same genome according to `filtered_hits.csv`
 
 - Produces `clustered-gc.faa` file
 
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # construct input and output paths
     in_faa_path = Path('projects') / project / 'clustered90.faa'
     in_unclustered_faa_path = Path('projects') / project / 'filtered_hits.faa'
-    in_df_path = Path('projects') / project / 'filtered_hits_data.csv'
+    in_df_path = Path('projects') / project / 'filtered_hits.csv'
 
     out_faa_path = Path('projects') / project / 'clustered90-gc.faa'
     out_df_path = Path('projects') / project / 'filtered_clustered.csv'
