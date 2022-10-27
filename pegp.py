@@ -276,7 +276,8 @@ UNLOCKS = {
 
 # init
 database = 'base1'
-projects = os.listdir(PROJECTS_PATH)
+folders = os.listdir(PROJECTS_PATH)
+projects = [i for i in folders if i[0] != '.']
 
 command = ''
 log = Log()
