@@ -14,7 +14,7 @@ def highlight(s):
 
 
 def update_status():
-    data = pd.DataFrame(DATA, index=list(range(1, 16)))
+    data = pd.DataFrame(STEPS, index=list(range(1, 16)))
 
     for project in projects:
 
@@ -243,7 +243,7 @@ STATUS_FILE = '''\t{}
 15\t-
 '''
 
-DATA = {'Step': ['1. Blast',
+STEPS = {'Step': ['1. Blast',
                  '2. Blast data',
                  '3. Blast report',
                  '4. Filter',
