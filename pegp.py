@@ -103,7 +103,7 @@ def start_process(step, project, database, *args):
     script = SCRIPTS[step]
     path = BATCH_SCRIPTS_PATH / script
     status_path = PROJECTS_PATH / project / 'status.txt'
-    process = subprocess.run(["sbatch", path, project, database] + list(args), capture_output=True)
+    process = subprocess.run(["sbatch", path, project, database] + list(args))  # , capture_output=True
 
     status = pd.read_csv(status_path, sep='\t', index_col=0)
     status.at[step, project] = 'queued'
