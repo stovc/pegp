@@ -101,7 +101,7 @@ def plot_3d(data_points, df, color_axis, color_dict):
                         edgecolors='black', marker='o', alpha=0.4, s=3, linewidth=0.2, cmap='jet')
 
     ax.set_xlabel('Identity')
-    ax.set_ylabel('Overlap length, aa')
+    ax.set_ylabel('Query coverage, %')
     ax.set_zlabel('Hit length, aa')
     if color_dict is not None:
         ax.legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc='upper left')

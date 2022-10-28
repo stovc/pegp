@@ -95,7 +95,7 @@ if __name__ == '__main__':
                 protID = alignment.accession
 
                 new_row = {'ID': ID, 'protID': protID, 'query': query_id,
-                           'evalue': hsp.expect, 'overlap': hsp.align_length,
+                           'evalue': hsp.expect, 'overlap': 100 * hsp.aln_span / hsp.query_span,    # TODO: refactor overlap to query coverage
                            'identity': hsp.identities / hsp.align_length, 'length': alignment.length,
                            'targ_dom_pos': (hsp.sbjct_start + (len(hsp.sbjct) // 2))}
                 out_df = out_df.append(new_row, ignore_index=True)  # TODO - change append to concat
