@@ -9,13 +9,8 @@
 import subprocess
 import sys, getopt
 from pathlib import Path
-import matplotlib.pyplot as plt
 import numpy as np
 from Bio.Blast import NCBIXML
-from matplotlib import colors
-from matplotlib.ticker import PercentFormatter
-import matplotlib as mpl
-from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 from ete3 import NCBITaxa
 
