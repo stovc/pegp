@@ -27,12 +27,12 @@ def get_lineage(taxid):
 
     lineage_dict = {ranks[i]: names[i] for i in lineage}  # dict {rank name: taxon name}
 
-    out = []
+    lineage_names = []
     ranks = ['superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
     for i in ranks:
         taxon = lineage_dict.get(i)
-        out.append(taxon)  # write organism
-    return out
+        lineage_names.append(taxon)  # write organism
+    return lineage_names
 
 
 def get_replicon(replicon):
