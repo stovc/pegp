@@ -16,9 +16,14 @@ from ete3 import NCBITaxa
 
 
 def get_lineage(taxid):
-    lineage = ncbi.get_lineage(int(taxid))  # get the lineage as a list of taxids
-    names = ncbi.get_taxid_translator(lineage)  # make a dictionary {taxid: taxon name}
-    ranks = ncbi.get_rank(lineage)  # make a dictionary {taxid: taxon rank}
+    """Get NCBI taxid of a species
+    Return the lineage of the species as a list of taxon names
+    The lineage includes taxonomic ranks according to the `ranks` variable
+    """
+
+    lineage_taxid = ncbi.get_lineage(int(taxid))  # get the lineage as a list of taxids
+    names = ncbi.get_taxid_translator(lineage_taxid)  # make a dictionary {taxid: taxon name}
+    ranks = ncbi.get_rank(lineage_taxid)  # make a dictionary {taxid: taxon rank}
 
     lineage_dict = {ranks[i]: names[i] for i in lineage}  # dict {rank name: taxon name}
 
