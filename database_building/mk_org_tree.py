@@ -1,11 +1,11 @@
-"""Generates species trees and corresponding annotation data from `taxid.txt` related to the database.
-The trees are collapsed to different taxonomic levels.
+"""Generate species trees as .nwk and corresponding annotation data as .csv from `taxid.txt` related to the database.
+The trees differ by the taxonomic rank to which they are collapsed
 
 input - taxid.txt
 output - org_tree_[TAXONOMIC RANK].nwk + 'org_tree_[TAXONOMIC RANK]_data.csv' where
 the taxonomic ranks are [full, genus, family, order, class, phylum]
 
-TODO: The job of `mk_org_tree.py` should be done in `mk_blast_db.py`
+TODO: The job of `mk_org_tree.py` should be done in `mk_db.py`
 """
 
 from ete3 import NCBITaxa
