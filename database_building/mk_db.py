@@ -350,4 +350,4 @@ log.close()
 concatenate('protein', 'faa')
 concatenate('taxid_map', 'txt')
 for folder in FOLDERS_TO_CONCATENATE_CSV:
-    concatenate(folder, 'csv')
+    concatenate_csv(folder)
