@@ -112,6 +112,16 @@ def concatenate(folder, extension):
                 outfile.write(infile.read())
 
 
+def concatenate_csv(folder):
+    """Concatenates all files of 'folder' into a single csv file."""
+    print('folder', folder)
+    record_list = os.listdir(database_path / folder)
+    record_list.sort()
+
+    df_concat = pd.concat([pd.read_csv(database_path / folder / f) for f in record_list], ignore_index=True)
+    df_concat.to_csv(database_path / f'{folder}.csv', index=False)
+
+
 # constants
 GENOMES_LOCATION = Path("genomes/")      # folder containing genome collections to construct a database from
 DATABASES_LOCATION = Path("databases/")  # folder containing databases
