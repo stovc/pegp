@@ -5,15 +5,21 @@ prepare
 - an _input file for construction of the homology search database_
 - _associated annotation files_
 
-For each genome, iterate all *sequence features* and make
-- 'proteins.fasta' with translations of protein coding genes
-- 'annotation.csv' with _annotations_
+Input - [database_name] [path to the folder with genomes]
+
+For each genome, iterate all *sequence features* and make the following files in `databases/[database_name]`:
+- 'protein.faa' with translations of protein coding genes (*this file will be used to generate BLAST database in a further step*)
+
+and other files containing interesting information about our proteins:
+- 'annotation.csv' with the most useful _annotations_, described below
+
+other less frequently used and more heavy-weighted annotations are written into separate .csv files
 - 'upstream.csv' with 200 bp upstream nucleotide sequences
 - 'downstream.csv' with 200 bp downstream nucleotide sequences
 - 'sequence.csv' with the nucleotide sequence of the genes
 - 'translation.csv' with translations protein coding genes
-where each record is preceded by an ID
-that is consistent across the files
+
+In all generated files, each record is preceded by an ID that is consistent across the files
 
 _Annotations_ are in the annotation.csv file and include:
 - Identity
@@ -21,6 +27,7 @@ _Annotations_ are in the annotation.csv file and include:
     - locus tag
     - assembly
     - accession
+    - protein_id
 - Position in the genome
     - replicon (identity of the chromosome or the plasmid)
     - start
@@ -29,27 +36,9 @@ _Annotations_ are in the annotation.csv file and include:
 - Taxonomy information
     - taxid (NCBI taxonomy ID)
 - Gene annotation
-    - feature type (..., ..., ...)
+    - feature type
     - gene
     - product
-    - protein_id (should be rather in the annotation section)
-
-
-TODO: `taxids.txt` and  `organism_tree.nwk` should be generated in this script rather than in separate ones
-TODO: Extract *genome size* from the parsed genomes to `annotation.csv`
-TODO: Extract *replicon size* from the parsed genomes to `annotation.csv`
-note - genome size is a sum of the chromosomes; replicon size - size of the particular replicon (chromosome or plasmid)
-TODO: Extract GC content of the genome
-TODO: Extract GC content of the gene
-TODO: check if the genome context works properly regarding the circular genome
-
-
-# Features for later
-- consider deleting map_output
-- consider using locus tag as an ID
-- extract positions of the origin and terminus
-- Implement preparation of HMM database construction input
-- Psi-BLAST DB construction input? if i) we need it and ii) it is different from BLASTP
 """
 
 import os, sys
