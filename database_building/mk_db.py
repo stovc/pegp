@@ -165,6 +165,7 @@ genome_paths = [i for i in genome_paths if i not in completed_paths]
 genome_paths.sort()
 completed_paths = open(database_path / 'completed_paths.txt', 'a')
 
+# generated IDs will consist of a prefix and an iterated part
 id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
@@ -177,16 +178,18 @@ for genome_path in genome_paths:  # iterate genomes
 
         seq_record_data = []
         assembly = genome_path.name
-        assembly = assembly.split('_')[0] + assembly.split('_')[1]  # GCF_000701165.1
+        assembly = assembly.split('_')[0] + assembly.split('_')[1]  # genome name, e.g. GCF_000701165.1
         log.write('Assembly: ' + assembly + ' ')
 
-        accession = seq_record.id  # NZ_CP023193.1
+        accession = seq_record.id  # genome id in NCBI, e.g. NZ_CP023193.1
         log.write('Accession: ' + accession + ' ')
 
-        # fasta file with all protein sequences
+        # open output files
+        ## fasta file with all protein sequences
         protein_output = open(database_path / 'protein' / f'{assembly}-{accession}', 'w')
-        # taxid map file with taxids for BLAST database
+        ## taxid map file with taxids for BLAST database
         map_output = open(database_path / 'taxid_map' / f'{assembly}-{accession}', 'w')
+        ## other annotations discribed
         upstream_out = open(database_path / 'upstream' / f'{assembly}-{accession}', 'w')
         sequence_out = open(database_path / 'sequence' / f'{assembly}-{accession}', 'w')
         downstream_out = open(database_path / 'downstream' / f'{assembly}-{accession}', 'w')
