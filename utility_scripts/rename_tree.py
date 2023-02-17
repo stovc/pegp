@@ -1,5 +1,7 @@
 """Fix the naming issue introduced by MEGA.
-Removes the introduced `/...` part for each tip
+Removes the introduced `/...` part from the name for each tip
+
+Utility script
 """
 
 from ete3 import Tree
