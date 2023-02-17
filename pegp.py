@@ -275,16 +275,15 @@ BATCH_SCRIPTS = {
     15: '15_raxml.batch'
 }
 
-PROMPT = highlight('q') + \
-         ': quit, ' + \
-         highlight('s [P] [S]') + Style.RESET_ALL + \
-         ': start Project [P] Step [S], ' + \
-         highlight('a') + \
-         ': start all ready processes, ' + \
-         highlight('n [P] [Pa]') + \
-         ': start new project [P] path [Pa], ' + \
-         highlight('d [p]') + \
-         ': Delete project [p]'
+# Prompt listing available commands
+PROMPT = '''
+Prompt:
+"n [project_name] [query_path]": create new project [project_name] with query at [query_path]
+"s [project] [step]": start [project] [step]
+"a": start all ready steps in all projects
+"d [project]": delete [project]
+"q": quit
+'''
 
 # This is written into the project status file `status.txt` when project is created
 STATUS_FILE = '''\t{}
