@@ -104,7 +104,7 @@ def export_annotation(tree, name):
         taxid = node.name
         name = get_name(taxid)
         rank = get_rank(taxid)
-        if rank not in ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom']:
+        if rank not in ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom'] and node.is_leaf():
             rank = 'species'
         if name == 'root':
             rank = 'root'
