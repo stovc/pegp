@@ -1,7 +1,5 @@
 #!/bin/bash
-module load ncbi-blast/2.11.0+
-#
-pwd
+
 echo "databases/$2/protein.faa"
 echo "projects/$1/input.faa"
 echo "projects/$1/blastp.xml"
