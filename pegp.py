@@ -9,11 +9,16 @@ from colorama import Fore, Back, Style
 
 # INPUT OUTPUT
 def highlight(s):
+    """Get string. Return highlighted string."""
     s = Fore.BLACK + Back.WHITE + s + Style.RESET_ALL
     return s
 
 
 def update_status():
+    """Update the status of each step of each project.
+    Iterate project directories, look at `status.txt` files.
+    Return dataframe with status of steps in projects."""
+
     data = pd.DataFrame(STEPS, index=list(range(1, 16)))
 
     for project in projects:
@@ -57,6 +62,9 @@ def update_status():
 
 
 def draw_table(data):
+    """Make a string containing the status table to print.
+    Get status dataframe."""
+
     table = PrettyTable(['Step'] + projects)
     table.align["Step"] = "l"
 
@@ -75,6 +83,8 @@ def draw_table(data):
 
 
 def update_screen():
+    """Update status and print the interface."""
+
     data = update_status()
     table = draw_table(data)
 
@@ -129,6 +139,7 @@ def call(action):
 
 @call
 def start_all_steps():
+    """Start steps that have status `ready` in all projects."""
     list_of_ready = []
     for col in projects:
         numbers = data.loc[data[col] == 'ready', col].index.tolist()
@@ -143,6 +154,8 @@ def start_all_steps():
 
 @call
 def start_step(project, step, *args):
+    """Start `step` of a `project` with specified additional arguments."""
+
     log.out(f'Starting Step {step} on {project}')
     start_process(int(step), project, database, *args)
     log.out('Started')
@@ -150,6 +163,7 @@ def start_step(project, step, *args):
 
 @call
 def create_project(project, inp_path):
+    """Create new project named `project` using query specified in `inp_path`"""
 
     new_project_path = PROJECTS_PATH / project
     new_inp_path = new_project_path / 'input.faa'
@@ -171,6 +185,8 @@ def create_project(project, inp_path):
 
 @call
 def delete_project(project):
+    """Delete specified project."""
+
     delete_project_path = PROJECTS_PATH / project
     if os.path.exists(delete_project_path):
         os.system(f'rm -R {delete_project_path}')
@@ -225,6 +241,7 @@ PROMPT = highlight('q') + \
          highlight('d [p]') + \
          ': Delete project [p]'
 
+# This is written into the project status file `status.txt` when project is created
 STATUS_FILE = '''\t{}
 1\tready
 2\t-
@@ -243,6 +260,7 @@ STATUS_FILE = '''\t{}
 15\t-
 '''
 
+# Steps of the analysis. Used to create status dataframe
 STEPS = {'Step': ['1. Blast',
                  '2. Blast data',
                  '3. Blast report',
@@ -260,6 +278,7 @@ STEPS = {'Step': ['1. Blast',
                  '15. Tree']
         }
 
+# Dependencies of the steps on each other
 UNLOCKS = {
     1: [2],
     2: [3],
@@ -292,6 +311,8 @@ class Command:
     def __init__(self, text, action):
         self.text = text
         self.action = action
+
+
 char = 1
 
 """
