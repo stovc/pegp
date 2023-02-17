@@ -12,6 +12,5 @@ unset SLURM_EXPORT_ENV
 export OMP_NUM_THREADS=1
 #
 
-echo 1 pseudostarted >> projects/$1/exit_log.txt
 srun bash scripts/01_blastp.sh $1 $2
 echo 1 $? >> projects/$1/exit_log.txt
