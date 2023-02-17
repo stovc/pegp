@@ -8,16 +8,15 @@ the taxonomic ranks are [full, genus, family, order, class, phylum]
 TODO: The job of `mk_org_tree.py` should be done in `mk_db.py`
 """
 
+import os
+import sys
+from pathlib import Path
 from ete3 import NCBITaxa
 ncbi = NCBITaxa()
-from pathlib import Path
-
-
-FOLDER = Path('../org_tree')
 
 
 def get_rank(taxid):
-    """Return rank of taxid"""
+    """Return rank of taxid."""
     rank = ncbi.get_rank([taxid])
     rank = list(rank.values())
     if len(rank) == 1:
@@ -28,7 +27,7 @@ def get_rank(taxid):
 
 
 def get_name(taxid):
-    """Return name of taxid"""
+    """Return name of taxid."""
     name = ncbi.get_taxid_translator([taxid])
     name = list(name.values())
     if len(name) == 1:
@@ -82,7 +81,11 @@ def prune_tree(tree, keep):
 
     return tree2
 
+
 def export_tree(tree, name):
+    if not os.path.exists(OUT_FOLDER):
+        os.makedirs(OUT_FOLDER)
+
     nwk_string = tree.write(format=1)
     out = open(OUT_FOLDER / name, 'w')
     out.write(nwk_string)
@@ -92,7 +95,10 @@ def export_tree(tree, name):
 
 
 def export_annotation(tree, name):
-    out = open(FOLDER / name, 'w')
+    if not os.path.exists(OUT_FOLDER):
+        os.makedirs(OUT_FOLDER)
+
+    out = open(OUT_FOLDER / name, 'w')
     out.write('taxid;name;rank\n')
     for node in tree.traverse():
         taxid = node.name
@@ -108,35 +114,42 @@ def export_annotation(tree, name):
     return None
 
 
-inp = open('../taxids.txt')
-taxids = inp.readlines()
-inp.close()
+if __name__ == '__main__':
+    database = sys.argv[1]
+    database_path = Path('../databases/') / database
 
-tree = ncbi.get_topology(taxids)
-print('constructed tree from taxids')
+    input_path = database_path / 'taxids.txt'
 
-tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_genus = prune_tree(tree, ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_family = prune_tree(tree, ['family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_order = prune_tree(tree, ['order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_class = prune_tree(tree, ['class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_phylum = prune_tree(tree, ['phylum', 'superkingdom', 'kingdom', 'root'])
-print('prunned trees')
+    OUT_FOLDER = database_path / 'org_trees'
 
-export_tree(tree_full, 'org_tree_full.nwk')
-export_tree(tree_genus, 'org_tree_genus.nwk')
-export_tree(tree_family, 'org_tree_family.nwk')
-export_tree(tree_order, 'org_tree_order.nwk')
-export_tree(tree_class, 'org_tree_class.nwk')
-export_tree(tree_phylum, 'org_tree_phylum.nwk')
-print('exported trees')
+    inp = open(input_path)
+    print(input_path)
+    taxids = inp.readlines()
+    inp.close()
 
-export_annotation(tree_full, 'org_tree_full_data.csv')
-export_annotation(tree_genus, 'org_tree_genus_data.csv')
-export_annotation(tree_family, 'org_tree_family_data.csv')
-export_annotation(tree_order, 'org_tree_order_data.csv')
-export_annotation(tree_class, 'org_tree_class_data.csv')
-export_annotation(tree_phylum, 'org_tree_phylum_data.csv')
-print('exported annotation data')
+    tree = ncbi.get_topology(taxids)
+    print('constructed tree from taxids')
 
+    tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+    tree_genus = prune_tree(tree, ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+    tree_family = prune_tree(tree, ['family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+    tree_order = prune_tree(tree, ['order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+    tree_class = prune_tree(tree, ['class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+    tree_phylum = prune_tree(tree, ['phylum', 'superkingdom', 'kingdom', 'root'])
+    print('prunned trees')
 
+    export_tree(tree_full, 'org_tree_full.nwk')
+    export_tree(tree_genus, 'org_tree_genus.nwk')
+    export_tree(tree_family, 'org_tree_family.nwk')
+    export_tree(tree_order, 'org_tree_order.nwk')
+    export_tree(tree_class, 'org_tree_class.nwk')
+    export_tree(tree_phylum, 'org_tree_phylum.nwk')
+    print('exported trees')
+
+    export_annotation(tree_full, 'org_tree_full_data.csv')
+    export_annotation(tree_genus, 'org_tree_genus_data.csv')
+    export_annotation(tree_family, 'org_tree_family_data.csv')
+    export_annotation(tree_order, 'org_tree_order_data.csv')
+    export_annotation(tree_class, 'org_tree_class_data.csv')
+    export_annotation(tree_phylum, 'org_tree_phylum_data.csv')
+    print('exported annotation data')
