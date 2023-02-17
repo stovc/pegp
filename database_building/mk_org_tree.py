@@ -69,12 +69,14 @@ def prune_tree(tree, keep):
     tree2 = tree.copy()
 
     to_prune = []
-    for n in tree2.traverse():
-        rank = get_rank(n.name)
-        if 'leaf' in keep and n.is_leaf():
-            to_prune.append(n.name)
+    for node in tree2.traverse():
+        rank = get_rank(node.name)
+        if 'fam' in rank:
+            print(node.name + '\t' + get_name(node.name) + '\t' + rank)
+        if 'leaf' in keep and node.is_leaf():
+            to_prune.append(node.name)
         if rank in keep:
-            to_prune.append(n.name)
+            to_prune.append(node.name)
 
     tree2.prune(to_prune)
 
@@ -82,7 +84,7 @@ def prune_tree(tree, keep):
 
 def export_tree(tree, name):
     nwk_string = tree.write(format=1)
-    out = open(FOLDER / name, 'w')
+    out = open(OUT_FOLDER / name, 'w')
     out.write(nwk_string)
     out.close()
 
@@ -92,9 +94,8 @@ def export_tree(tree, name):
 def export_annotation(tree, name):
     out = open(FOLDER / name, 'w')
     out.write('taxid;name;rank\n')
-    for n in tree.traverse():
-        rank = get_rank(n.name)
-        taxid = n.name
+    for node in tree.traverse():
+        taxid = node.name
         name = get_name(taxid)
         rank = get_rank(taxid)
         if rank not in ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom']:
