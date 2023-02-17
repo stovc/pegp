@@ -110,3 +110,7 @@ if __name__ == '__main__':
     out_df = out_df.drop('replicon', axis=1)
 
     out_df.to_csv(out_path, index=False)
+
+    # print exin code 0 nto the exit log
+    with open(exitlog_path, 'a') as outfile:
+        subprocess.run(["echo", '2 0'], stdout=outfile)
