@@ -31,7 +31,7 @@ def update_status():
             new_exit_log = ''
 
             for line in exit_log:
-                step = int(line.split(' ')[0])              # first word
+                step = int(line.split(' ')[0])  # first word
                 step_status = line.split(' ')[1][:-1]  # second word without end line symbol \n
                 if step_status == 'started':
                     status.at[step, project] = 'running'
@@ -91,7 +91,7 @@ def update_screen():
     print('Database:', database)
     print(table)
     print(PROMPT)
-    #for i in log.history:
+    # for i in log.history:
     #    print(i)
 
 
@@ -307,21 +307,21 @@ STATUS_FILE = '''\t{}
 
 # Steps of the analysis. Used to create status dataframe
 STEPS = {'Step': ['1. Blast',
-                 '2. Blast data',
-                 '3. Blast report',
-                 '4. Filter',
-                 '5. Cluster',
-                 '6. Genome consistence',
-                 '7. Cluster data',
-                 '8. Align',
-                 '9. Full translations',
-                 '10. Genome context',
-                 '11. Trim',
-                 '12. Domain search',
-                 '13. Prottest',
-                 '14. Domain data',
-                 '15. Tree']
-        }
+                  '2. Blast data',
+                  '3. Blast report',
+                  '4. Filter',
+                  '5. Cluster',
+                  '6. Genome consistence',
+                  '7. Cluster data',
+                  '8. Align',
+                  '9. Full translations',
+                  '10. Genome context',
+                  '11. Trim',
+                  '12. Domain search',
+                  '13. Prottest',
+                  '14. Domain data',
+                  '15. Tree']
+         }
 
 # Dependencies of the steps on each other
 UNLOCKS = {
