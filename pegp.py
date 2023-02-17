@@ -110,10 +110,25 @@ class Log:
 
 # Start process
 def start_process(step, project, database, *args):
-    script = SCRIPTS[step]
-    path = BATCH_SCRIPTS_PATH / script
+    if mode == 'default':
+        script = SCRIPTS[step]
+        path = SCRIPTS_PATH / script
+    elif mode == 'cluster':
+        script = BATCH_SCRIPTS[step]
+        path = BATCH_SCRIPTS_PATH / script
+
     status_path = PROJECTS_PATH / project / 'status.txt'
-    process = subprocess.run(["sbatch", path, project, database] + list(args))  # , capture_output=True
+
+    print(path)
+    extension = str(path).split('.')[-1]
+    if extension == 'batch':
+        program = 'sbatch'
+    elif extension == 'py':
+        program = 'python3'
+    elif extension == 'sh':
+        program = 'bash'
+
+    process = subprocess.run([program, path, project, database] + list(args))  # , capture_output=True
 
     status = pd.read_csv(status_path, sep='\t', index_col=0)
     status.at[step, project] = 'queued'
@@ -130,10 +145,11 @@ def call(action):
     def wrapper(input):
         n_args = action.__code__.co_argcount
         args = tuple(input.split(' ')[1:])
-        if len(args) < n_args:              # TODO: it should check if function fits a preset argument range
+        if len(args) < n_args:  # TODO: it should check if function fits a preset argument range
             log.out(f'{n_args} arguments expected, {len(args)} passed')
         else:
             action(*args)
+
     return wrapper
 
 
@@ -210,25 +226,54 @@ def quitx():
     quit()
 
 
+# Whether the mode is default or "cluster"
+# In default mode the scripts are run directly
+# In cluster mode batch scripts are run
+mode = 'default'
+
 # constants
+# paths
 PROJECTS_PATH = Path("projects/")
 BATCH_SCRIPTS_PATH = Path("batch_scripts/")
-SCRIPTS = {1: '01_blastp.batch',
-           2: '02_mk_blastp_df.batch',
-           3: '03_plot_blastp.batch',
-           4: '04_filter_blastp.batch',
-           5: '05_cdhit.batch',
-           6: '06_mk_gen_consistent.batch',
-           7: '07_cluster_dict.batch',
-           8: '08_align.batch',
-           9: '09_get_translations.batch',
-           10: '10_get_gen_context.batch',
-           11: '11_trim.batch',
-           12: '12_hmmscan.batch',
-           13: '13_prottest.batch',
-           14: '14_get_domains.batch',
-           15: '15_raxml.batch'
-           }
+SCRIPTS_PATH = Path("scripts/")
+
+# Scripts to be run in the default mode
+SCRIPTS = {
+    1: '01_blastp.sh',
+    2: '02_mk_blastp_df.py',
+    3: '03_plot_blastp.py',
+    4: '04_filter_blastp.py',
+    5: '05_cdhit.sh',
+    6: '06_mk_gen_consistent.py',
+    7: '07_cluster_dict.py',
+    8: '08_align.sh',
+    9: '09_get_translations.py',
+    10: '10_get_gen_context.py',
+    11: '11_trim.sh',
+    12: '12_hmmscan.sh',
+    13: '13_prottest.sh',
+    14: '14_get_domains.py',
+    15: '15_raxml.sh'
+}
+
+# Scripts to be run in the cluster mode
+BATCH_SCRIPTS = {
+    1: '01_blastp.batch',
+    2: '02_mk_blastp_df.batch',
+    3: '03_plot_blastp.batch',
+    4: '04_filter_blastp.batch',
+    5: '05_cdhit.batch',
+    6: '06_mk_gen_consistent.batch',
+    7: '07_cluster_dict.batch',
+    8: '08_align.batch',
+    9: '09_get_translations.batch',
+    10: '10_get_gen_context.batch',
+    11: '11_trim.batch',
+    12: '12_hmmscan.batch',
+    13: '13_prottest.batch',
+    14: '14_get_domains.batch',
+    15: '15_raxml.batch'
+}
 
 PROMPT = highlight('q') + \
          ': quit, ' + \
