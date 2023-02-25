@@ -171,7 +171,7 @@ if __name__ == '__main__':
         # 3d plot
 
         xs = list(df_handle['identity'])
-        ys = list(df_handle['overlap'])
+        ys = list(df_handle['query_coverage'])
         zs = list(df_handle['length'])
 
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
@@ -185,9 +185,9 @@ if __name__ == '__main__':
         # 3d plot evalue
         plot_3d(data_points, df_handle, 'evalue', None)  # colored by evalue
 
-    # plot pairplot with taxonomy information
-    cols = ['overlap', 'identity', 'length', 'evalue^0.1', 'taxon']
-    pairplot(df_handle, cols, 'taxon', taxon_color_dict)
+        # plot pairplot with taxonomy information
+        cols = ['query_coverage', 'identity', 'length', 'evalue^0.1', 'taxon']
+        pairplot(df_handle, cols, 'taxon', taxon_color_dict)
 
         # plot taxon distribution
 
