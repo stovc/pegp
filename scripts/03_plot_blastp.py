@@ -132,10 +132,9 @@ if __name__ == '__main__':
                     '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8',
                     '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'] + 30*['#a9a9a9']
 
-    for df in query_dfs:
-        # Taxon destribution
+        # Taxon distribution
         # Finally, generates Taxons list and Taxon_counts list
-        df_handle = df
+        df_handle = data
         taxon_destribution = df_handle['phylum'].value_counts(sort=True)
 
         taxons = taxon_destribution.index.values.tolist()
