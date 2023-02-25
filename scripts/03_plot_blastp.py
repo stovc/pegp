@@ -18,6 +18,7 @@ from matplotlib.lines import Line2D
 import matplotlib.backends.backend_pdf
 import seaborn as sns
 import subprocess
+import traceback
 
 
 def filer_taxonomy(taxon, filter_map):
@@ -28,31 +29,9 @@ def filer_taxonomy(taxon, filter_map):
         return 'Other'
 
 
-def assign_cluster(identity, overlap, length):
-    #print(identity, type(identity))
-    #print(overlap, type(overlap))
-    #print(length, type(length))
-    #print('!')
-    #           ident       overlap     len
-    #           ((0.20, 0.40), (115, 225), (550, 1000))
-    clusters = []
-
-    for i in range(len(clusters)):
-        print('ident', clusters[i][0][0], identity, clusters[i][0][1])
-        if (clusters[i][0][0] < identity) & (identity <= clusters[i][0][1]):
-            print('over', clusters[i][1][0], overlap, clusters[i][1][1])
-            if (clusters[i][1][0] < overlap) & (overlap <= clusters[i][1][1]):
-                print('len', clusters[i][2][0], length, clusters[i][2][1])
-                if (clusters[i][2][0] < length) & (length <= clusters[i][2][1]):
-                    return str(i)
-    else:
-        return '-'
-
-
 def pairplot(data, columns, hue, palette):
     g = sns.PairGrid(data[columns], diag_sharey=False, hue=hue,
                      height=3, aspect=1.5, palette=palette, corner=True)
-    #g.map_upper(sns.kdeplot)
     g.map_lower(sns.scatterplot, edgecolor="k", linewidth=0.2, s=3)
     g.map_diag(sns.histplot, hue=None)
     g.set(rasterized=True)
@@ -190,28 +169,6 @@ if __name__ == '__main__':
         color_dict_cluster = {'0': 'red', '1': 'blue', '2': 'green', '3': 'orange', '4': 'magenta', '5': 'cyan',
                               '-': 'grey'}
 
-        # Ploting N hits destributions per phylum  # TODO: substitute it with a tree with a phyletic pattern
-
-        # fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-        # #g = sns.displot(data=genome_df, x="assembly", col='taxon', col_wrap=5)
-        # g = sns.displot(data=genome_df, x="assembly", col='phylum', col_wrap=4, stat='probability', common_norm=False,
-        #                 discrete=True)
-
-        # pdf.savefig()
-
-        # Cluster assignment
-
-        # df_handle['cluster'] = None
-        #
-        # for ind in df_handle.index:
-        #     df_handle['cluster'][ind] = assign_cluster(df_handle['identity'][ind], df_handle['overlap'][ind], df_handle['length'][ind])
-        #
-        # print(list(df_handle['cluster']))
-
-        # plot pairplot with replicon type  # does not make much sense by default
-        # cols = ['overlap', 'identity', 'length', 'evalue^0.1', 'replicon_type']
-        # pairplot(df_handle, cols, 'replicon_type', {'plasmid': 'green', 'chromosome': 'blue', 'main': 'blue'})
-
 
         # 3d plot
 
@@ -234,12 +191,7 @@ if __name__ == '__main__':
     cols = ['overlap', 'identity', 'length', 'evalue^0.1', 'taxon']
     pairplot(df_handle, cols, 'taxon', taxon_color_dict)
 
-    # plot pp with clusters
-
-    #cols = ['overlap', 'identity', 'length', 'evalue^0.1', 'cluster']
-    #pairplot(df_handle, cols, 'cluster', None)
-
-    # plot taxon distribution
+        # plot taxon distribution
 
     fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
     ax.bar(taxons, taxon_counts)
