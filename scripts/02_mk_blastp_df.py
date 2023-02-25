@@ -7,10 +7,10 @@
 """
 
 import subprocess
-import sys, getopt
+import sys
 from pathlib import Path
-import numpy as np
-from Bio.Blast import NCBIXML
+import traceback
+from Bio import SearchIO
 import pandas as pd
 from ete3 import NCBITaxa
 
@@ -56,22 +56,23 @@ def get_replicon(replicon):
 
 
 if __name__ == '__main__':
-    project = sys.argv[1]
-    database = sys.argv[2]
-    data_path = Path('databases') / database / 'annotation.csv'  # will be stored in analysis configs
+    try:
+        # args
+        project = sys.argv[1]
+        database = sys.argv[2]
 
-    # logging to exit log
-    exitlog_path = Path('projects') / project / 'exit_log.txt'
+        # NCBI taxonomy
+        ncbi = NCBITaxa()
 
-    with open(exitlog_path, 'a') as outfile:
-        subprocess.run(["echo", '2 started'], stdout=outfile)
+        # construct paths
+        in_path = Path('projects') / project / 'blastp.xml'
+        data_path = Path('databases') / database / 'annotation.csv'  # database will be stored in analysis configs
+        out_path = Path('projects') / project / 'blastp_df.csv'
+        exitlog_path = Path('projects') / project / 'exit_log.txt'
 
-    # NCBI taxonomy
-    ncbi = NCBITaxa()
-
-    # construct input and output paths
-    in_path = Path('projects') / project / 'blastp.xml'
-    out_path = Path('projects') / project / 'blastp_df.csv'
+        # logging start to exit log
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '2 started'], stdout=outfile)  # TODO: make it through write
 
     # open input and output
     result_handle = open(in_path, 'r')
@@ -82,44 +83,64 @@ if __name__ == '__main__':
     # print(prot_df.index.values)
     prot_df['protID'] = prot_df.index
 
-    out_df = pd.DataFrame(columns=['ID', 'protID', 'query', 'evalue', 'overlap', 'identity', 'length', 'targ_dom_pos'])
+        out_df = pd.DataFrame(
+            columns=['ID', 'protID', 'evalue', 'query_coverage', 'identity', 'length', 'targ_dom_pos'])
 
-    genomes = {}
-    found_hits = []
-
-    blast_records = NCBIXML.parse(result_handle)
-
-    n = 0
-    for blast_record in blast_records:
-        query_length = blast_record.query_length
-        query_id = blast_record.query_id.split('_')[1]  # Query_1 -> 1
-        for alignment in blast_record.alignments:
+        # parse homology search output and make dataframe of hits
+        search_result = SearchIO.read(in_path, "blast-xml")  # this is currently xml output of blast. to be custom later
+        n = 0
+        for hit in search_result:
             hsp_no = 0
-            for hsp in alignment.hsps:
+            for hsp in hit:
                 hsp_no += 1
                 n += 1
                 print(n)
 
-                ID = alignment.accession + str(hsp_no)
-                protID = alignment.accession
+                # row to be added to the dataframe
+                print('query span', hsp.query_span)
+                print('full query', search_result.seq_len)
 
-                new_row = {'ID': ID, 'protID': protID, 'query': query_id,
-                           'evalue': hsp.expect, 'overlap': 100 * hsp.aln_span / hsp.query_span,    # TODO: refactor overlap to query coverage
-                           'identity': hsp.identities / hsp.align_length, 'length': alignment.length,
-                           'targ_dom_pos': (hsp.sbjct_start + (len(hsp.sbjct) // 2))}
-                out_df = out_df.append(new_row, ignore_index=True)  # TODO - change append to concat
+                new_row = pd.DataFrame(
+                    {
+                        'ID': hit.id + str(hsp_no),  # hit id = protein_id + hsp number
+                        'protID': hit.id,  # id of the protein the hsp belongs to
+                        'evalue': hsp.evalue,
+                        'query_coverage': 100 * hsp.query_span / search_result.seq_len,
+                        'identity': hsp.ident_num / hsp.aln_span,
+                        'length': hit.seq_len,
+                        'targ_dom_pos': (hsp.hit_start + hsp.query_span // 2)  # coordinate of the center of the query
+                    },
+                    index=[0]
+                )
+                out_df = pd.concat([out_df, new_row])
 
-    out_df = pd.merge(out_df, prot_df, how='left', on='protID')
+        print(out_df)
 
-    out_df['superkingdom'], out_df['phylum'], out_df['class'], out_df['order'], \
-    out_df['family'], out_df['genus'], out_df['species'] = zip(*map(get_lineage, out_df['taxid']))
+        # add annotations from `annotation.csv` to the hit dataframe
+        out_df = pd.merge(out_df, prot_df, how='left', on='protID')
 
-    out_df['replicon_type'], out_df['replicon_name'] = zip(*map(get_replicon, out_df['replicon']))
+        print(out_df)
 
-    out_df = out_df.drop('replicon', axis=1)
+        # add columns with belonging to taxa on different taxonomic levels based on taxid
+        out_df['superkingdom'], out_df['phylum'], out_df['class'], out_df['order'], \
+            out_df['family'], out_df['genus'], out_df['species'] = zip(*map(get_lineage, out_df['taxid']))
 
-    out_df.to_csv(out_path, index=False)
+        # add columns with replicon type and name based on the value in the dataframe
+        out_df['replicon_type'], out_df['replicon_name'] = zip(*map(get_replicon, out_df['replicon']))
+        out_df = out_df.drop('replicon', axis=1)
 
-    # print exin code 0 nto the exit log
-    with open(exitlog_path, 'a') as outfile:
-        subprocess.run(["echo", '2 0'], stdout=outfile)
+        out_df.to_csv(out_path, index=False)
+
+    except Exception as e:
+        ecx_type = str(type(e))
+
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '2 ' + ecx_type], stdout=outfile)
+
+        with open('log.txt', 'a') as outfile:
+            traceback.print_exc(file=outfile)
+
+    else:
+        # print exin code 0 nto the exit log
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '2 0'], stdout=outfile)
