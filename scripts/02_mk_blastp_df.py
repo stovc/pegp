@@ -74,14 +74,11 @@ if __name__ == '__main__':
         with open(exitlog_path, 'a') as outfile:
             subprocess.run(["echo", '2 started'], stdout=outfile)  # TODO: make it through write
 
-    # open input and output
-    result_handle = open(in_path, 'r')
-    prot_df = pd.read_csv(data_path, index_col=0)
-    # print(prot_df)
-    # print(prot_df.index)
-    # print(prot_df.index.name)
-    # print(prot_df.index.values)
-    prot_df['protID'] = prot_df.index
+        log = open('log.txt', 'a')
+
+        # create input and output dataframes
+        prot_df = pd.read_csv(data_path, index_col=0)
+        prot_df['protID'] = prot_df.index
 
         out_df = pd.DataFrame(
             columns=['ID', 'protID', 'evalue', 'query_coverage', 'identity', 'length', 'targ_dom_pos'])
