@@ -48,14 +48,10 @@ def plot_3d(data_points, df, color_axis, color_dict):
     labels = [value for value in list(df_handle[color_axis])]
     markers = ['x' if q == 'plasmid' else 'o' for q in list(df['replicon_type'])]
 
-    fig = plt.figure(figsize=(9, 6))
-    ax = fig.add_subplot(111, projection='3d')
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     ax.set_rasterized(True)
 
-    ax.set_xlim(None, ident_lim)
-    ax.set_ylim(None, overlap_lim)
-    ax.set_zlim(None, length_lim)
-
+    # construct legend
     if color_dict is not None:
         legend_elements = [Line2D([0], [0], marker='o', color='w',
                                   label=value, markerfacecolor=color_dict[value])
@@ -63,11 +59,12 @@ def plot_3d(data_points, df, color_axis, color_dict):
     else:
         legend_elements = None
 
+    # plot data
     if color_dict is not None:
         for point, color, mark, lab in zip(data_points, colors, markers, labels):
             x, y, z = point
-            ax.scatter(x, y, z, c=color, edgecolors='black', marker=mark, label=lab,
-                       alpha=0.4, s=3, linewidth=0.2)
+            ax.scatter(x, y, z, c=color, marker=mark, label=lab,
+                       alpha=0.4, s=3, linewidth=0.8)
     else:
         xs = []
         ys = []
@@ -77,17 +74,25 @@ def plot_3d(data_points, df, color_axis, color_dict):
             ys.append(y)
             zs.append(z)
         sc = ax.scatter(xs, ys, zs, c=colors, norm=matplotlib.colors.PowerNorm(gamma=0.1),
-                        edgecolors='black', marker='o', alpha=0.4, s=3, linewidth=0.2, cmap='jet')
+                        edgecolors='black', marker='o', alpha=0.8, s=3, linewidth=0.2, cmap='jet')
 
+    # set upper limits
+    ax.set_xlim(None, ident_lim)
+    ax.set_ylim(None, overlap_lim)
+    ax.set_zlim(None, length_lim)
+
+    # set axis labels
     ax.set_xlabel('Identity')
     ax.set_ylabel('Query coverage, %')
     ax.set_zlabel('Hit length, aa')
+
     if color_dict is not None:
         ax.legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc='upper left')
     else:
         plt.colorbar(sc, label='E-value', ticks=[10, 1, 0.1, 0.05, 0.01, 0.001, 0.0001, 10**-6, 10**-9, 10**-12, 10**-100],
                      format='%.0e')
     plt.tight_layout()
+
     pdf.savefig(dpi=400)
 
 
