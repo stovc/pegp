@@ -12,7 +12,6 @@ import os
 import sys
 from pathlib import Path
 from ete3 import NCBITaxa
-ncbi = NCBITaxa()
 
 
 def get_rank(taxid):
@@ -117,6 +116,8 @@ def export_annotation(tree, name):
 if __name__ == '__main__':
     database = sys.argv[1]
     database_path = Path('../databases/') / database
+
+    ncbi = NCBITaxa()
 
     input_path = database_path / 'taxids.txt'
 
