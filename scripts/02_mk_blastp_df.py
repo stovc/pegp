@@ -20,15 +20,15 @@ def get_lineage(taxid):
     Return the lineage of the species as a list of taxon names
     The lineage includes taxonomic ranks according to the `ranks` variable
     """
+    ranks = ['superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
 
     lineage_taxid = ncbi.get_lineage(int(taxid))  # get the lineage as a list of taxids
-    names = ncbi.get_taxid_translator(lineage_taxid)  # make a dictionary {taxid: taxon name}
-    ranks = ncbi.get_rank(lineage_taxid)  # make a dictionary {taxid: taxon rank}
+    lineage_names = ncbi.get_taxid_translator(lineage_taxid)  # make the lineage as dictionary {taxid: taxon name}
+    lineage_ranks = ncbi.get_rank(lineage_taxid)  # make a dictionary {taxid: taxon rank}
 
-    lineage_dict = {ranks[i]: names[i] for i in lineage}  # dict {rank name: taxon name}
+    lineage_dict = {lineage_ranks[i]: lineage_names[i] for i in lineage_names}  # dict {rank name: taxon name}
 
     lineage_names = []
-    ranks = ['superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
     for i in ranks:
         taxon = lineage_dict.get(i)
         lineage_names.append(taxon)  # write organism
