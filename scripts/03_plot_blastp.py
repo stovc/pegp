@@ -97,46 +97,40 @@ def plot_3d(data_points, df, color_axis, color_dict):
 
 
 if __name__ == '__main__':
-    # arguments
-    project = sys.argv[1]  # argument -- project name
-
     try:
-        ident_lim = int(sys.argv[2])
-    except:
-        ident_lim = None
+        # arguments
+        project = sys.argv[1]  # argument -- project name
 
-    try:
-        overlap_lim = int(sys.argv[3])
-    except:
-        overlap_lim = None
+        # upper limits for 3D plots - optional arguments
+        try:
+            ident_lim = int(sys.argv[2])
+        except:
+            ident_lim = None
 
-    try:
-        length_lim = int(sys.argv[4])
-    except:
-        length_lim = None
+        try:
+            overlap_lim = int(sys.argv[3])
+        except:
+            overlap_lim = None
 
-    # generate paths
-    data_path = Path('projects') / project / 'blastp_df.csv'  # path to the blastp result dataframe
-    out_path = Path('projects') / project / 'blastp_report.pdf'  # path to the output report pdf
-    exitlog_path = Path('projects') / project / 'exit_log.txt'
+        try:
+            length_lim = int(sys.argv[4])
+        except:
+            length_lim = None
 
-    with open(exitlog_path, 'a') as outfile:
-        subprocess.run(["echo", '3 started'], stdout=outfile)
+        # generate paths
+        data_path = Path('projects') / project / 'blastp_df.csv'  # path to the blastp result dataframe
+        out_path = Path('projects') / project / 'blastp_report.pdf'  # path to the output report pdf
+        exitlog_path = Path('projects') / project / 'exit_log.txt'
 
-    data = pd.read_csv(data_path, index_col=0)  # dataframe with blastp results
-    pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '3 started'], stdout=outfile)
 
-    # generate a separate dataframe for each blastp querry
-    queries = data['query'].unique().tolist()
-    queries.sort()
-    print("Queries:", queries)
-    query_dfs = []
-    for i in range(len(queries)):
-        query_dfs.append(data[data['query'] == i + 1])
+        data = pd.read_csv(data_path, index_col=0)  # dataframe with blastp results
+        pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
 
-    colors20 = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4',
-                '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8',
-                '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'] + 30*['#a9a9a9']
+        colors20 = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4',
+                    '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8',
+                    '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'] + 30*['#a9a9a9']
 
     for df in query_dfs:
         # Taxon destribution
@@ -198,47 +192,61 @@ if __name__ == '__main__':
 
         # plot taxon distribution
 
-    fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
-    ax.bar(taxons, taxon_counts)
-    ax.set_rasterized(True)
-    ax.set_yscale('log')
+        fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
+        ax.bar(taxons, taxon_counts)
+        ax.set_rasterized(True)
+        ax.set_yscale('log')
 
-    ax.set_title('Total hits in phyla')
-    ax.set_xlabel('N hits')
-    ax.set_ylabel('Phylum')
+        ax.set_title('Total hits in phyla')
+        ax.set_xlabel('N hits')
+        ax.set_ylabel('Phylum')
 
-    for label in ax.get_xticklabels():  # rotate ticks
-        label.set_rotation(40)
-        label.set_horizontalalignment('right')
+        for label in ax.get_xticklabels():  # rotate ticks
+            label.set_rotation(40)
+            label.set_horizontalalignment('right')
 
-    plt.tight_layout()
-    pdf.savefig()
+        plt.tight_layout()
+        pdf.savefig()
 
-    # plot paralogy
-    genome_destribution = df_handle['assembly'].value_counts(sort=True).to_dict()
-    genome_df = df_handle[['assembly', 'phylum']].drop_duplicates()
-    genome_df = genome_df.replace({'assembly': genome_destribution})
-    genome_mean = genome_df.groupby('phylum').mean()
+        # plot average N_hits per genome in phyla
+        genome_destribution = df_handle['assembly'].value_counts(sort=True).to_dict()
+        genome_df = df_handle[['assembly', 'phylum']].drop_duplicates()
+        genome_df = genome_df.replace({'assembly': genome_destribution})
+        genome_mean = genome_df.groupby('phylum').mean()
 
-    taxons = genome_mean.index.values.tolist()
-    taxon_mean_hits = genome_mean['assembly'].tolist()
+        taxons = genome_mean.index.values.tolist()
+        taxon_mean_hits = genome_mean['assembly'].tolist()
 
-    fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey=True)
-    ax.bar(taxons, taxon_mean_hits)
-    ax.set_rasterized(True)
+        fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey=True)
+        ax.bar(taxons, taxon_mean_hits)
+        ax.set_rasterized(True)
 
-    for label in ax.get_xticklabels():  # rotate ticks
-        label.set_rotation(40)
-        label.set_horizontalalignment('right')
+        for label in ax.get_xticklabels():  # rotate ticks
+            label.set_rotation(40)
+            label.set_horizontalalignment('right')
 
-    plt.tight_layout()
+        plt.tight_layout()
 
-    ax.set_title('Average N hits in a genome')
-    ax.set_xlabel('N hits')
-    ax.set_ylabel('Phylum')
+        ax.set_title('Average N hits in a genome')
+        ax.set_xlabel('N hits')
+        ax.set_ylabel('Phylum')
 
-    pdf.savefig()
+        pdf.savefig()
 
-    ###
+        ###
 
-    pdf.close()
+        pdf.close()
+
+    except Exception as e:
+        ecx_type = str(type(e))
+
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '3 ' + ecx_type], stdout=outfile)
+
+        with open('log.txt', 'a') as outfile:
+            traceback.print_exc(file=outfile)
+
+    else:
+        # print exin code 0 nto the exit log
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '3 0'], stdout=outfile)
