@@ -36,6 +36,15 @@ def get_lineage(taxid):
 
 
 def get_replicon(replicon):
+    """e.g.
+    in - 'chromosome_II'
+    out - ('chromosome', 'II')
+
+    but 'main' --> ('main', 'main')
+
+    TODO: this should be done in database_building/mk_db.py
+    """
+
     if replicon == 'main':
         replicon_type = 'main'
         replicon_name = 'main'
