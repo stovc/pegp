@@ -128,7 +128,7 @@ if __name__ == '__main__':
     taxids = inp.readlines()
     inp.close()
 
-    tree = ncbi.get_topology(taxids)
+    tree = ncbi.get_topology(taxids, intermediate_nodes=True)
     print('constructed tree from taxids')
 
     tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
