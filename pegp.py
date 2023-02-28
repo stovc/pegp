@@ -28,7 +28,6 @@ def update_status():
 
         try:
             exit_log = open(PROJECTS_PATH / project / 'exit_log.txt', 'r')
-            new_exit_log = ''
 
             for line in exit_log:
                 step = int(line.split(' ')[0])  # first word
