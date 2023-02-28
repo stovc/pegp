@@ -30,26 +30,25 @@ def update_status():
             exit_log = open(PROJECTS_PATH / project / 'exit_log.txt', 'r')
 
             for line in exit_log:
-                step = int(line.split(' ')[0])  # first word
-                step_status = line.split(' ')[1][:-1]  # second word without end line symbol \n
+                step = int(line.split(' ')[0])  # first word - the step number
+                step_status = ''.join(line.split(' ')[1:])[:-1]  # the line except the 1st word and the end line symbol \n - step status
                 if step_status == 'started':
                     status.at[step, project] = 'running'
-                elif step_status.isnumeric():
-                    if step_status == '0':
-                        status.at[step, project] = 'done'
-                        for i in UNLOCKS[step]:
-                            print(status.at[i, project], type(status.at[i, project]))
-                            if status.at[i, project] == '-':
-                                status.at[i, project] = 'ready'
 
-                    else:
-                        status.at[step, project] = f'failed {step_status}'
+                elif step_status == '0':  # exit code 0 - step successfully completed
+                    status.at[step, project] = 'done'
+
+                    # unlock steps dependent on the completed step
+                    for i in UNLOCKS[step]:
+                        if status.at[i, project] == '-':
+                            status.at[i, project] = 'ready'
+
                 else:
-                    new_exit_log += line
+                    status.at[step, project] = f'failed {step_status}'
             exit_log.close()
 
             exit_log = open(PROJECTS_PATH / project / 'exit_log.txt', 'w')
-            exit_log.write(new_exit_log)
+            exit_log.write('')
             exit_log.close()
 
             status.to_csv(status_path, sep='\t')
