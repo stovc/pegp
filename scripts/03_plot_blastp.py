@@ -4,16 +4,9 @@
 """
 
 import sys
-import getopt
 from pathlib import Path
-import numpy as np
-from math import log2
 import pandas as pd
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib import colors, cm
-from matplotlib.ticker import PercentFormatter
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.lines import Line2D
 import matplotlib.backends.backend_pdf
 import seaborn as sns
