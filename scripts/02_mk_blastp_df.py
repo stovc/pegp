@@ -79,7 +79,7 @@ if __name__ == '__main__':
         # NCBI taxonomy database
         ncbi = NCBITaxa()
 
-        # logging start to exit log
+        # log start to exit log
         exitlog_path = Path('projects') / project / 'exit_log.txt'
         with open(exitlog_path, 'a') as outfile:
             subprocess.run(["echo", '2 started'], stdout=outfile)  # TODO: make it through write
