@@ -3,11 +3,11 @@
 - Step 4 in the pipeline
 """
 
-import sys, getopt
+import sys
 from pathlib import Path
 from Bio import Seq, SeqIO
 from Bio import SeqFeature
-from Bio.Blast import NCBIXML
+from Bio import SearchIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 import gc
 import subprocess
@@ -45,24 +45,18 @@ if __name__ == '__main__':
 
     proteins_to_filter = []
 
-    n = 0
-    for blast_record in blast_records:
-        query_length = blast_record.query_length
-        for alignment in blast_record.alignments:
+        # retrieve aligned sequences of filtered hits
+        ids_to_retrieve = list(df.index.values)
+        for hit in search_result:
             hsp_no = 0
-            for hsp in alignment.hsps:
+            for hsp in hit:
                 hsp_no += 1
-                n += 1
-                print(n)
 
-                ID = alignment.accession + str(hsp_no)
-                identity = hsp.identities / hsp.align_length
-                overlap = hsp.align_length
-                length = alignment.length
-                evalue = hsp.expect
-                sequence = hsp.sbjct.replace('-', '')
+                ID = hit.id + str(hsp_no)
 
-                if identity > IDENT_THRESHOLD and overlap > OVERLAP_THRESHOLD and evalue < EVALUE_THRESHOLD:
+                if ID in ids_to_retrieve:
+                    sequence = str(hsp.hit.seq)
+                    sequence = sequence.replace('-', '')  # remove gaps
                     out.write('>' + ID + '\n' + sequence + '\n')
 
     df = df[df.identity > IDENT_THRESHOLD]
