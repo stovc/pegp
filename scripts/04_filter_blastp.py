@@ -43,7 +43,10 @@ if __name__ == '__main__':
 
         out = open(out_faa_path, 'w')
 
-    proteins_to_filter = []
+        #  filter df by thresholds
+        df = df[df.identity > ident_threshold]
+        df = df[df.query_coverage > coverage_threshold]
+        df = df[df.evalue < evalue_threshold]
 
         # retrieve aligned sequences of filtered hits
         ids_to_retrieve = list(df.index.values)
@@ -59,11 +62,7 @@ if __name__ == '__main__':
                     sequence = sequence.replace('-', '')  # remove gaps
                     out.write('>' + ID + '\n' + sequence + '\n')
 
-    df = df[df.identity > IDENT_THRESHOLD]
-    df = df[df.overlap > OVERLAP_THRESHOLD]
-    df = df[df.evalue < EVALUE_THRESHOLD]
-    df = df.drop(columns=['query', 'evalue', 'overlap', 'identity'])
-    df.to_csv(out_df_path)
+        df.to_csv(out_df_path)
 
         out.close()
     except Exception as e:
