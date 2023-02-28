@@ -11,23 +11,47 @@ while the truncated ones are needed for the alignment and tree construction
 import sys
 from pathlib import Path
 import pandas as pd
+import subprocess
+import traceback
 
-# arguments - project name and database
-project = sys.argv[1]
-database = sys.argv[2]
+if __name__ == '__main__':
+    try:
+        # arguments - project name and database
+        project = sys.argv[1]
+        database = sys.argv[2]
 
-# construct input and output paths
-in_path = Path('projects') / project / 'filtered_clustered.csv'
-data_path = Path('databases') / database / 'translation.csv'
+        # logging to exit log
+        exitlog_path = Path('projects') / project / 'exit_log.txt'
 
-out_path = Path('projects') / project / 'clustered_full.faa'
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '9 started'], stdout=outfile)
 
-translation_db = pd.read_csv(data_path, index_col=0, names=['translation'])
-clustered_db = pd.read_csv(in_path, index_col=0)
+        # construct input and output paths
+        in_path = Path('projects') / project / 'filtered_clustered.csv'
+        data_path = Path('databases') / database / 'translation.csv'
 
-ids = list(clustered_db.index)
+        out_path = Path('projects') / project / 'clustered_full.faa'
 
-with open(out_path, 'w') as f:
-    for i in ids:
-        f.write('>' + i + '\n')
-        f.write(translation_db.loc[i, 'translation'] + '\n')
+        translation_db = pd.read_csv(data_path, index_col=0, names=['translation'])
+        clustered_db = pd.read_csv(in_path, index_col=0)
+
+        ids = list(clustered_db.index)
+
+        with open(out_path, 'w') as f:
+            for id in ids:
+                protID = id[:-1]
+                f.write('>' + protID + '\n')
+                f.write(translation_db.loc[protID, 'translation'] + '\n')
+    except Exception as e:
+        ecx_type = str(type(e))
+
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '9 ' + ecx_type], stdout=outfile)
+
+        with open('log.txt', 'a') as outfile:
+            traceback.print_exc(file=outfile)
+
+    else:
+        # print exin code 0 to the exit log
+        with open(exitlog_path, 'a') as outfile:
+            subprocess.run(["echo", '9 0'], stdout=outfile)
