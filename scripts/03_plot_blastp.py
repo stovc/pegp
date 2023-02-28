@@ -1,4 +1,10 @@
 """Plot BLAST hits and their properties.
+Plots:
+    - 3d plot of identity, query_coverage, and length colored by taxon
+    - 3d plot of identity, query_coverage, and length colored by e-value
+    - Pair scatter plot of identity, query_coverage, and length with histograms at the diagonal
+    - Histogram of total hits per phylum (TODO: would be nice to plot values normalized to numbers of genomes/phylum)
+    - Histogram of average number of hits per genome in a phylum (TODO: would be nice to plot a tree with pattern)
 
 - Step 3 in the pipeline
 """
@@ -23,6 +29,12 @@ def filer_taxonomy(taxon, filter_map):
 
 
 def pairplot(data, columns, hue, palette):
+    """Plot seaborn pairplot.
+    Data - dataframe
+    Columns - columns from data to be plotted
+    Hue - column that defines colors of plotted dots
+    Palette - color palette fot dots
+    """
     g = sns.PairGrid(data[columns], diag_sharey=False, hue=hue,
                      height=3, aspect=1.5, palette=palette, corner=True)
     g.map_lower(sns.scatterplot, edgecolor="k", linewidth=0.2, s=3)
@@ -32,8 +44,12 @@ def pairplot(data, columns, hue, palette):
     pdf.savefig(dpi=300)
 
 
-def plot_3d(data_points, df, color_axis, color_dict):
-    """Plot 3d scatter plot."""
+def plot_3d(data_points, df, color_axis, color_dict=None):
+    """Plot 3d scatter plot.
+    data_points - list of tuples (x, y, z)
+    df - dataframe with data for annotation
+    color_axis - column that defines colors of the dots
+    color_dict"""
     if color_dict is not None:
         colors = [color_dict[value] for value in list(df[color_axis])]
     else:
@@ -111,19 +127,26 @@ if __name__ == '__main__':
             length_lim = None
 
         # generate paths
-        data_path = Path('projects') / project / 'blastp_df.csv'  # path to the blastp result dataframe
-        out_path = Path('projects') / project / 'blastp_report.pdf'  # path to the output report pdf
-        exitlog_path = Path('projects') / project / 'exit_log.txt'
 
+
+
+        # log start to exit log
+        exitlog_path = Path('projects') / project / 'exit_log.txt'
         with open(exitlog_path, 'a') as outfile:
             subprocess.run(["echo", '3 started'], stdout=outfile)
 
+        # read data
+        data_path = Path('projects') / project / 'blastp_df.csv'  # path to the blastp result dataframe
         data = pd.read_csv(data_path, index_col=0)  # dataframe with blastp results
+
+        # create output to plot to
+        out_path = Path('projects') / project / 'blastp_report.pdf'  # path to the output report pdf
         pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
 
-        colors20 = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4',
+        # set of colors for plots
+        COLORS20 = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4',
                     '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8',
-                    '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'] + 30*['#a9a9a9']
+                    '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'] + 30 * ['#a9a9a9']
 
         # Taxon distribution
         # Finally, generates Taxons list and Taxon_counts list
@@ -155,35 +178,27 @@ if __name__ == '__main__':
 
         taxon_color_dict = {}
         for i in range(len(taxons)):
-            taxon_color_dict[taxons[i]] = colors20[i]
-
-        color_dict_cluster = {'0': 'red', '1': 'blue', '2': 'green', '3': 'orange', '4': 'magenta', '5': 'cyan',
-                              '-': 'grey'}
+            taxon_color_dict[taxons[i]] = COLORS20[i]
 
 
         # 3d plot
-
         xs = list(df_handle['identity'])
         ys = list(df_handle['query_coverage'])
         zs = list(df_handle['length'])
 
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
-        plot_3d(data_points, df_handle, 'taxon', taxon_color_dict)  # colored by taxon
+        # 3d plot of identity, query_coverage, and legth colored by taxon
+        plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
 
-        # 3d plot clusters
-
-        # plot_3d(data_points, df_handle, 'cluster', color_dict_cluster)  # colored by cluster
-
-        # 3d plot evalue
-        plot_3d(data_points, df_handle, 'evalue', None)  # colored by evalue
+        # # 3d plot of identity, query_coverage, and legth colored by evalue
+        plot_3d(data_points, df_handle, color_axis='evalue')
 
         # plot pairplot with taxonomy information
         cols = ['query_coverage', 'identity', 'length', 'evalue^0.1', 'taxon']
         pairplot(df_handle, cols, 'taxon', taxon_color_dict)
 
         # plot taxon distribution
-
         fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
         ax.bar(taxons, taxon_counts)
         ax.set_rasterized(True)
@@ -201,9 +216,9 @@ if __name__ == '__main__':
         pdf.savefig()
 
         # plot average N_hits per genome in phyla
-        genome_destribution = df_handle['assembly'].value_counts(sort=True).to_dict()
+        genome_distribution = df_handle['assembly'].value_counts(sort=True).to_dict()
         genome_df = df_handle[['assembly', 'phylum']].drop_duplicates()
-        genome_df = genome_df.replace({'assembly': genome_destribution})
+        genome_df = genome_df.replace({'assembly': genome_distribution})
         genome_mean = genome_df.groupby('phylum').mean()
 
         taxons = genome_mean.index.values.tolist()
