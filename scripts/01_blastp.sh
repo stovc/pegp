@@ -1,5 +1,6 @@
 #!/bin/bash
 # blast "input.faa" from project folder specified in $1 against a database specified in $2
+# e-value cutoff - 0.05; out format - xml; maximum reported hits - as much as possible
 
 # args
 PROJECT=$1
