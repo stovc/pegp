@@ -1,9 +1,13 @@
 """Make the dataframe of BLAST hits with annotations.
 
-- input `blastp_hits.xml`
-- output `blastp_hits_data.csv`
+- input 1 `blastp_hits.xml` - BLASTP search output (from `project` specified in arguments)
+- input 2 `annotation.csv` - .csv with annotations for each potential hit in the `database` specified in arguments
+- output `blastp_hits_data.csv` - dataframe containing hit ids, BLAST output properties (identity, query coverage,
+hit length), and additional annotations from the database
 
 - Step 2 in the pipeline
+
+TODO: hit length can be precomputed and be a part of the database
 """
 
 import subprocess
@@ -18,25 +22,36 @@ from ete3 import NCBITaxa
 def get_lineage(taxid):
     """Get NCBI taxid of a species
     Return the lineage of the species as a list of taxon names
-    The lineage includes taxonomic ranks according to the `ranks` variable
+    The lineage includes taxonomic ranks according to the `filter_ranks` variable
+
+    Example:
+        input: 511145
+        output: ['Bacteria', 'Pseudomonadota','Gammaproteobacteria','Enterobacterales','Enterobacteriaceae',
+        'Escherichia','Escherichia coli']
     """
-    ranks = ['superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
+    # taxonomic ranks to keep in the lineage
+    filter_ranks = ['superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
 
-    lineage_taxid = ncbi.get_lineage(int(taxid))  # get the lineage as a list of taxids
-    lineage_names = ncbi.get_taxid_translator(lineage_taxid)  # make the lineage as dictionary {taxid: taxon name}
-    lineage_ranks = ncbi.get_rank(lineage_taxid)  # make a dictionary {taxid: taxon rank}
+    # get the lineage as a list of taxids
+    lineage_taxid = ncbi.get_lineage(int(taxid))
+    # make the lineage as dictionary {taxid: taxon name}
+    lineage_names = ncbi.get_taxid_translator(lineage_taxid)
+    # make a dictionary {taxid: taxon rank}
+    lineage_ranks = ncbi.get_rank(lineage_taxid)
+    # dict {rank name: taxon name}
+    lineage_dict = {lineage_ranks[i]: lineage_names[i] for i in lineage_names}
 
-    lineage_dict = {lineage_ranks[i]: lineage_names[i] for i in lineage_names}  # dict {rank name: taxon name}
-
+    # filter lineage_dict by filter_ranks
     lineage_names = []
-    for i in ranks:
+    for i in filter_ranks:
         taxon = lineage_dict.get(i)
         lineage_names.append(taxon)  # write organism
     return lineage_names
 
 
 def get_replicon(replicon):
-    """e.g.
+    """Get replicon type and name by replicon annotation of the source feature in a Genbank file.
+    e.g.
     in - 'chromosome_II'
     out - ('chromosome', 'II')
 
@@ -61,42 +76,34 @@ if __name__ == '__main__':
         project = sys.argv[1]
         database = sys.argv[2]
 
-        # NCBI taxonomy
+        # NCBI taxonomy database
         ncbi = NCBITaxa()
 
-        # construct paths
-        in_path = Path('projects') / project / 'blastp.xml'
-        data_path = Path('databases') / database / 'annotation.csv'  # database will be stored in analysis configs
-        out_path = Path('projects') / project / 'blastp_df.csv'
-        exitlog_path = Path('projects') / project / 'exit_log.txt'
-
         # logging start to exit log
+        exitlog_path = Path('projects') / project / 'exit_log.txt'
         with open(exitlog_path, 'a') as outfile:
             subprocess.run(["echo", '2 started'], stdout=outfile)  # TODO: make it through write
 
-        log = open('log.txt', 'a')
-
-        # create input and output dataframes
+        # read input dataframe
+        data_path = Path('databases') / database / 'annotation.csv'  # database will be stored in analysis configs
         prot_df = pd.read_csv(data_path, index_col=0)
         prot_df['protID'] = prot_df.index
 
+        # create output dataframe
         out_df = pd.DataFrame(
             columns=['ID', 'protID', 'evalue', 'query_coverage', 'identity', 'length', 'targ_dom_pos'])
 
-        # parse homology search output and make dataframe of hits
-        search_result = SearchIO.read(in_path, "blast-xml")  # this is currently xml output of blast. to be custom later
-        n = 0
+        # open homology search output to be parsed
+        search_result_path = Path('projects') / project / 'blastp.xml'
+        search_result = SearchIO.read(search_result_path, "blast-xml")  # it is xml output of blast. to be custom later
+
+        # parse homology search output (iterate hits and their HSPs) and make dataframe of hits
         for hit in search_result:
             hsp_no = 0
             for hsp in hit:
                 hsp_no += 1
-                n += 1
-                print(n)
 
                 # row to be added to the dataframe
-                print('query span', hsp.query_span)
-                print('full query', search_result.seq_len)
-
                 new_row = pd.DataFrame(
                     {
                         'ID': hit.id + str(hsp_no),  # hit id = protein_id + hsp number
@@ -111,14 +118,10 @@ if __name__ == '__main__':
                 )
                 out_df = pd.concat([out_df, new_row])
 
-        print(out_df)
-
         # add annotations from `annotation.csv` to the hit dataframe
         out_df = pd.merge(out_df, prot_df, how='left', on='protID')
 
-        print(out_df)
-
-        # add columns with belonging to taxa on different taxonomic levels based on taxid
+        # add columns with taxa of different taxonomic levels based on taxid
         out_df['superkingdom'], out_df['phylum'], out_df['class'], out_df['order'], \
             out_df['family'], out_df['genus'], out_df['species'] = zip(*map(get_lineage, out_df['taxid']))
 
@@ -126,7 +129,9 @@ if __name__ == '__main__':
         out_df['replicon_type'], out_df['replicon_name'] = zip(*map(get_replicon, out_df['replicon']))
         out_df = out_df.drop('replicon', axis=1)
 
-        out_df.to_csv(out_path, index=False)
+        # export output dataframe to csv
+        out_df_path = Path('projects') / project / 'blastp_df.csv'
+        out_df.to_csv(out_df_path, index=False)
 
     except Exception as e:
         ecx_type = str(type(e))
