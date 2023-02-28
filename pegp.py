@@ -53,8 +53,8 @@ def update_status():
 
             status.to_csv(status_path, sep='\t')
         except:
-            #  print('exit log open exception')
-            ''
+            print('exit log open exception')
+
         data = pd.concat([data, status], axis=1)
     return data
 
