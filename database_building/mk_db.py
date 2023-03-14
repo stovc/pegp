@@ -123,7 +123,6 @@ COLUMNS = ['ID', 'locus_tag',
            'start', 'end', 'strand',
            'taxid', 'replicon',
            'feature', 'gene', 'product', 'protein_id']  # columns in the annotation dataframe
-FOLDERS_TO_CONCATENATE_CSV = ['annotation', 'upstream', 'sequence', 'downstream', 'translation']
 
 # parse arguments
 # expected arguments: 1) database name; 2-N) genome folders to extract the genomes from
@@ -341,5 +340,12 @@ log.close()
 
 concatenate('protein', 'faa')
 concatenate('taxid_map', 'txt')
+
+concatenate('upstream', 'csv')
+concatenate('sequence', 'csv')
+concatenate('downstream', 'csv')
+concatenate('translation', 'csv')
+
+FOLDERS_TO_CONCATENATE_CSV = ['annotation']
 for folder in FOLDERS_TO_CONCATENATE_CSV:
     concatenate_csv(folder)
