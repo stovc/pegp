@@ -1,5 +1,6 @@
 #!/bin/bash
 # blast "input.faa" from project folder specified in $1 against a database specified in $2
+# output - BLASTP search report "blastp.xml"
 # e-value cutoff - 0.05; out format - xml; maximum reported hits - as much as possible
 
 # args

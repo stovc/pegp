@@ -1,7 +1,7 @@
 #!/bin/bash
-# this step is reserved for testing which substitution model suits
-# the alignment better for maximum likelihood inference
-# currently does nothing
+# This step is reserved for testing which substitution model suits
+# the alignment better for maximum likelihood inference.
+# It currently does nothing.
 
 # log step number and started status
 echo 13 started >> projects/$1/exit_log.txt

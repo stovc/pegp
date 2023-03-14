@@ -21,9 +21,9 @@ if __name__ == '__main__':
         for i in sys.argv:
             print(i)
         project = sys.argv[1]
-        ident_threshold = float(sys.argv[3])  # 0.15
-        coverage_threshold = float(sys.argv[4])  # 115
-        evalue_threshold = float(sys.argv[5])  # 0.05
+        ident_threshold = float(sys.argv[3])
+        coverage_threshold = float(sys.argv[4])
+        evalue_threshold = float(sys.argv[5])
 
         # construct input and output paths
         in_path = Path('projects') / project / 'blastp.xml'

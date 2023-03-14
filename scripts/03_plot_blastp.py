@@ -188,10 +188,10 @@ if __name__ == '__main__':
 
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
-        # 3d plot of identity, query_coverage, and legth colored by taxon
+        # 3d plot of identity, query_coverage, and length colored by taxon
         plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
 
-        # # 3d plot of identity, query_coverage, and legth colored by evalue
+        # # 3d plot of identity, query_coverage, and length colored by evalue
         plot_3d(data_points, df_handle, color_axis='evalue')
 
         # plot pairplot with taxonomy information
