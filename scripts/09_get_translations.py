@@ -33,7 +33,7 @@ if __name__ == '__main__':
         out_path = Path('projects') / project / 'clustered_full.faa'
 
         translation_db = pd.read_csv(data_path, index_col=0, names=['translation'])
-        clustered_db = pd.read_csv(in_path, index_col=0)
+        clustered_db = pd.read_csv(in_path, index_col=0)  # TODO: to get index, there's no need to read all columns
 
         ids = list(clustered_db.index)
 
