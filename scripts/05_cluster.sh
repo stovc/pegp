@@ -1,6 +1,9 @@
 #!/bin/bash
-# cluster sequences into clusters of 90% and more similarity and pick representatives
-# using cd-hit
+# cluster sequences into clusters of 90% and more similarity and pick representatives using cd-hit
+# input - filtered_hits.faa
+# output:
+# - clustered90.faa - fasta file with representative sequences
+# - clustered90.faa - description of all computed clusters
 
 # arg
 PROJECT=$1

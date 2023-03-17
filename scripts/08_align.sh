@@ -1,5 +1,7 @@
 #!/bin/bash
 # align clustered and genome-consistent hits by MAFFT in the L-ins-i mode
+# input - clustered90-gc.faa
+# output - aligned.fa
 
 # args
 PROJECT=$1

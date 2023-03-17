@@ -1,6 +1,11 @@
 #!/bin/bash
-# trim the alignment
-# remove columns that contain >= 50% of gaps
+# trim the alignment by removing columns that contain fraction of gaps lower than $THRESHOLD
+# Input:
+#    - "aligned.fa";
+#    - [trimming threshold]
+# Output:
+#    - "trimed.fa" - trimmed alignment
+#    - trim.html - triming report
 
 # arg
 PROJECT=$1

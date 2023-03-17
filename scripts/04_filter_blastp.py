@@ -1,6 +1,13 @@
-"""Filter BLAST hits by parameters: identity, overlap, e-value.
+"""Filter BLAST hits by parameters: identity, query coverage, e-value.
 
-- Step 4 in the pipeline
+- input:
+    - "blastp.xml" - blastp report. needed to extract aligned parts of the hits
+    - "blastp_df.csv" - csv with annotations to subset
+    - parameters with filtering thresholds: [identity], [query coverage], [e-value]
+
+- output:
+    - 'filtered_hits.faa' - fasta file with filtered hits containing aligned parts of the proteins
+    - 'filtered_hits.csv' - csv with annotations to the filtered hits
 """
 
 import sys

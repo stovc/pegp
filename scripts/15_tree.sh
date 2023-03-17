@@ -1,9 +1,11 @@
 #!/bin/bash
 # Construct maximum likelihood tree with 1000 ultrafast bootstrap replicates
-# Input - trimed.fa
-# Output - tree/tree.treefile - ML tree
-#          tree/tree.treefile - consensus tree
-#          tree/tree.iqtree - iqtree output
+# Input:
+#    - "trimed.fa"
+# Output:
+#    - "tree/tree.treefile" - ML tree
+#    - "tree/tree.treefile" - consensus tree
+#    - "tree/tree.iqtree" - iqtree output
 
 # args
 PROJECT=$1

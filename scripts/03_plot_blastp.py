@@ -1,12 +1,14 @@
 """Plot BLAST hits and their properties.
-Plots:
+
+- input: "blastp_df.csv"
+- output: "blastp_report.pdf"
+
+Output contains the following plots:
     - 3d plot of identity, query_coverage, and length colored by taxon
     - 3d plot of identity, query_coverage, and length colored by e-value
     - Pair scatter plot of identity, query_coverage, and length with histograms at the diagonal
     - Histogram of total hits per phylum (TODO: would be nice to plot values normalized to numbers of genomes/phylum)
     - Histogram of average number of hits per genome in a phylum (TODO: would be nice to plot a tree with pattern)
-
-- Step 3 in the pipeline
 """
 
 import sys

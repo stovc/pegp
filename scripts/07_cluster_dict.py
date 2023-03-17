@@ -1,15 +1,13 @@
 """Construct a .csv containing cluster representative information for non-clustered proteins.
 
-- input: cdhit 'clustered90.faa.clstr' output file
-- output: cluster_dict.csv
+- input: "clustered90.faa.clstr" cdhit output file
+- output: "cluster_dict.csv"
 
 ```csv
 id,representative
 [unclustered protein id],[cluster representative protein id]
 AB00047H1T,AB00047H1T
 ```
-
-- Step 6a in the pipeline
 """
 
 import sys

@@ -3,9 +3,13 @@
 - `clustered.faa` file is updated with sequences from `filtered_fits.faa`
 if they are present in the same genome according to `filtered_hits.csv`
 
-- Produces `clustered-gc.faa` file
+Input:
+    - clustered.faa
+    - filtered_fits.faa
+    - filtered_hits.csv
 
-- Step 6 in the pipeline
+Output:
+    - `clustered-gc.faa` file
 """
 
 import sys

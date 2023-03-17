@@ -1,12 +1,9 @@
-"""Get a dataframe describing the genome context of the hits.
+"""Make a dataframe describing the genome context of the hits.
 
 - input: `filtered_clustered.csv`, `annotation.csv`
 - output:  `genome_context.csv`
 
-- Step 7b in the pipeline
-
 TODO: revise the way the paths are formed
-
 """
 
 import sys
@@ -88,7 +85,6 @@ if __name__ == '__main__':
                     start = int(rec['start']) * sm
                     end = int(rec['end']) * sm
                     strand = int(rec['strand']) * sm
-
 
                     if sm == 1:
                         to_write = f'{row.ID};{gene};{target};{start};{end};{strand}\n'

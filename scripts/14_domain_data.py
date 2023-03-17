@@ -1,6 +1,10 @@
 """Make a .csv file with domain data from hmmscan tabular output.
 
-- Step 14 in the pipeline
+Input:
+    - "hmmscan.tbl" - hmmscan output
+    - "filtered_clustered.csv" - annotations
+Output:
+    - "domains.csv" - predicted domains with annotations
 """
 
 import sys

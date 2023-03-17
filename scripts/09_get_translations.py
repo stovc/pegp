@@ -1,11 +1,13 @@
 """Retrieves full translations of `clustered_gc.faa` sequences from `filtered_clustered.csv`.
 
-- `clustered-gc.faa` contains truncated translations as they result from a homology search
-
 - Full translations are needed for the domain search,
 while the truncated ones are needed for the alignment and tree construction
 
-- Step 7a in the pipeline
+Input:
+    - "filtered_clustered.csv"
+    - "translation.csv"
+Output:
+    - "clustered_full.faa"
 """
 
 import sys
