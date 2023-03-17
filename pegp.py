@@ -250,8 +250,8 @@ SCRIPTS = {
     11: '11_trim.sh',
     12: '12_hmmscan.sh',
     13: '13_prottest.sh',
-    14: '14_get_domains.py',
-    15: '15_raxml.sh'
+    14: '14_domain_data.py',
+    15: '15_tree.sh'
 }
 
 # Scripts to be run in the cluster mode
@@ -333,9 +333,10 @@ UNLOCKS = {
     9: [],
     10: [],
     11: [13],
-    13: [15],
-    9: [12],
     12: [14],
+    13: [15],
+    14: [],
+    15: []
 }
 
 # init
