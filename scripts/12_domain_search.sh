@@ -4,7 +4,7 @@
 
 # args
 PROJECT=$1
-DOMAIN_DB="Pfam-A.hmm"
+DOMAIN_DB="databases/Pfam/Pfam-A.hmm"
 
 echo 12 started >> projects/"$PROJECT"/exit_log.txt
 hmmscan --domtblout projects/"$PROJECT"/hmmscan.tbl --cut_ga "$DOMAIN_DB" projects/"$PROJECT"/clustered_full.faa

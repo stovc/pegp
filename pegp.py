@@ -248,7 +248,7 @@ SCRIPTS = {
     9: '09_get_translations.py',
     10: '10_get_gen_context.py',
     11: '11_trim.sh',
-    12: '12_hmmscan.sh',
+    12: '12_domain_search.sh',
     13: '13_prottest.sh',
     14: '14_domain_data.py',
     15: '15_tree.sh'
@@ -330,7 +330,7 @@ UNLOCKS = {
     6: [8, 9, 10],
     7: [],
     8: [11],
-    9: [],
+    9: [12],
     10: [],
     11: [13],
     12: [14],
