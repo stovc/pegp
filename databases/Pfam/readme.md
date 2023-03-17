@@ -1,0 +1,8 @@
+- This directory is for Pfam database for domain search by hmmsearch
+- It should contain the following files:
+    - Pfam-A.hmm
+    - Pfam-A.hmm.h3f
+    - Pfam-A.hmm.h3i
+    - Pfam-A.hmm.h3m
+    - Pfam-A.hmm.h3p
+- To get Pfam ready for domain search run: `bash utility_scripts/mk_pfam.sh` from the root of the repository 
