@@ -43,7 +43,7 @@ def pairplot(data, columns, hue, palette):
     g.map_diag(sns.histplot, hue=None)
     g.set(rasterized=True)
 
-    pdf.savefig(dpi=300)
+    pdf.savefig(dpi=300, bbox_inches='tight')
 
 
 def plot_3d(data_points, df, color_axis, color_dict=None):
@@ -98,13 +98,13 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
     ax.set_zlabel('Hit length, aa')
 
     if color_dict is not None:
-        ax.legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc='upper left')
+        ax.legend(handles=legend_elements, bbox_to_anchor=(1.1, 1), loc='upper left')
     else:
         plt.colorbar(sc, label='E-value', ticks=[10, 1, 0.1, 0.05, 0.01, 0.001, 0.0001, 10**-6, 10**-9, 10**-12, 10**-100],
-                     format='%.0e')
+                     format='%.0e', pad=0.1)
     plt.tight_layout()
 
-    pdf.savefig(dpi=400)
+    pdf.savefig(dpi=400, bbox_inches='tight')
 
 
 if __name__ == '__main__':
@@ -211,7 +211,7 @@ if __name__ == '__main__':
             label.set_horizontalalignment('right')
 
         plt.tight_layout()
-        pdf.savefig()
+        pdf.savefig(bbox_inches='tight')
 
         # plot average N_hits per genome in phyla
         genome_distribution = df_handle['assembly'].value_counts(sort=True).to_dict()
@@ -236,7 +236,8 @@ if __name__ == '__main__':
         ax.set_xlabel('N hits')
         ax.set_ylabel('Phylum')
 
-        pdf.savefig()
+        pdf.savefig(bbox_inches='tight')
+
         pdf.close()
 
     except Exception as e:
