@@ -186,6 +186,15 @@ if __name__ == '__main__':
 
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
+        firstPage = plt.figure(figsize=(11.69,8.27))
+        firstPage.clf()
+        txt = f"Project name: '{project}'"
+        firstPage.text(0.2, 0.7, txt, transform=firstPage.transFigure, size=24, ha="left")
+        database = 'family'  # this is hardcoded now! should be taken from args
+        txt = f"Database for alignment: '{database}'"
+        firstPage.text(0.2, 0.6, txt, transform=firstPage.transFigure, size=24, ha="left")
+        pdf.savefig()
+
         # 3d plot of identity, query_coverage, and length colored by taxon
         plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
 
