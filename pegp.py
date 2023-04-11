@@ -303,9 +303,9 @@ STATUS_FILE = '''\t{}
 '''
 
 # Steps of the analysis. Used to create status dataframe
-STEPS = {'Step': ['1. Blast',
-                  '2. Blast data',
-                  '3. Blast report',
+STEPS = {'Step': ['1. Search',
+                  '2. Hit data',
+                  '3. Search report',
                   '4. Filter',
                   '5. Cluster',
                   '6. Genome consistence',
