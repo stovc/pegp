@@ -42,7 +42,7 @@ if __name__ == '__main__':
         with open(out_path, 'w') as f:
             for id in ids:
                 protID = id[:-1]
-                f.write('>' + protID + '\n')
+                f.write('>' + id + '\n')  # get a separate record for each hsp to be compatible with tree-annotation
                 f.write(translation_db.loc[protID, 'translation'] + '\n')
     except Exception as e:
         ecx_type = str(type(e))
