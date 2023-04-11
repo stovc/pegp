@@ -208,6 +208,8 @@ for genome_path in genome_paths:
         taxid = 'NONE'
         replicon = 'NONE'
         for feature in seq_record.features:  # extract taxid and replicon from the source feature
+            # "source" feature is single per seq_record/replicon and contains replicon related information
+            # this feature is not written to the database; its properties are assigned to every database entry
             if feature.type == 'source':
 
                 db_xref_list = feature.qualifiers.get('db_xref')  # extract taxid from the source feature
