@@ -93,7 +93,7 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
     ax.set_zlim(None, length_lim)
 
     # set axis labels
-    ax.set_xlabel('Identity')
+    ax.set_xlabel('Log e-value')
     ax.set_ylabel('Query coverage, %')
     ax.set_zlabel('Hit length, aa')
 
@@ -127,10 +127,6 @@ if __name__ == '__main__':
             length_lim = int(sys.argv[4])
         except:
             length_lim = None
-
-        # generate paths
-
-
 
         # log start to exit log
         exitlog_path = Path('projects') / project / 'exit_log.txt'
@@ -175,7 +171,6 @@ if __name__ == '__main__':
             taxons.append('Other')
             taxon_counts.append(other_count)
 
-        df_handle['evalue^0.1'] = df_handle['evalue']**0.1
         df_handle = df_handle.replace({'replicon_type': {'main': 'chromosome'}})
 
         # generate taxon color dicts
@@ -184,9 +179,8 @@ if __name__ == '__main__':
         for i in range(len(taxons)):
             taxon_color_dict[taxons[i]] = COLORS20[i]
 
-
         # 3d plot
-        xs = list(df_handle['identity'])
+        xs = list(df_handle['lg_evalue'])
         ys = list(df_handle['query_coverage'])
         zs = list(df_handle['length'])
 
@@ -196,10 +190,10 @@ if __name__ == '__main__':
         plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
 
         # # 3d plot of identity, query_coverage, and length colored by evalue
-        plot_3d(data_points, df_handle, color_axis='evalue')
+        # plot_3d(data_points, df_handle, color_axis='lg_evalue')
 
         # plot pairplot with taxonomy information
-        cols = ['query_coverage', 'identity', 'length', 'evalue^0.1', 'taxon']
+        cols = ['lg_evalue', 'query_coverage', 'length', 'taxon']  # 'evalue^0.1', 'length', 'identity',
         pairplot(df_handle, cols, 'taxon', taxon_color_dict)
 
         # plot taxon distribution
@@ -243,12 +237,10 @@ if __name__ == '__main__':
         ax.set_ylabel('Phylum')
 
         pdf.savefig()
-
-        ###
-
         pdf.close()
 
     except Exception as e:
+        print("EXCEPTION RAISED")
         ecx_type = str(type(e))
 
         with open(exitlog_path, 'a') as outfile:
