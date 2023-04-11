@@ -164,14 +164,16 @@ if __name__ == '__main__':
         taxons = taxon_destribution.index.values.tolist()
         taxon_counts = list(taxon_destribution)
 
-        other_position = taxons.index('Other')
-        other_count = taxon_counts[other_position]
+        # put 'Other' to the end of `taxons` if present
+        if 'Other' in taxons:
+            other_position = taxons.index('Other')
+            other_count = taxon_counts[other_position]
 
-        del taxons[other_position]
-        del taxon_counts[other_position]
+            del taxons[other_position]
+            del taxon_counts[other_position]
 
-        taxons.append('Other')
-        taxon_counts.append(other_count)
+            taxons.append('Other')
+            taxon_counts.append(other_count)
 
         df_handle['evalue^0.1'] = df_handle['evalue']**0.1
         df_handle = df_handle.replace({'replicon_type': {'main': 'chromosome'}})
