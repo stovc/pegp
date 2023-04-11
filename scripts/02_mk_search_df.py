@@ -12,6 +12,7 @@ TODO: hit length can be precomputed and be a part of the database
 
 import subprocess
 import sys
+import math
 from pathlib import Path
 import traceback
 from Bio import SearchIO
@@ -91,7 +92,7 @@ if __name__ == '__main__':
 
         # create output dataframe
         out_df = pd.DataFrame(
-            columns=['ID', 'protID', 'evalue', 'query_coverage', 'identity', 'length', 'targ_dom_pos'])
+            columns=['ID', 'protID', 'evalue', 'lg_evalue', 'query_coverage', 'targ_dom_pos'])
 
         # open homology search output to be parsed
         search_result_path = Path('projects') / project / 'hits.txt'
@@ -109,6 +110,7 @@ if __name__ == '__main__':
                         'ID': hit.id + str(hsp_no),  # hit id = protein_id + hsp number
                         'protID': hit.id,  # id of the protein the hsp belongs to
                         'evalue': hsp.evalue,
+                        'lg_evalue': math.log10(hsp.evalue),
                         'query_coverage': 100 * hsp.query_span / search_result.seq_len,
                         # 'identity': hsp.ident_num / hsp.aln_span,  # THIS ONE WE USE ONLY FOR BLAST
                         'targ_dom_pos': (hsp.hit_start + hsp.query_span // 2)  # coordinate of the center of the query
