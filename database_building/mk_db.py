@@ -169,11 +169,13 @@ id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
 iteration = 1
-for genome_path in genome_paths:  # iterate genomes
+# iterate genomes
+for genome_path in genome_paths:
     log.write(f'{iteration} {genome_path}\n')
     print(f'{iteration} {genome_path}')
     iteration += 1
-    for seq_record in SeqIO.parse(genome_path, 'genbank'):  # iterate seq. records (replicons) in a genbank file
+    # iterate seq. records (replicons) in a genbank file
+    for seq_record in SeqIO.parse(genome_path, 'genbank'):
 
         seq_record_data = []
         assembly = genome_path.name
