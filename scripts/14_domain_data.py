@@ -25,13 +25,14 @@ if __name__ == '__main__':
             subprocess.run(["echo", '14 started'], stdout=outfile)
 
         # construct input and output paths
-        in_hmmscan_path = Path('projects') / project / 'hmmscan.tbl'
-        in_data_path = Path('projects') / project / 'filtered_clustered.csv'
+
 
         out_path = Path('projects') / project / 'domains.csv'
 
         names = ['domain', 'id', 'evalue', 'start', 'stop']
 
+        # hmmscan data
+        in_hmmscan_path = Path('projects') / project / 'hmmscan.tbl'
         hmmscan_df = pd.read_csv(in_hmmscan_path,
                                  delim_whitespace=True,
                                  skiprows=3, skipfooter=10,
