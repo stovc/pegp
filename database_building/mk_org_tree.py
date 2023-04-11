@@ -11,10 +11,72 @@ TODO: The job of `mk_org_tree.py` should be done in `mk_db.py`
 import os
 import sys
 from pathlib import Path
-from ete3 import NCBITaxa
+from ete3 import NCBITaxa, PhyloNode
 
 
-def get_rank(taxid):
+def prune_tree(tree: PhyloNode, keep: list) -> PhyloNode:
+    """Remove nodes not listed in `keep`
+    If `keep` contains 'leaf', tips of the tree are not removed.
+    Return prunned tree."""
+    tree2 = tree.copy()
+
+    # list of nodes to be discarded
+    to_prune = []
+
+    # iterate nodes and add their names into to_prune list if their rank is not in to prune
+    for node in tree2.traverse():
+        rank = get_rank(node.name)
+        if 'leaf' in keep and node.is_leaf():  # node is removed if it is leaf and `keep` doe not contain `leaf`
+            to_prune.append(node.name)
+        if rank in keep:
+            to_prune.append(node.name)
+
+    tree2.prune(to_prune)
+
+    return tree2
+
+
+def export_tree(tree: PhyloNode, path) -> None:
+    """Export tree as .nwk to specified path."""
+    nwk_string = tree.write(format=1)
+    with open(path, 'w') as out_file:
+        out_file.write(nwk_string)
+    return None
+
+
+def export_annotation(tree: PhyloNode, path) -> None:
+    """Export annotation .csv annotation for tree to specified path.
+    The annotation .csv contains [taxid,name,rank] for each node of the tree"""
+
+    with open(path, 'w') as out_file:
+        out_file.write('taxid;name;rank\n')
+        for node in tree.traverse():
+            taxid = node.name
+            name = get_taxid_name(taxid)
+            rank = get_rank(taxid)
+
+            if node.is_leaf():    # all leaves get the "species" rank. it is done for simplicity
+                rank = 'species'  # it is now compatible with the  R scripts. TODO: ranking at the strain level
+
+            if name == 'root':
+                rank = 'root'
+            out_file.write(f'{taxid};{name};{rank}\n')
+    return None
+
+
+def get_taxid_name(taxid: int) -> str:
+    """Return name of taxid.
+    Return 'missing' if taxid is missing in the database"""
+    name = ncbi.get_taxid_translator([taxid])
+    name = list(name.values())
+    if len(name) == 1:
+        name = name[0]
+    else:
+        name = 'missing'
+    return name
+
+
+def get_rank(taxid: int) -> str:
     """Return rank of taxid."""
     rank = ncbi.get_rank([taxid])
     rank = list(rank.values())
@@ -25,111 +87,21 @@ def get_rank(taxid):
     return rank
 
 
-def get_name(taxid):
-    """Return name of taxid."""
-    name = ncbi.get_taxid_translator([taxid])
-    name = list(name.values())
-    if len(name) == 1:
-        name = name[0]
-    else:
-        name = 'missing'
-    return name
-
-
-def collapse_leaf(node):
-    keep = ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root']
-    rank = get_rank(node.name)
-
-    if rank in keep:
-       return True
-    else:
-       return False
-
-
-def cleanup_tree(tree, keep):
-    tree2 = tree.copy()
-
-    to_delete = []
-    for n in tree2.traverse():
-        rank = get_rank(n.name)
-        if 'leaf' not in keep and n.is_leaf():
-            to_delete.append(n)
-        if rank not in keep and not n.is_leaf():
-            to_delete.append(n)
-
-    for node in to_delete:
-        node.delete()
-
-    return tree2
-
-
-def prune_tree(tree, keep):
-    tree2 = tree.copy()
-
-    to_prune = []
-    for node in tree2.traverse():
-        rank = get_rank(node.name)
-        if 'fam' in rank:
-            print(node.name + '\t' + get_name(node.name) + '\t' + rank)
-        if 'leaf' in keep and node.is_leaf():
-            to_prune.append(node.name)
-        if rank in keep:
-            to_prune.append(node.name)
-
-    tree2.prune(to_prune)
-
-    return tree2
-
-
-def export_tree(tree, name):
-    if not os.path.exists(OUT_FOLDER):
-        os.makedirs(OUT_FOLDER)
-
-    nwk_string = tree.write(format=1)
-    out = open(OUT_FOLDER / name, 'w')
-    out.write(nwk_string)
-    out.close()
-
-    return None
-
-
-def export_annotation(tree, name):
-    if not os.path.exists(OUT_FOLDER):
-        os.makedirs(OUT_FOLDER)
-
-    out = open(OUT_FOLDER / name, 'w')
-    out.write('taxid;name;rank\n')
-    for node in tree.traverse():
-        taxid = node.name
-        name = get_name(taxid)
-        rank = get_rank(taxid)
-        if rank not in ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom'] and node.is_leaf():
-            rank = 'species'
-        if name == 'root':
-            rank = 'root'
-        out.write(f'{taxid};{name};{rank}\n')
-    out.close()
-
-    return None
-
-
 if __name__ == '__main__':
+
     database = sys.argv[1]
     database_path = Path('../databases/') / database
 
+    # NCBI taxonomy database object
     ncbi = NCBITaxa()
 
+    # read taxids from txt to a list
     input_path = database_path / 'taxids.txt'
+    with open(input_path, 'r') as input_file:
+        taxids = input_file.readlines()
 
-    OUT_FOLDER = database_path / 'org_trees'
-
-    inp = open(input_path)
-    print(input_path)
-    taxids = inp.readlines()
-    inp.close()
-
+    # get tree topology as PhyloNode object
     tree = ncbi.get_topology(taxids, intermediate_nodes=True)
-    print('constructed tree from taxids')
 
     tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
     tree_genus = prune_tree(tree, ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
