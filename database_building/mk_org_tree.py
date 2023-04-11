@@ -109,20 +109,20 @@ if __name__ == '__main__':
     tree_order = prune_tree(tree, ['order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
     tree_class = prune_tree(tree, ['class', 'phylum', 'superkingdom', 'kingdom', 'root'])
     tree_phylum = prune_tree(tree, ['phylum', 'superkingdom', 'kingdom', 'root'])
-    print('prunned trees')
 
-    export_tree(tree_full, 'org_tree_full.nwk')
-    export_tree(tree_genus, 'org_tree_genus.nwk')
-    export_tree(tree_family, 'org_tree_family.nwk')
-    export_tree(tree_order, 'org_tree_order.nwk')
-    export_tree(tree_class, 'org_tree_class.nwk')
-    export_tree(tree_phylum, 'org_tree_phylum.nwk')
-    print('exported trees')
+    # EXPORT TREES AND ANNOTATIONS
+    # construct path for the output folder and make it
+    out_folder = database_path / 'org_trees'
+    if not os.path.exists(out_folder):
+        os.makedirs(out_folder)
 
-    export_annotation(tree_full, 'org_tree_full_data.csv')
-    export_annotation(tree_genus, 'org_tree_genus_data.csv')
-    export_annotation(tree_family, 'org_tree_family_data.csv')
-    export_annotation(tree_order, 'org_tree_order_data.csv')
-    export_annotation(tree_class, 'org_tree_class_data.csv')
-    export_annotation(tree_phylum, 'org_tree_phylum_data.csv')
-    print('exported annotation data')
+    # export trees pruned to different taxonomic levels
+    export_tree(tree_full, out_folder / 'org_tree_full.nwk')
+    export_tree(tree_genus, out_folder / 'org_tree_genus.nwk')
+    export_tree(tree_family, out_folder / 'org_tree_family.nwk')
+    export_tree(tree_order, out_folder / 'org_tree_order.nwk')
+    export_tree(tree_class, out_folder / 'org_tree_class.nwk')
+    export_tree(tree_phylum, out_folder / 'org_tree_phylum.nwk')
+
+    # export .csv annotations for the trees pruned to different taxonomic levels
+    export_annotation(tree_full, out_folder / 'org_tree_full_data.csv')
