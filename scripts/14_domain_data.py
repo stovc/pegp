@@ -40,9 +40,15 @@ if __name__ == '__main__':
                                  index_col=1,
                                  names=names,
                                  engine='python')
-        prot_series = pd.read_csv(in_data_path, usecols=['ID', 'targ_dom_pos'], index_col=0)
-        prot_series = prot_series['targ_dom_pos']
-        grouped = hmmscan_df.groupby('id')
+
+        grouped = hmmscan_df.groupby('id')  # each group consists of all domains found in particular protein
+
+        # protein data
+        in_data_path = Path('projects') / project / 'filtered_clustered.csv'
+        prot_data = pd.read_csv(in_data_path, usecols=['ID', 'length', 'targ_dom_pos'], index_col=0)
+        ids = prot_data.index
+        target_domain_positions = prot_data['targ_dom_pos']
+        protein_lengths = prot_data['length']
 
         out_df = pd.DataFrame()
 
@@ -54,10 +60,15 @@ if __name__ == '__main__':
                     to_append = pd.DataFrame(row).T
                     out_df = pd.concat([out_df, to_append], ignore_index=True)
 
-        ids = prot_series.index
+        # add dummy annotations to align domain plot
         for i in ids:
-            position = prot_series[i]
-            to_append = {0: i, 1: '.', 2: 0, 3: position, 4: position + 1}
+            # append target domain positions
+            position = target_domain_positions[i]
+            to_append = {0: i, 1: '.', 2: 0, 3: position, 4: position + 1}   # apparently I can remove this column 2 --- test!
+            out_df = out_df.append(to_append, ignore_index=True)  # TODO: change append to concat
+            # append whole proteins
+            protein_length = protein_lengths[i]
+            to_append = {0: i, 1: '_', 2: 0, 3: 0, 4: protein_length}
             out_df = out_df.append(to_append, ignore_index=True)  # TODO: change append to concat
 
         out_df = out_df.drop(columns=[2])
