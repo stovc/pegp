@@ -138,11 +138,11 @@ if __name__ == '__main__':
             subprocess.run(["echo", '3 started'], stdout=outfile)
 
         # read data
-        data_path = Path('projects') / project / 'blastp_df.csv'  # path to the blastp result dataframe
+        data_path = Path('projects') / project / 'hits_df.csv'  # path to the blastp result dataframe
         data = pd.read_csv(data_path, index_col=0)  # dataframe with blastp results
 
         # create output to plot to
-        out_path = Path('projects') / project / 'blastp_report.pdf'  # path to the output report pdf
+        out_path = Path('projects') / project / 'search_report.pdf'  # path to the output report pdf
         pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
 
         # set of colors for plots

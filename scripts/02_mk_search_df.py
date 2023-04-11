@@ -94,8 +94,8 @@ if __name__ == '__main__':
             columns=['ID', 'protID', 'evalue', 'query_coverage', 'identity', 'length', 'targ_dom_pos'])
 
         # open homology search output to be parsed
-        search_result_path = Path('projects') / project / 'blastp.xml'
-        search_result = SearchIO.read(search_result_path, "blast-xml")  # it is xml output of blast. to be custom later
+        search_result_path = Path('projects') / project / 'hits.txt'
+        search_result = SearchIO.read(search_result_path, "hmmer3-text")  # it is xml output of blast. to be custom later
 
         # parse homology search output (iterate hits and their HSPs) and make dataframe of hits
         for hit in search_result:
@@ -110,8 +110,7 @@ if __name__ == '__main__':
                         'protID': hit.id,  # id of the protein the hsp belongs to
                         'evalue': hsp.evalue,
                         'query_coverage': 100 * hsp.query_span / search_result.seq_len,
-                        'identity': hsp.ident_num / hsp.aln_span,
-                        'length': hit.seq_len,
+                        # 'identity': hsp.ident_num / hsp.aln_span,  # THIS ONE WE USE ONLY FOR BLAST
                         'targ_dom_pos': (hsp.hit_start + hsp.query_span // 2)  # coordinate of the center of the query
                     },
                     index=[0]
@@ -130,7 +129,7 @@ if __name__ == '__main__':
         out_df = out_df.drop('replicon', axis=1)
 
         # export output dataframe to csv
-        out_df_path = Path('projects') / project / 'blastp_df.csv'
+        out_df_path = Path('projects') / project / 'hits_df.csv'
         out_df.to_csv(out_df_path, index=False)
 
     except Exception as e:

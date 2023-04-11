@@ -12,7 +12,7 @@ DATABASE=$2
 echo 1 started >> projects/"$PROJECT"/exit_log.txt
 
 #blast
-blastp -query projects/"$PROJECT"/input.faa -db databases/"$DATABASE"/protein.faa -out projects/"$PROJECT"/blastp.xml -evalue 0.05 -outfmt 5 -max_target_seqs 100000
+hmmsearch -o projects/"$PROJECT"/hits.txt projects/"$PROJECT"/input.faa databases/"$DATABASE"/protein.faa
 
 # write step number and exit status to the exit log
 echo 1 $? >> projects/$PROJECT/exit_log.txt

@@ -237,10 +237,10 @@ SCRIPTS_PATH = Path("scripts/")
 
 # Scripts to be run in the default mode
 SCRIPTS = {
-    1: '01_blastp.sh',
-    2: '02_mk_blastp_df.py',
-    3: '03_plot_blastp.py',
-    4: '04_filter_blastp.py',
+    1: '01_search.sh',
+    2: '02_mk_search_df.py',
+    3: '03_plot_search.py',
+    4: '04_filter.py',
     5: '05_cluster.sh',
     6: '06_mk_genome_consistent.py',
     7: '07_cluster_dict.py',

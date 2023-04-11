@@ -28,13 +28,13 @@ if __name__ == '__main__':
         for i in sys.argv:
             print(i)
         project = sys.argv[1]
-        ident_threshold = float(sys.argv[3])
-        coverage_threshold = float(sys.argv[4])
-        evalue_threshold = float(sys.argv[5])
+        # ident_threshold = float(sys.argv[3]) # only for 1 query blast searches. perhaps to be deleted
+        coverage_threshold = float(sys.argv[3])
+        evalue_threshold = float(sys.argv[4])
 
         # construct input and output paths
-        in_path = Path('projects') / project / 'blastp.xml'
-        df_path = Path('projects') / project / 'blastp_df.csv'
+        in_path = Path('projects') / project / 'hits.txt'
+        df_path = Path('projects') / project / 'hits_df.csv'
         out_df_path = Path('projects') / project / 'filtered_hits.csv'
         out_faa_path = Path('projects') / project / 'filtered_hits.faa'
 
@@ -44,14 +44,14 @@ if __name__ == '__main__':
         # logging start to exit log
         with open(exitlog_path, 'a') as outfile:
             subprocess.run(["echo", '4 started'], stdout=outfile)
-        search_result = SearchIO.read(in_path, "blast-xml")  # this is currently xml output of blast. to be custom later
+        search_result = SearchIO.read(in_path, "hmmer3-text")  # this is currently xml output of blast. to be custom later
 
         df = pd.read_csv(df_path, index_col=0)
 
         out = open(out_faa_path, 'w')
 
         #  filter df by thresholds
-        df = df[df.identity > ident_threshold]
+        # df = df[df.identity > ident_threshold]  # only for 1 query blast searches. perhaps to be deleted
         df = df[df.query_coverage > coverage_threshold]
         df = df[df.evalue < evalue_threshold]
 
