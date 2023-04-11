@@ -122,7 +122,7 @@ COLUMNS = ['ID', 'locus_tag',
            'assembly', 'accession',
            'start', 'end', 'strand',
            'taxid', 'replicon',
-           'feature', 'gene', 'product', 'protein_id']  # columns in the annotation dataframe
+           'feature', 'gene', 'product', "length", 'protein_id']  # columns in the annotation dataframe
 
 # parse arguments
 # expected arguments: 1) database name; 2-N) genome folders to extract the genomes from
@@ -264,6 +264,9 @@ for genome_path in genome_paths:  # iterate genomes
                     protein_output.write(f'>{ID}\n{translation}\n')  # write a fasta record with translation
                     map_output.write(ID + ' ' + taxid + '\n')
                     translation_out.write(f'{ID},{translation}\n')
+                    protein_length = len(translation)
+                else:
+                    protein_length = None
 
                 upstream_out.write(f'{ID},{upstream}\n')
                 sequence_out.write(f'{ID},{sequence}\n')
@@ -273,7 +276,7 @@ for genome_path in genome_paths:  # iterate genomes
                               assembly, accession, start, end, strand,
                               taxid, replicon,
                               feature_type, gene,
-                              product, protein_id]
+                              product, protein_length, protein_id]
                 seq_record_data.append(annotation)
 
         seq_record_data = pd.DataFrame(seq_record_data, columns=COLUMNS)
