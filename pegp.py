@@ -401,12 +401,9 @@ commands = {'a': start_all_steps,
 while True:
     command = input('>>> ')
     log.inp(command)
-
-    for i in commands.keys():
-        command_args = command.split(' ')
-        if command_args[0] == i:
-            action = commands[command_args[0]]
-            action(command)
-            break
+    command_args = command.split(' ')
+    if command_args[0] in commands.keys():
+        action = commands[command_args[0]]
+        action(command)
     else:
         log.out(f'unknown command "{command}"')
