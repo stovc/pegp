@@ -1,13 +1,15 @@
 """Make the dataframe of BLAST hits with annotations.
 
 - input:
-    - `blastp_hits.xml` - BLASTP search output (from `project` specified in arguments)
+    - `hits.txt` - BLASTP search output (from `project` specified in arguments)
     - `annotation.csv` - .csv with annotations for each potential hit in the `database` specified in arguments
 
 - output `blastp_hits_data.csv` - dataframe containing hit ids, BLAST output properties (identity, query coverage,
 hit length), and additional annotations from the database
 
 TODO: hit length can be precomputed and be a part of the database
+
+FIXME: not blast anymore
 """
 
 import subprocess

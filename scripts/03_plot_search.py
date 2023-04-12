@@ -1,7 +1,7 @@
 """Plot BLAST hits and their properties.
 
-- input: "blastp_df.csv"
-- output: "blastp_report.pdf"
+- input: "hits_df.csv"
+- output: "search_report.pdf"
 
 Output contains the following plots:
     - 3d plot of identity, query_coverage, and length colored by taxon
@@ -13,6 +13,7 @@ Output contains the following plots:
 
 import sys
 from pathlib import Path
+from Bio import SeqIO, SearchIO
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -111,20 +112,21 @@ if __name__ == '__main__':
     try:
         # arguments
         project = sys.argv[1]  # argument -- project name
+        database = sys.argv[2] # arument -- database name
 
         # upper limits for 3D plots - optional arguments
         try:
-            ident_lim = int(sys.argv[2])
+            ident_lim = int(sys.argv[3])
         except:
             ident_lim = None
 
         try:
-            overlap_lim = int(sys.argv[3])
+            overlap_lim = int(sys.argv[4])
         except:
             overlap_lim = None
 
         try:
-            length_lim = int(sys.argv[4])
+            length_lim = int(sys.argv[5])
         except:
             length_lim = None
 
@@ -188,11 +190,35 @@ if __name__ == '__main__':
 
         firstPage = plt.figure(figsize=(11.69,8.27))
         firstPage.clf()
-        txt = f"Project name: '{project}'"
+        txt = f"Database: {database}"
         firstPage.text(0.2, 0.7, txt, transform=firstPage.transFigure, size=24, ha="left")
-        database = 'family'  # this is hardcoded now! should be taken from args
-        txt = f"Database for alignment: '{database}'"
+
+        protein_faa_path = Path('databases') / database / 'protein.faa'
+        with open(fastq_file_path) as file:
+            database_size = sum([1 for record in SeqIO.parse(file, 'fasta')])
+        txt = f"Database size: {str(database_size)}"
         firstPage.text(0.2, 0.6, txt, transform=firstPage.transFigure, size=24, ha="left")
+
+        txt = f"Query: {project}" #тоже наверное лучше распарсить из hits.txt?
+        firstPage.text(0.2, 0.5, txt, transform=firstPage.transFigure, size=24, ha="left")
+
+        hmmer_results_path = Path('projects') / project / 'hits.txt'
+        hmmer_results = SearchIO.read(hmmer_results_path, "hmmer3-text")
+        txt = f"Homology search using: {hmmer_result.program} {hmmer_result.version}"
+        firstPage.text(0.2, 0.4, txt, transform=firstPage.transFigure, size=24, ha="left")
+
+        number_of_HSPs = len(data['ID'])
+        txt = f"Number of HSPs: {str(number_of_HSPs)}"
+        firstPage.text(0.2, 0.3, txt, transform=firstPage.transFigure, size=24, ha="left")
+
+        hit_proteins_number = len(data['protID'].unique())
+        txt = f"Number of hit proteins: {str(hit_proteins_number)}"
+        firstPage.text(0.2, 0.2, txt, transform=firstPage.transFigure, size=24, ha="left")   
+
+        hit_genomes_number = len(data['assembly'].unique())
+        txt = f"Number of hit proteins: {str(hit_genomes_number)}"
+        firstPage.text(0.2, 0.1, txt, transform=firstPage.transFigure, size=24, ha="left")      
+
         pdf.savefig()
 
         # 3d plot of identity, query_coverage, and length colored by taxon
