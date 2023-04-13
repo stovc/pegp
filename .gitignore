@@ -1,0 +1,8 @@
+databases*
+!databases/readme.md
+
+projects*
+!projects/readme
+
+repr-genome-download*
+genomes_family*
