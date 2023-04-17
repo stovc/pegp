@@ -15,12 +15,9 @@ PEGP (protein evolutionary genomics pipeline). A software tool for
   - https://github.com/weizhongli/cdhit/wiki/2.-Installation - installation
 - MAFFT
   - https://mafft.cbrc.jp/alignment/software/linux.html - installation (recommend usinf .deb for installation)
-- trimAl v1.2
-  - http://trimal.cgenomics.org/downloads - installation
-- hmmer
-  - `conda install -c bioconda hmmer`
-- iqtree v2.x
-  - `conda install -c bioconda iqtree`
+- trimAl v1.2 `conda install -c bioconda trimal`
+- hmmer `conda install -c bioconda hmmer`
+- iqtree v2.x `conda install -c bioconda iqtree`
 
 ### Python packages
 
