@@ -8,9 +8,9 @@ PEGP (protein evolutionary genomics pipeline). A software tool for
 - reconstruction of phyletic pattern with identification of paralogs
 
 ## Dependencies
+
 ### Software
-- ncbi-blast+
-  - https://www.ncbi.nlm.nih.gov/books/NBK52640/ - installation and setup
+
 - CD-HIT
   - https://github.com/weizhongli/cdhit/wiki/2.-Installation - installation
 - MAFFT
@@ -23,15 +23,14 @@ PEGP (protein evolutionary genomics pipeline). A software tool for
   - `conda install -c bioconda iqtree`
 
 ### Python packages
-- Python 3.9
-- BioPython
-- ete3=3.1.2
-- numpy
-- pandas
-- matplotlib
-- seaborn
-- prettytable
-- colorama
+
+- python 3.10
+- biopython `conda install biopython`
+- ete3 `conda install -c etetoolkit ete3`
+- matplotlib `conda install matplotlib`
+- numpy, pandas, seaborn `conda install seaborn`
+- prettytable `conda install prettytable`
+- colorama `conda install colorama`
 
 ## Installation
 - `git clone https://github.com/stovc/pegp`
