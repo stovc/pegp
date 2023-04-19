@@ -14,6 +14,7 @@ Output contains the following plots:
 import sys
 from pathlib import Path
 from Bio import SeqIO, SearchIO
+from collections import defaultdict
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -44,6 +45,23 @@ def pairplot(data, columns, hue, palette):
     g.map_diag(sns.histplot, hue=None)
     g.set(rasterized=True)
 
+    pdf.savefig(dpi=300, bbox_inches='tight')
+
+def plot_hist(data, key, y_label):
+    hits_number_per_object = defaultdict(int)
+    for key_object in data[key]:
+        hits_number_per_object[key_object] += 1
+    key_objects_cnt_per_hits_number = defaultdict(int)
+    for hits_number in hits_number_per_object.values():
+        key_objects_cnt_per_hits_number[hits_number] += 1
+    N_hits = range(max(key_objects_cnt_per_hits_number))
+    N_key_objects = [key_objects_cnt_per_hits_number[i] for i in N_hits]
+    fig, ax = plt.subplots()
+    ax.set_rasterized(True)
+    ax.bar(N_hits, N_key_objects)
+    ax.set_xlabel('Number of hits')
+    ax.set_ylabel(y_label)
+    ax.set_xlim(0, len(N_hits)+1)
     pdf.savefig(dpi=300, bbox_inches='tight')
 
 
@@ -136,8 +154,8 @@ if __name__ == '__main__':
             outfile.write('3 started\n')
 
         # read data
-        data_path = Path('projects') / project / 'hits_df.csv'  # path to the blastp result dataframe
-        data = pd.read_csv(data_path, index_col=0)  # dataframe with blastp results
+        data_path = Path('projects') / project / 'hits_df.csv'  # path to the hmmer result dataframe
+        data = pd.read_csv(data_path, index_col=0)  # dataframe with hmmer results
 
         # create output to plot to
         out_path = Path('projects') / project / 'search_report.pdf'  # path to the output report pdf
@@ -194,20 +212,20 @@ if __name__ == '__main__':
         firstPage.text(0.2, 0.7, txt, transform=firstPage.transFigure, size=24, ha="left")
 
         protein_faa_path = Path('databases') / database / 'protein.faa'
-        with open(fastq_file_path) as file:
+        with open(protein_faa_path) as file:
             database_size = sum([1 for record in SeqIO.parse(file, 'fasta')])
         txt = f"Database size: {str(database_size)}"
         firstPage.text(0.2, 0.6, txt, transform=firstPage.transFigure, size=24, ha="left")
 
-        txt = f"Query: {project}" #тоже наверное лучше распарсить из hits.txt?
-        firstPage.text(0.2, 0.5, txt, transform=firstPage.transFigure, size=24, ha="left")
-
         hmmer_results_path = Path('projects') / project / 'hits.txt'
         hmmer_results = SearchIO.read(hmmer_results_path, "hmmer3-text")
-        txt = f"Homology search using: {hmmer_result.program} {hmmer_result.version}"
+        txt = f"Query: {hmmer_results._id}"
+        firstPage.text(0.2, 0.5, txt, transform=firstPage.transFigure, size=24, ha="left")
+
+        txt = f"Homology search using: {hmmer_results.program} {hmmer_results.version}"
         firstPage.text(0.2, 0.4, txt, transform=firstPage.transFigure, size=24, ha="left")
 
-        number_of_HSPs = len(data['ID'])
+        number_of_HSPs = len(data['protID'])
         txt = f"Number of HSPs: {str(number_of_HSPs)}"
         firstPage.text(0.2, 0.3, txt, transform=firstPage.transFigure, size=24, ha="left")
 
@@ -216,10 +234,13 @@ if __name__ == '__main__':
         firstPage.text(0.2, 0.2, txt, transform=firstPage.transFigure, size=24, ha="left")   
 
         hit_genomes_number = len(data['assembly'].unique())
-        txt = f"Number of hit proteins: {str(hit_genomes_number)}"
+        txt = f"Number of hit genomes: {str(hit_genomes_number)}"
         firstPage.text(0.2, 0.1, txt, transform=firstPage.transFigure, size=24, ha="left")      
 
         pdf.savefig()
+
+        plot_hist(df_handle, 'assembly', 'Number of genomes')
+        plot_hist(df_handle, 'protID', 'Number of proteins')
 
         # 3d plot of identity, query_coverage, and length colored by taxon
         plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
