@@ -65,6 +65,60 @@ def plot_hist(data, key, y_label):
     pdf.savefig(dpi=300, bbox_inches='tight')
 
 
+def find_overlaps(starts, ends, length):
+    """
+    Calculates pairwise overlaps of hits
+    in one assembly. 
+
+    TODO: rewrite bruteforce to scanline 
+    """
+    hits_pairs_number_per_overlap_length = defaultdict(int)
+    n_hits = len(starts)
+    genome_length = -1
+    for i in range(n_hits):
+        flag = False
+        start_i = starts[i]
+        end_i = ends[i]
+        if start_i > end_i:
+            if genome_length == -1:
+                genome_length = length[i] + start_i - end_i
+            end_i += genome_length
+            flag = True
+        for j in range(n_hits):
+            if i == j:
+                continue
+            start_j = starts[j]
+            end_j = ends[j]
+            if flag:
+                if start_j < end_j:
+                    start_j += genome_length
+                end_j += genome_length
+            if start_i < start_j < end_j < end_i or start_i < start_j - genome_length < end_j - genome_length < end_i:
+                hits_pairs_number_per_overlap_length[length[j]] += 1
+            elif start_i < start_j < end_i:
+                hits_pairs_number_per_overlap_length[end_i - start_j] += 1
+    return hits_pairs_number_per_overlap_length 
+
+
+def plot_overlaps(data):
+    hits_pairs_number_per_overlap_length = defaultdict(int)
+    for assembly in data['assembly'].unique():
+        starts = data[data['assembly'] == assembly]['start']
+        ends = data[data['assembly'] == assembly]['end']
+        length = data[data['assembly'] == assembly]['length']
+        for overlap_length, hits_pairs_number in find_overlaps(starts, ends, length).items():
+            hits_pairs_number_per_overlap_length[overlap_length] += hits_pairs_number
+    overlap_lengths = range(1, max(hits_pairs_number_per_overlap_length) + 1)
+    N_hits_pairs = [hits_pairs_number_per_overlap_length[i] for i in overlap_lengths]
+    fig, ax = plt.subplots()
+    ax.set_rasterized(True)
+    ax.bar(overlap_lengths, N_hits_pairs)
+    ax.set_xlabel('Overlap length')
+    ax.set_ylabel('Number of hits pairs')
+    ax.set_xlim(0, len(overlap_lengths)+1)
+    pdf.savefig(dpi=300, bbox_inches='tight')    
+
+
 def plot_3d(data_points, df, color_axis, color_dict=None):
     """Plot 3d scatter plot.
     data_points - list of tuples (x, y, z)
@@ -241,6 +295,8 @@ if __name__ == '__main__':
 
         plot_hist(df_handle, 'assembly', 'Number of genomes')
         plot_hist(df_handle, 'protID', 'Number of proteins')
+
+        plot_overlaps(data)
 
         # 3d plot of identity, query_coverage, and length colored by taxon
         plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
