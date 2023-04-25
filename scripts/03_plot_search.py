@@ -1,11 +1,14 @@
-"""Plot BLAST hits and their properties.
+"""Plot HMMER hits and their properties.
 
 - input: "hits_df.csv"
 - output: "search_report.pdf"
 
-Output contains the following plots:
+Output contains the following:
+    - Information about database, query, homology search tool, and numerical characteristics of search results
+    - Histogram of unique genomes
+    - Histogram of unique proteins
+    - Histogram of hits pairwise overlaps lengthes
     - 3d plot of identity, query_coverage, and length colored by taxon
-    - 3d plot of identity, query_coverage, and length colored by e-value
     - Pair scatter plot of identity, query_coverage, and length with histograms at the diagonal
     - Histogram of total hits per phylum (TODO: would be nice to plot values normalized to numbers of genomes/phylum)
     - Histogram of average number of hits per genome in a phylum (TODO: would be nice to plot a tree with pattern)
@@ -25,7 +28,9 @@ import traceback
 
 
 def filer_taxonomy(taxon, filter_map):
-    """Return taxon if it belongs to the filter map. Otherwise, return 'other'. """
+    """Return taxon if it belongs to the filter map. Otherwise, return 'other'. 
+    """
+
     if taxon in filter_map:
         return taxon
     else:
@@ -48,6 +53,12 @@ def pairplot(data, columns, hue, palette):
     pdf.savefig(dpi=300, bbox_inches='tight')
 
 def plot_hist(data, key, y_label):
+    """Plot distribution of unique values.
+    data - dataframe
+    key - key in data, distribution of unique values of which is concidering
+    y_label - label of y axe in the plot, describing what the key object is
+    """
+
     hits_number_per_object = defaultdict(int)
     for key_object in data[key]:
         hits_number_per_object[key_object] += 1
@@ -66,12 +77,15 @@ def plot_hist(data, key, y_label):
 
 
 def find_overlaps(starts, ends, length):
-    """
-    Calculates pairwise overlaps of hits
-    in one assembly. 
+    """Return distribution of hits pairwise 
+    overlaps lengthes in one genome.
+    starts - array with coordinates of hits starts
+    ends - array with coordinates of hits ends
+    length - array with hits lengthes
 
-    TODO: rewrite bruteforce to scanline 
+    TODO: rewrite to O(n) algorithm 
     """
+
     hits_pairs_number_per_overlap_length = defaultdict(int)
     n_hits = len(starts)
     genome_length = -1
@@ -101,6 +115,10 @@ def find_overlaps(starts, ends, length):
 
 
 def plot_overlaps(data):
+    """Plot distribution of hits pairwise overlaps lengthes.
+    data - dataframe
+    """
+
     hits_pairs_number_per_overlap_length = defaultdict(int)
     for assembly in data['assembly'].unique():
         starts = data[data['assembly'] == assembly]['start']
@@ -124,7 +142,9 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
     data_points - list of tuples (x, y, z)
     df - dataframe with data for annotation
     color_axis - column that defines colors of the dots
-    color_dict"""
+    color_dict
+    """
+
     if color_dict is not None:
         colors = [color_dict[value] for value in list(df[color_axis])]
     else:
@@ -260,6 +280,8 @@ if __name__ == '__main__':
 
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
+        # output of information about database, query, homology search tool, and  
+        # numerical characteristics of search results
         firstPage = plt.figure(figsize=(11.69,8.27))
         firstPage.clf()
         txt = f"Database: {database}"
@@ -293,9 +315,13 @@ if __name__ == '__main__':
 
         pdf.savefig()
 
+        # plot genomes distribution
         plot_hist(df_handle, 'assembly', 'Number of genomes')
+
+        # plot proteins distribution
         plot_hist(df_handle, 'protID', 'Number of proteins')
 
+        # plot hits overlaps lengthes distribution
         plot_overlaps(data)
 
         # 3d plot of identity, query_coverage, and length colored by taxon
