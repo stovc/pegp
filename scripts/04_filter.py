@@ -1,13 +1,14 @@
-"""Filter BLAST hits by parameters: identity, query coverage, e-value.
+"""Filter HMMER hits by parameters: query coverage, e-value.
 
 - input:
-    - "blastp.xml" - blastp report. needed to extract aligned parts of the hits
-    - "blastp_df.csv" - csv with annotations to subset
-    - parameters with filtering thresholds: [identity], [query coverage], [e-value]
+    - "hits.txt" - hmmer report. needed to extract aligned parts of the hits
+    - "hits_df.csv" - csv with annotations to subset
+    - parameters with filtering thresholds: [query coverage], [e-value]
 
 - output:
     - 'filtered_hits.faa' - fasta file with filtered hits containing aligned parts of the proteins
-    - 'filtered_hits.csv' - csv with annotations to the filtered hits
+
+- add 'filtered' column to hits_df.csv. Value is True, if the hit successfully passed filtering
 """
 
 import sys
@@ -24,18 +25,13 @@ import pandas as pd
 
 if __name__ == '__main__':
     try:
-        print('args')
-        for i in sys.argv:
-            print(i)
         project = sys.argv[1]
-        # ident_threshold = float(sys.argv[3]) # only for 1 query blast searches. perhaps to be deleted
         coverage_threshold = float(sys.argv[3])
         evalue_threshold = float(sys.argv[4])
 
         # construct input and output paths
         in_path = Path('projects') / project / 'hits.txt'
         df_path = Path('projects') / project / 'hits_df.csv'
-        out_df_path = Path('projects') / project / 'filtered_hits.csv'
         out_faa_path = Path('projects') / project / 'filtered_hits.faa'
 
         # logging to exit log
@@ -51,12 +47,13 @@ if __name__ == '__main__':
         out = open(out_faa_path, 'w')
 
         #  filter df by thresholds
-        # df = df[df.identity > ident_threshold]  # only for 1 query blast searches. perhaps to be deleted
-        df = df[df.query_coverage > coverage_threshold]
-        df = df[df.evalue < evalue_threshold]
+        df['filtered'] = [df['query_coverage'][i] > coverage_threshold and 
+                           df['evalue'][i] < evalue_threshold 
+                           for i in range(len(df['query_coverage']))
+                         ]
 
         # retrieve aligned sequences of filtered hits
-        ids_to_retrieve = list(df.index.values)
+        ids_to_retrieve = list(df[df.filtered == True].index.values)
         for hit in search_result:
             hsp_no = 0
             for hsp in hit:
@@ -69,7 +66,7 @@ if __name__ == '__main__':
                     sequence = sequence.replace('-', '')  # remove gaps
                     out.write('>' + ID + '\n' + sequence + '\n')
 
-        df.to_csv(out_df_path)
+        df.to_csv(df_path)
 
         out.close()
     except Exception as e:
