@@ -27,14 +27,29 @@ import subprocess
 import traceback
 
 
-def filer_taxonomy(taxon, filter_map):
-    """Return taxon if it belongs to the filter map. Otherwise, return 'other'. 
+def filter_df(object, filter_map):
+    """Return object if it belongs to the filter map. Otherwise, return 'other'. 
     """
 
-    if taxon in filter_map:
-        return taxon
+    if object in filter_map:
+        return object
     else:
         return 'Other'
+
+
+def put_other_to_the_end(data, distribution):
+    """Put 'Other' to the end of `data` if present
+    data - array with features of hits
+    distribution - number of hits with particular feature
+    """
+    
+    if 'Other' in data:
+        other_position = data.index('Other')
+        other_count = distribution[other_position]
+        del data[other_position]
+        del distribution[other_position]
+        data.append('Other')
+        distribution.append(other_count)
 
 
 def pairplot(data, columns, hue, palette):
@@ -152,7 +167,7 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
     labels = [value for value in list(df_handle[color_axis])]
     markers = ['x' if q == 'plasmid' else 'o' for q in list(df['replicon_type'])]
 
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(9, 6))
     ax.set_rasterized(True)
 
     # construct legend
@@ -230,55 +245,18 @@ if __name__ == '__main__':
         # read data
         data_path = Path('projects') / project / 'hits_df.csv'  # path to the hmmer result dataframe
         data = pd.read_csv(data_path, index_col=0)  # dataframe with hmmer results
-
+       
         # create output to plot to
         out_path = Path('projects') / project / 'search_report.pdf'  # path to the output report pdf
         pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
-
+        
         # set of colors for plots
         COLORS20 = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4',
                     '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8',
                     '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'] + 30 * ['#a9a9a9']
-
-        # Taxon distribution
-        # Finally, generates Taxons list and Taxon_counts list
+        
         df_handle = data
-        taxon_destribution = df_handle['phylum'].value_counts(sort=True)
-
-        taxons = taxon_destribution.index.values.tolist()
-
-        filter_map = taxons[0:13]  # selects 1st N taxons
-        df_handle['taxon'] = df_handle['phylum'].apply(filer_taxonomy, args=[filter_map])  # substitute taxons to "other" according f_map
-        taxon_destribution = df_handle['taxon'].value_counts(sort=True)
-
-        taxons = taxon_destribution.index.values.tolist()
-        taxon_counts = list(taxon_destribution)
-
-        # put 'Other' to the end of `taxons` if present
-        if 'Other' in taxons:
-            other_position = taxons.index('Other')
-            other_count = taxon_counts[other_position]
-
-            del taxons[other_position]
-            del taxon_counts[other_position]
-
-            taxons.append('Other')
-            taxon_counts.append(other_count)
-
         df_handle = df_handle.replace({'replicon_type': {'main': 'chromosome'}})
-
-        # generate taxon color dicts
-
-        taxon_color_dict = {}
-        for i in range(len(taxons)):
-            taxon_color_dict[taxons[i]] = COLORS20[i]
-
-        # 3d plot
-        xs = list(df_handle['lg_evalue'])
-        ys = list(df_handle['query_coverage'])
-        zs = list(df_handle['length'])
-
-        data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
         # output of information about database, query, homology search tool, and  
         # numerical characteristics of search results
@@ -301,30 +279,57 @@ if __name__ == '__main__':
         txt = f"Homology search using: {hmmer_results.program} {hmmer_results.version}"
         firstPage.text(0.2, 0.4, txt, transform=firstPage.transFigure, size=24, ha="left")
 
-        number_of_HSPs = len(data['protID'])
+        number_of_HSPs = len(df_handle['protID'])
         txt = f"Number of HSPs: {str(number_of_HSPs)}"
         firstPage.text(0.2, 0.3, txt, transform=firstPage.transFigure, size=24, ha="left")
 
-        hit_proteins_number = len(data['protID'].unique())
+        hit_proteins_number = len(df_handle['protID'].unique())
         txt = f"Number of hit proteins: {str(hit_proteins_number)}"
         firstPage.text(0.2, 0.2, txt, transform=firstPage.transFigure, size=24, ha="left")   
 
-        hit_genomes_number = len(data['assembly'].unique())
+        hit_genomes_number = len(df_handle['assembly'].unique())
         txt = f"Number of hit genomes: {str(hit_genomes_number)}"
         firstPage.text(0.2, 0.1, txt, transform=firstPage.transFigure, size=24, ha="left")      
 
         pdf.savefig()
-
+        
         # plot genomes distribution
         plot_hist(df_handle, 'assembly', 'Number of genomes')
-
+        
         # plot proteins distribution
         plot_hist(df_handle, 'protID', 'Number of proteins')
-
+       
         # plot hits overlaps lengthes distribution
-        plot_overlaps(data)
+        plot_overlaps(df_handle)
 
         # 3d plot of identity, query_coverage, and length colored by taxon
+        # Taxon distribution
+        # Finally, generates Taxons list and Taxon_counts list
+        taxon_destribution = df_handle['phylum'].value_counts(sort=True)
+
+        taxons = taxon_destribution.index.values.tolist()
+
+        filter_map = taxons[0:13]  # selects 1st N taxons
+        df_handle['taxon'] = df_handle['phylum'].apply(filter_df, args=[filter_map])  # substitute taxons to "other" according f_map
+        taxon_destribution = df_handle['taxon'].value_counts(sort=True)
+
+        taxons = taxon_destribution.index.values.tolist()
+        taxon_counts = list(taxon_destribution)
+
+        # put 'Other' to the end of `taxons` if present
+        put_other_to_the_end(taxons, taxon_counts)
+
+        # generate taxon color dicts
+        taxon_color_dict = {}
+        for i in range(len(taxons)):
+            taxon_color_dict[taxons[i]] = COLORS20[i]
+
+        # 3d plot
+        xs = list(df_handle['lg_evalue'])
+        ys = list(df_handle['query_coverage'])
+        zs = list(df_handle['length'])
+
+        data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
         plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
 
         # # 3d plot of identity, query_coverage, and length colored by evalue
@@ -334,6 +339,57 @@ if __name__ == '__main__':
         cols = ['lg_evalue', 'query_coverage', 'length', 'taxon']  # 'evalue^0.1', 'length', 'identity',
         pairplot(df_handle, cols, 'taxon', taxon_color_dict)
 
+        # plot annotation distribution
+        annotation_destribution = df_handle['product'].value_counts(sort=True)
+        products = annotation_destribution.index.values.tolist()
+        product_counts = list(annotation_destribution)
+        filter_map = []
+        i = 0
+        cnt = 0
+        while cnt < number_of_HSPs * 0.9:
+            filter_map.append(products[i])
+            cnt += product_counts[i]
+            i += 1
+        df_handle['function'] = df_handle['product'].apply(filter_df, args=[filter_map])  # substitute products to "Other" according f_map
+        function_distribution = df_handle['function'].value_counts(sort=True)
+        functions = function_distribution.index.values.tolist()
+        function_distribution = list(function_distribution)
+
+        # put 'Other' to the end of `functions` if present
+        put_other_to_the_end(functions, function_distribution)
+
+        fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
+        ax.bar(functions, function_distribution)
+        ax.set_title('Distribution of functional annotations')
+        ax.set_xlabel('Product')
+        ax.set_ylabel('N hits')
+        for label in ax.get_xticklabels():  # rotate ticks
+            label.set_rotation(40)
+            label.set_horizontalalignment('right')
+        pdf.savefig(bbox_inches='tight')
+
+        # output the list of all functional annotations
+        i = 0
+        while i < len(products):
+            page = plt.figure(figsize=(11.69,8.27))
+            page.clf()
+            if i == 0:
+                page.text(0.1, 0.9, "List of all functional annotations", transform=page.transFigure, size=24, ha="left")
+            txt = ""
+            until = i + 25
+            while i < len(products) and i < until:
+                txt += products[i] + ':   ' + str(product_counts[i]) + '\n'
+                i += 1
+            page.text(0.1, 0.1, txt, transform=page.transFigure, size=15, ha="left")
+            pdf.savefig()
+
+        # 3d plot of identity, query_coverage, and length colored by functional annotation
+        function_color_dict = {}
+        for i in range(len(functions)):
+            function_color_dict[functions[i]] = COLORS20[i]
+        plot_3d(data_points, df_handle, color_axis='function', 
+                                        color_dict=function_color_dict)
+
         # plot taxon distribution
         fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
         ax.bar(taxons, taxon_counts)
@@ -341,8 +397,8 @@ if __name__ == '__main__':
         ax.set_yscale('log')
 
         ax.set_title('Total hits in phyla')
-        ax.set_xlabel('N hits')
-        ax.set_ylabel('Phylum')
+        ax.set_ylabel('N hits')
+        ax.set_xlabel('Phylum')
 
         for label in ax.get_xticklabels():  # rotate ticks
             label.set_rotation(40)
@@ -371,17 +427,16 @@ if __name__ == '__main__':
         plt.tight_layout()
 
         ax.set_title('Average N hits in a genome')
-        ax.set_xlabel('N hits')
-        ax.set_ylabel('Phylum')
+        ax.set_ylabel('N hits')
+        ax.set_xlabel('Phylum')
 
         pdf.savefig(bbox_inches='tight')
 
         pdf.close()
 
     except Exception as e:
-        print("EXCEPTION RAISED")
         ecx_type = str(type(e))
-
+        print(f"EXCEPTION {ecx_type} RAISED")
         with open(exitlog_path, 'a') as outfile:
             outfile.write('3 ' + ecx_type + '\n')
 
