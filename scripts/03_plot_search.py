@@ -131,7 +131,7 @@ if __name__ == '__main__':
         # log start to exit log
         exitlog_path = Path('projects') / project / 'exit_log.txt'
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '3 started'], stdout=outfile)
+            outfile.write('3 started\n')
 
         # read data
         data_path = Path('projects') / project / 'hits_df.csv'  # path to the blastp result dataframe
@@ -244,7 +244,7 @@ if __name__ == '__main__':
         ecx_type = str(type(e))
 
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '3 ' + ecx_type], stdout=outfile)
+            outfile.write('3 ' + ecx_type + '\n')
 
         with open('log.txt', 'a') as outfile:
             traceback.print_exc(file=outfile)
@@ -252,4 +252,4 @@ if __name__ == '__main__':
     else:
         # print exin code 0 nto the exit log
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '3 0'], stdout=outfile)
+            outfile.write('3 0\n')

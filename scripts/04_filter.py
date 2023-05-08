@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
         # logging start to exit log
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '4 started'], stdout=outfile)
+            outfile.write('4 started\n')
         search_result = SearchIO.read(in_path, "hmmer3-text")  # this is currently xml output of blast. to be custom later
 
         df = pd.read_csv(df_path, index_col=0)
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         ecx_type = str(type(e))
 
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '4 ' + ecx_type], stdout=outfile)
+            outfile.write('4 ' + ecx_type + '\n')
 
         with open('log.txt', 'a') as outfile:
             traceback.print_exc(file=outfile)
@@ -84,4 +84,4 @@ if __name__ == '__main__':
     else:
         # print exin code 0 to the exit log
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '4 0'], stdout=outfile)
+            outfile.write('4 0\n')

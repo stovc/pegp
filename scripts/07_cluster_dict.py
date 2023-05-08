@@ -31,7 +31,7 @@ if __name__ == '__main__':
         exitlog_path = Path('projects') / project / 'exit_log.txt'
 
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '7 started'], stdout=outfile)
+            outfile.write('7 started\n')
 
         # open data
         clstr = open(in_clstr_path, 'r')
@@ -66,7 +66,7 @@ if __name__ == '__main__':
         ecx_type = str(type(e))
 
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '7 ' + ecx_type], stdout=outfile)
+            outfile.write('7 ' + ecx_type + '\n')
 
         with open('log.txt', 'a') as outfile:
             traceback.print_exc(file=outfile)
@@ -74,4 +74,4 @@ if __name__ == '__main__':
     else:
         # print exin code 0 to the exit log
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '7 0'], stdout=outfile)
+            outfile.write('7 0\n')

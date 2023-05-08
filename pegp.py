@@ -65,18 +65,15 @@ def draw_table(data):
 
     table = PrettyTable(['Step'] + projects)
     table.align["Step"] = "l"
-
     for row in data.iterrows():
         lst_row = list(row[1])
-        updated_row = []
-        for j in lst_row:
-            nj = j.replace('done', Fore.GREEN + 'Done' + Style.RESET_ALL)
-            nj = nj.replace('ready', Fore.YELLOW + 'Ready' + Style.RESET_ALL)
-            nj = nj.replace('queued', Fore.BLUE + Style.BRIGHT + 'Queued' + Style.RESET_ALL)
-            nj = nj.replace('running', Fore.CYAN + 'Running' + Style.RESET_ALL)
-            nj = nj.replace('failed', Fore.RED + 'Failed' + Style.RESET_ALL)
-            updated_row.append(nj)
-        table.add_row(updated_row)
+        status = lst_row[1]
+        status = status.replace('done', Fore.GREEN + 'Done' + Style.RESET_ALL)
+        status = status.replace('ready', Fore.YELLOW + 'Ready' + Style.RESET_ALL)
+        status = status.replace('queued', Fore.BLUE + Style.BRIGHT + 'Queued' + Style.RESET_ALL)
+        status = status.replace('running', Fore.CYAN + 'Running' + Style.RESET_ALL)
+        status = status.replace('failed', Fore.RED + 'Failed' + Style.RESET_ALL)
+        table.add_row([lst_row[0], status])
     return table
 
 
