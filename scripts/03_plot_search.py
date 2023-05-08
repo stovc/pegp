@@ -164,7 +164,7 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
         colors = [color_dict[value] for value in list(df[color_axis])]
     else:
         colors = [value for value in list(df[color_axis])]
-    labels = [value for value in list(df_handle[color_axis])]
+    labels = [value for value in list(df[color_axis])]
     markers = ['x' if q == 'plasmid' else 'o' for q in list(df['replicon_type'])]
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(9, 6))
@@ -255,44 +255,50 @@ if __name__ == '__main__':
                     '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8',
                     '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'] + 30 * ['#a9a9a9']
         
-        df_handle = data
+        #pre-filtering of hits with e-value > 0.1
+        df_handle = data[data.evalue <= 0.1]
+        
         df_handle = df_handle.replace({'replicon_type': {'main': 'chromosome'}})
 
         # output of information about database, query, homology search tool, and  
         # numerical characteristics of search results
         firstPage = plt.figure(figsize=(11.69,8.27))
         firstPage.clf()
+
+        txt = "Preliminary filtering was carried out by e-value < 0.1"
+        firstPage.text(0.1, 0.9, txt, transform=firstPage.transFigure, size=20, ha="left")
+
         txt = f"Database: {database}"
-        firstPage.text(0.2, 0.7, txt, transform=firstPage.transFigure, size=24, ha="left")
+        firstPage.text(0.1, 0.8, txt, transform=firstPage.transFigure, size=20, ha="left")
 
         protein_faa_path = Path('databases') / database / 'protein.faa'
         with open(protein_faa_path) as file:
             database_size = sum([1 for record in SeqIO.parse(file, 'fasta')])
         txt = f"Database size: {str(database_size)}"
-        firstPage.text(0.2, 0.6, txt, transform=firstPage.transFigure, size=24, ha="left")
+        firstPage.text(0.1, 0.7, txt, transform=firstPage.transFigure, size=20, ha="left")
 
         hmmer_results_path = Path('projects') / project / 'hits.txt'
         hmmer_results = SearchIO.read(hmmer_results_path, "hmmer3-text")
         txt = f"Query: {hmmer_results._id}"
-        firstPage.text(0.2, 0.5, txt, transform=firstPage.transFigure, size=24, ha="left")
+        firstPage.text(0.1, 0.6, txt, transform=firstPage.transFigure, size=20, ha="left")
 
         txt = f"Homology search using: {hmmer_results.program} {hmmer_results.version}"
-        firstPage.text(0.2, 0.4, txt, transform=firstPage.transFigure, size=24, ha="left")
+        firstPage.text(0.1, 0.5, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        number_of_HSPs = len(df_handle['protID'])
+        number_of_HSPs = len(df_handle.index)
         txt = f"Number of HSPs: {str(number_of_HSPs)}"
-        firstPage.text(0.2, 0.3, txt, transform=firstPage.transFigure, size=24, ha="left")
+        firstPage.text(0.1, 0.4, txt, transform=firstPage.transFigure, size=20, ha="left")
 
         hit_proteins_number = len(df_handle['protID'].unique())
         txt = f"Number of hit proteins: {str(hit_proteins_number)}"
-        firstPage.text(0.2, 0.2, txt, transform=firstPage.transFigure, size=24, ha="left")   
+        firstPage.text(0.1, 0.3, txt, transform=firstPage.transFigure, size=20, ha="left")   
 
         hit_genomes_number = len(df_handle['assembly'].unique())
         txt = f"Number of hit genomes: {str(hit_genomes_number)}"
-        firstPage.text(0.2, 0.1, txt, transform=firstPage.transFigure, size=24, ha="left")      
+        firstPage.text(0.1, 0.2, txt, transform=firstPage.transFigure, size=20, ha="left")      
 
         pdf.savefig()
-        
+
         # plot genomes distribution
         plot_hist(df_handle, 'assembly', 'Number of genomes')
         
@@ -339,57 +345,7 @@ if __name__ == '__main__':
         cols = ['lg_evalue', 'query_coverage', 'length', 'taxon']  # 'evalue^0.1', 'length', 'identity',
         pairplot(df_handle, cols, 'taxon', taxon_color_dict)
 
-        # plot annotation distribution
-        annotation_destribution = df_handle['product'].value_counts(sort=True)
-        products = annotation_destribution.index.values.tolist()
-        product_counts = list(annotation_destribution)
-        filter_map = []
-        i = 0
-        cnt = 0
-        while cnt < number_of_HSPs * 0.9:
-            filter_map.append(products[i])
-            cnt += product_counts[i]
-            i += 1
-        df_handle['function'] = df_handle['product'].apply(filter_df, args=[filter_map])  # substitute products to "Other" according f_map
-        function_distribution = df_handle['function'].value_counts(sort=True)
-        functions = function_distribution.index.values.tolist()
-        function_distribution = list(function_distribution)
-
-        # put 'Other' to the end of `functions` if present
-        put_other_to_the_end(functions, function_distribution)
-
-        fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
-        ax.bar(functions, function_distribution)
-        ax.set_title('Distribution of functional annotations')
-        ax.set_xlabel('Product')
-        ax.set_ylabel('N hits')
-        for label in ax.get_xticklabels():  # rotate ticks
-            label.set_rotation(40)
-            label.set_horizontalalignment('right')
-        pdf.savefig(bbox_inches='tight')
-
-        # output the list of all functional annotations
-        i = 0
-        while i < len(products):
-            page = plt.figure(figsize=(11.69,8.27))
-            page.clf()
-            if i == 0:
-                page.text(0.1, 0.9, "List of all functional annotations", transform=page.transFigure, size=24, ha="left")
-            txt = ""
-            until = i + 25
-            while i < len(products) and i < until:
-                txt += products[i] + ':   ' + str(product_counts[i]) + '\n'
-                i += 1
-            page.text(0.1, 0.1, txt, transform=page.transFigure, size=15, ha="left")
-            pdf.savefig()
-
-        # 3d plot of identity, query_coverage, and length colored by functional annotation
-        function_color_dict = {}
-        for i in range(len(functions)):
-            function_color_dict[functions[i]] = COLORS20[i]
-        plot_3d(data_points, df_handle, color_axis='function', 
-                                        color_dict=function_color_dict)
-
+      
         # plot taxon distribution
         fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
         ax.bar(taxons, taxon_counts)
@@ -406,7 +362,7 @@ if __name__ == '__main__':
 
         plt.tight_layout()
         pdf.savefig(bbox_inches='tight')
-
+       
         # plot average N_hits per genome in phyla
         genome_distribution = df_handle['assembly'].value_counts(sort=True).to_dict()
         genome_df = df_handle[['assembly', 'phylum']].drop_duplicates()
@@ -432,10 +388,63 @@ if __name__ == '__main__':
 
         pdf.savefig(bbox_inches='tight')
 
-        pdf.close()
+       # plot annotation distribution
+        annotation_destribution = df_handle['product'].value_counts(sort=True)
+        products = annotation_destribution.index.values.tolist()
+        product_counts = list(annotation_destribution)
+        filter_map = []
+        i = 0
+        cnt = 0
+        while cnt < number_of_HSPs * 0.9:
+            filter_map.append(products[i])
+            cnt += product_counts[i]
+            i += 1
+        
+        df_handle['function'] = df_handle['product'].apply(filter_df, args=[filter_map])  # substitute products to "Other" according f_map
+        function_distribution = df_handle['function'].value_counts(sort=True)
+        functions = function_distribution.index.values.tolist()
+        function_distribution = list(function_distribution)
 
+        # put 'Other' to the end of `functions` if present
+        put_other_to_the_end(functions, function_distribution)
+
+        fig, ax = plt.subplots(1, 1, figsize=(9, 6), sharey='all')
+        ax.bar(functions, function_distribution)
+        ax.set_title('Distribution of functional annotations')
+        ax.set_xlabel('Product')
+        ax.set_ylabel('N hits')
+        for label in ax.get_xticklabels():  # rotate ticks
+            label.set_rotation(40)
+            label.set_horizontalalignment('right')
+        pdf.savefig(bbox_inches='tight')
+        
+        # output the list of all functional annotations
+        i = 0
+        while i < len(products):
+            page = plt.figure(figsize=(11.69,8.27))
+            page.clf()
+            if i == 0:
+                page.text(0.1, 0.9, "List of all functional annotations", transform=page.transFigure, size=24, ha="left")
+            txt = ""
+            until = i + 25
+            while i < len(products) and i < until:
+                txt += products[i] + ':   ' + str(product_counts[i]) + '\n'
+                i += 1
+            page.text(0.1, 0.1, txt, transform=page.transFigure, size=15, ha="left")
+            pdf.savefig()
+        
+        # 3d plot of identity, query_coverage, and length colored by functional annotation
+        function_color_dict = {}
+        for i in range(len(functions)):
+            function_color_dict[functions[i]] = COLORS20[i]
+        plot_3d(data_points, df_handle, color_axis='function', 
+                                        color_dict=function_color_dict)
+
+        pdf.close()
+        
     except Exception as e:
         ecx_type = str(type(e))
+        print(e)
         print(f"EXCEPTION {ecx_type} RAISED")
         with open(exitlog_path, 'a') as outfile:
             outfile.write('3 ' + ecx_type + '\n')
