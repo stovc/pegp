@@ -19,7 +19,7 @@ def update_status():
     Iterate project directories, look at `status.txt` files.
     Return dataframe with status of steps in projects."""
 
-    data = pd.DataFrame(STEPS, index=list(range(1, 16)))
+    data = pd.DataFrame(STEPS, index=list(range(1, 17)))
 
     for project in projects:
 
@@ -238,14 +238,15 @@ SCRIPTS = {
     5: '05_cluster.sh',
     6: '06_mk_genome_consistent.py',
     7: '07_cluster_dict.py',
-    8: '08_align.sh',
-    9: '09_get_translations.py',
-    10: '10_get_gen_context.py',
-    11: '11_trim.sh',
-    12: '12_domain_search.sh',
-    13: '13_prottest.sh',
-    14: '14_domain_data.py',
-    15: '15_tree.sh'
+    8: '08_plot_filtration_clusterization.py',
+    9: '09_align.sh',
+    10: '10_get_translations.py',
+    11: '11_get_gen_context.py',
+    12: '12_trim.sh',
+    13: '13_domain_search.sh',
+    14: '14_prottest.sh',
+    15: '15_domain_data.py',
+    16: '16_tree.sh'
 }
 
 # Scripts to be run in the cluster mode
@@ -257,14 +258,15 @@ BATCH_SCRIPTS = {
     5: '05_cluster.batch',
     6: '06_mk_genome_consistent.batch',
     7: '07_cluster_dict.batch',
-    8: '08_align.batch',
-    9: '09_get_translations.batch',
-    10: '10_get_gen_context.batch',
-    11: '11_trim.batch',
-    12: '12_hmmscan.batch',
-    13: '13_prottest.batch',
-    14: '14_get_domains.batch',
-    15: '15_raxml.batch'
+    8: '08_plot_filtration_clusterization.batch',
+    9: '09_align.batch',
+    10: '10_get_translations.batch',
+    11: '11_get_gen_context.batch',
+    12: '12_trim.batch',
+    13: '13_hmmscan.batch',
+    14: '14_prottest.batch',
+    15: '15_get_domains.batch',
+    16: '16_raxml.batch'
 }
 
 # Prompt listing available commands
@@ -294,6 +296,7 @@ STATUS_FILE = '''\t{}
 13\t-
 14\t-
 15\t-
+16\t-
 '''
 
 # Steps of the analysis. Used to create status dataframe
@@ -304,14 +307,15 @@ STEPS = {'Step': ['1. Search',
                   '5. Cluster',
                   '6. Genome consistence',
                   '7. Cluster data',
-                  '8. Align',
-                  '9. Full translations',
-                  '10. Genome context',
-                  '11. Trim',
-                  '12. Domain search',
-                  '13. Prottest',
-                  '14. Domain data',
-                  '15. Tree']
+                  '8. Filtration and clusterization report',
+                  '9. Align',
+                  '10. Full translations',
+                  '11. Genome context',
+                  '12. Trim',
+                  '13. Domain search',
+                  '14. Prottest',
+                  '15. Domain data',
+                  '16. Tree']
          }
 
 # Dependencies of the steps on each other
@@ -321,16 +325,17 @@ UNLOCKS = {
     3: [4],
     4: [5],
     5: [6, 7],
-    6: [8, 9, 10],
-    7: [],
-    8: [11],
+    6: [9, 10, 11],
+    7: [8],
+    8: [],
     9: [12],
-    10: [],
-    11: [13],
+    10: [13],
+    11: [],
     12: [14],
     13: [15],
-    14: [],
-    15: []
+    14: [16],
+    15: [],
+    16: []
 }
 
 # init
