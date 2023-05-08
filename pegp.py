@@ -60,7 +60,7 @@ def update_status():
 
 
 def draw_table(data):
-    """Make a string containing the status table to print.
+    """Print a string containing the status table to print.
     Get status dataframe."""
 
     table = PrettyTable(['Step'] + projects)
@@ -74,17 +74,14 @@ def draw_table(data):
         status = status.replace('running', Fore.CYAN + 'Running' + Style.RESET_ALL)
         status = status.replace('failed', Fore.RED + 'Failed' + Style.RESET_ALL)
         table.add_row([lst_row[0], status])
-    return table
+    print(table)
 
 
 def update_screen():
     """Update status and print the interface."""
-
-    data = update_status()
-    table = draw_table(data)
-
     print('Database:', database)
-    print(table)
+    data = update_status()
+    draw_table(data)
     print(PROMPT)
     # for i in log.history:
     #    print(i)
@@ -344,9 +341,6 @@ projects = [i for i in folders if i[0] != '.']
 command = ''
 log = Log()
 
-data = update_status()
-
-table = draw_table(data)
 update_screen()
 
 
