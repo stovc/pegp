@@ -1,10 +1,11 @@
-"""Retrieves full translations of `clustered_gc.faa` sequences from `filtered_clustered.csv`.
+"""Retrieves full translations of `clustered_gc.faa` sequences from `hits_df.csv`, which passed 
+filtration, clusterization and genome concistency operation.
 
 - Full translations are needed for the domain search,
 while the truncated ones are needed for the alignment and tree construction
 
 Input:
-    - "filtered_clustered.csv"
+    - "hits_df.csv"
     - "translation.csv"
 Output:
     - "clustered_full.faa"
@@ -29,13 +30,14 @@ if __name__ == '__main__':
             outfile.write('9 started\n')
 
         # construct input and output paths
-        in_path = Path('projects') / project / 'filtered_clustered.csv'
+        in_path = Path('projects') / project / 'hits_df.csv'
         data_path = Path('databases') / database / 'translation.csv'
 
         out_path = Path('projects') / project / 'clustered_full.faa'
 
         translation_db = pd.read_csv(data_path, index_col=0, names=['translation'])
-        clustered_db = pd.read_csv(in_path, index_col=0)  # TODO: to get index, there's no need to read all columns
+        clustered_db = pd.read_csv(in_path, usecols=['ID', 'filtered_clustered'], index_col=0)
+        clustered_db = clustered_db[clustered_db.filtered_clustered == True]
 
         ids = list(clustered_db.index)
 

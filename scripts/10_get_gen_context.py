@@ -1,6 +1,6 @@
 """Make a dataframe describing the genome context of the hits.
 
-- input: `filtered_clustered.csv`, `annotation.csv`
+- input: `hits_df.csv`, `annotation.csv`
 - output:  `genome_context.csv`
 
 TODO: revise the way the paths are formed
@@ -27,12 +27,13 @@ if __name__ == '__main__':
             outfile.write('10 started\n')
 
         # construct input and output paths
-        in_path = Path('projects') / project / 'filtered_clustered.csv'
+        in_path = Path('projects') / project / 'hits_df.csv'
         data_path = Path('databases') / database / 'annotation.csv'
         out_path = Path('projects') / project / 'genome_context.csv'
 
         annotation_db = pd.read_csv(data_path, index_col=0)
         clustered_db = pd.read_csv(in_path)
+        clustered_db = clustered_db[clustered_db.filtered_clustered == True]
 
         ids = list(clustered_db.index)
 

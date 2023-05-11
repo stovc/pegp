@@ -2,7 +2,7 @@
 
 Input:
     - "hmmscan.tbl" - hmmscan output
-    - "filtered_clustered.csv" - annotations
+    - "hits_df.csv" - annotations
 Output:
     - "domains.csv" - predicted domains with annotations
 """
@@ -44,8 +44,9 @@ if __name__ == '__main__':
         grouped = hmmscan_df.groupby('id')  # each group consists of all domains found in particular protein
 
         # protein data
-        in_data_path = Path('projects') / project / 'filtered_clustered.csv'
-        prot_data = pd.read_csv(in_data_path, usecols=['ID', 'length', 'targ_dom_pos'], index_col=0)
+        in_data_path = Path('projects') / project / 'hits_df.csv'
+        prot_data = pd.read_csv(in_data_path, usecols=['ID', 'length', 'targ_dom_pos', 'filtered_clustered'], index_col=0)
+        prot_data = prot_data[prot_data.filtered_clustered == True]
         ids = prot_data.index
         target_domain_positions = prot_data['targ_dom_pos']
         protein_lengths = prot_data['length']
