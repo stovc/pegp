@@ -26,7 +26,7 @@ if __name__ == '__main__':
         exitlog_path = Path('projects') / project / 'exit_log.txt'
 
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '9 started'], stdout=outfile)
+            outfile.write('9 started\n')
 
         # construct input and output paths
         in_path = Path('projects') / project / 'filtered_clustered.csv'
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         ecx_type = str(type(e))
 
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '9 ' + ecx_type], stdout=outfile)
+            outfile.write('9 ' + ecx_type + '\n')
 
         with open('log.txt', 'a') as outfile:
             traceback.print_exc(file=outfile)
@@ -56,4 +56,4 @@ if __name__ == '__main__':
     else:
         # print exin code 0 to the exit log
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '9 0'], stdout=outfile)
+            outfile.write('9 0\n')

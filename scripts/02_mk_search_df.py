@@ -83,7 +83,7 @@ if __name__ == '__main__':
         # log start to exit log
         exitlog_path = Path('projects') / project / 'exit_log.txt'
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '2 started'], stdout=outfile)  # TODO: make it through write
+            outfile.write('2 started\n')
 
         # read input dataframe
         data_path = Path('databases') / database / 'annotation.csv'  # database will be stored in analysis configs
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         ecx_type = str(type(e))
 
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '2 ' + ecx_type], stdout=outfile)
+            outfile.write('2 ' + ecx_type + '\n')
 
         with open('log.txt', 'a') as outfile:
             traceback.print_exc(file=outfile)
@@ -146,4 +146,4 @@ if __name__ == '__main__':
     else:
         # print exin code 0 nto the exit log
         with open(exitlog_path, 'a') as outfile:
-            subprocess.run(["echo", '2 0'], stdout=outfile)
+            outfile.write('2 0\n')
