@@ -22,7 +22,7 @@ if __name__ == '__main__':
         exitlog_path = Path('projects') / project / 'exit_log.txt'
 
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('15 started\n')
+            outfile.write('16 started\n')
 
         # construct input and output paths
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         ecx_type = str(type(e))
 
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('15 ' + ecx_type + '\n')
+            outfile.write('16 ' + ecx_type + '\n')
 
         with open('log.txt', 'a') as outfile:
             traceback.print_exc(file=outfile)
@@ -88,4 +88,4 @@ if __name__ == '__main__':
     else:
         # print exin code 0 to the exit log
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('15 0\n')
+            outfile.write('16 0\n')
