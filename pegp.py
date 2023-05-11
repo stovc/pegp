@@ -245,10 +245,11 @@ SCRIPTS = {
     9: '09_get_translations.py',
     10: '10_get_gen_context.py',
     11: '11_trim.sh',
-    12: '12_domain_search.sh',
-    13: '13_prottest.sh',
-    14: '14_domain_data.py',
-    15: '15_tree.sh'
+    12: '12_trim_report.py',
+    13: '13_domain_search.sh',
+    14: '14_prottest.sh',
+    15: '15_domain_data.py',
+    16: '16_tree.sh'
 }
 
 # Scripts to be run in the cluster mode
@@ -264,10 +265,11 @@ BATCH_SCRIPTS = {
     9: '09_get_translations.batch',
     10: '10_get_gen_context.batch',
     11: '11_trim.batch',
-    12: '12_hmmscan.batch',
-    13: '13_prottest.batch',
-    14: '14_get_domains.batch',
-    15: '15_raxml.batch'
+    12: '12_trim_report.batch',
+    13: '13_hmmscan.batch',
+    14: '14_prottest.batch',
+    15: '15_get_domains.batch',
+    16: '16_raxml.batch'
 }
 
 # Prompt listing available commands
@@ -297,6 +299,7 @@ STATUS_FILE = '''\t{}
 13\t-
 14\t-
 15\t-
+16\t-
 '''
 
 # Steps of the analysis. Used to create status dataframe
@@ -311,10 +314,11 @@ STEPS = {'Step': ['1. Search',
                   '9. Full translations',
                   '10. Genome context',
                   '11. Trim',
-                  '12. Domain search',
-                  '13. Prottest',
-                  '14. Domain data',
-                  '15. Tree']
+                  '12. Trim report',
+                  '13. Domain search',
+                  '14. Prottest',
+                  '15. Domain data',
+                  '16. Tree']
          }
 
 # Dependencies of the steps on each other
