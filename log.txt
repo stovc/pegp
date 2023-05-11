@@ -272,3 +272,41 @@ Traceback (most recent call last):
   File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/pandas/core/generic.py", line 1527, in __nonzero__
     raise ValueError(
 ValueError: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 183, in <module>
+    clustered_ids.append(seq_record.id)
+AttributeError: 'set' object has no attribute 'append'
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 183, in <module>
+    clustered_ids.append(seq_record.id)
+AttributeError: 'set' object has no attribute 'append'
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 191, in <module>
+    elif not df.index[i] in clustered_ids:
+NameError: name 'df' is not defined
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 210, in <module>
+    plot_3d(data_points, data, color_axis='status', color_dict=status_color_dict)
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 45, in plot_3d
+    labels = [value for value in list(df_handle[color_axis])]
+NameError: name 'df_handle' is not defined
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 210, in <module>
+    plot_3d(data_points, data, color_axis='status', color_dict=status_color_dict)
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 53, in plot_3d
+    legend_elements = [Line2D([0], [0], marker='o', color='w',
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 53, in <listcomp>
+    legend_elements = [Line2D([0], [0], marker='o', color='w',
+NameError: name 'Line2D' is not defined
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 211, in <module>
+    plot_3d(data_points, data, color_axis='status', color_dict=status_color_dict)
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 78, in plot_3d
+    ax.set_xlim(None, ident_lim)
+NameError: name 'ident_lim' is not defined
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/08_plot_filtering_clustering.py", line 169, in <module>
+    genome_consistency_output_hits_cnt = len(data[data.filtered_clustered == True].index)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/pandas/core/generic.py", line 5902, in __getattr__
+    return object.__getattribute__(self, name)
+AttributeError: 'DataFrame' object has no attribute 'filtered_clustered'

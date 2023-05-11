@@ -22,12 +22,13 @@ Output contains folowing:
 
 """
 
-import sys
+import sys  
 from pathlib import Path
 from Bio import SeqIO
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.backends.backend_pdf
+from matplotlib.lines import Line2D
 import subprocess
 import traceback
 
@@ -42,10 +43,10 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
         colors = [color_dict[value] for value in list(df[color_axis])]
     else:
         colors = [value for value in list(df[color_axis])]
-    labels = [value for value in list(df_handle[color_axis])]
+    labels = [value for value in list(df[color_axis])]
     markers = ['x' if q == 'plasmid' else 'o' for q in list(df['replicon_type'])]
 
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(9, 6))
     ax.set_rasterized(True)
 
     # construct legend
@@ -73,10 +74,6 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
         sc = ax.scatter(xs, ys, zs, c=colors, norm=matplotlib.colors.PowerNorm(gamma=0.1),
                         edgecolors='black', marker='o', alpha=0.8, s=3, linewidth=0.2, cmap='jet')
 
-    # set upper limits
-    ax.set_xlim(None, ident_lim)
-    ax.set_ylim(None, overlap_lim)
-    ax.set_zlim(None, length_lim)
 
     # set axis labels
     ax.set_xlabel('Log e-value')
@@ -90,7 +87,7 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
                      format='%.0e')
     plt.tight_layout()
 
-    pdf.savefig(dpi=400)
+    pdf.savefig(dpi=400, bbox_inches='tight')
 
 
 if __name__ == '__main__':
@@ -105,8 +102,6 @@ if __name__ == '__main__':
         # read data
         data_path = Path('projects') / project / 'hits_df.csv'  # path to the dataframe with hits
         data = pd.read_csv(data_path, index_col=0)  # dataframe with hits
-        filtered_data = data[data.filtered == True]
-        filtered_clustered_data = data[data.filtered_clustered == True]
 
         # create output to plot to
         out_path = Path('projects') / project / 'filtering_clustering_report.pdf'  # path to the output report pdf
@@ -119,22 +114,22 @@ if __name__ == '__main__':
         page.text(0.1, 0.9, txt, transform=page.transFigure, size=24, ha="left")
 
         # filtering parameters
-        txt = "Filtering parameters:\n"
+        txt = "Filtering parameters:\n\n"
         filtering_log_path = Path('projects') / project / 'filtering_log.txt'
         with open(filtering_log_path, 'r') as filtering_log:
             for line in filtering_log:
                 txt += ' - ' + line + '\n'
-        page.text(0.1, 0.55, txt, transform=page.transFigure, size=20, ha="left")
+        page.text(0.1, 0.65, txt, transform=page.transFigure, size=20, ha="left")
 
         # number of input hits
         filtering_input_hits_cnt = len(data.index)
         txt = f"Number of filtering input hits: {filtering_input_hits_cnt}"
-        page.text(0.1, 0.5, txt, transform=page.transFigure, size=20, ha="left")
+        page.text(0.1, 0.6, txt, transform=page.transFigure, size=20, ha="left")
 
         # number of output hits
-        filtering_output_hits_cnt = len(filtered_data.index)
+        filtering_output_hits_cnt = len(data[data.filtered == True].index)
         txt = f"Number of filtering output hits: {filtering_output_hits_cnt}"
-        page.text(0.1, 0.4, txt, transform=page.transFigure, size=20, ha="left")
+        page.text(0.1, 0.5, txt, transform=page.transFigure, size=20, ha="left")
 
         pdf.savefig()
 
@@ -171,19 +166,53 @@ if __name__ == '__main__':
         page.text(0.1, 0.5, txt, transform=page.transFigure, size=20, ha="left")
 
         # number of hits after genome consistency
-        genome_consistency_output_hits_cnt = len(filtered_clustered_data.index)
+        genome_consistency_output_hits_cnt = len(data[data.filtered_clustered == True].index)
         txt = f"Number of hits after genome consistency procedure: {genome_consistency_output_hits_cnt}"
         page.text(0.1, 0.4, txt, transform=page.transFigure, size=20, ha="left") 
 
         pdf.savefig()
 
-        #3d plot
+        # 3d plot of log_evalue, query coverage, length colored by filtering, clustering, and genome 
+        # consistency procedure
+        clustered_path = data_path = Path('projects') / project / 'clustered90.faa' 
+        clustered_ids = set()
+        for seq_record in SeqIO.parse(clustered_path, "fasta"):
+            clustered_ids.add(seq_record.id) 
+
+        status = ['Failed filtering', 'Filtered but not representative', 'Representative', 
+                'Returned after genome consistency procedure']
+        statuses_list = [''] * len(data.index)
+        for i in range(len(data.index)):
+            if data['filtered'][i] == False:
+                statuses_list[i] = 'Failed filtering'
+            elif not data.index[i] in clustered_ids:
+                if data['filtered_clustered'][i] == False:
+                    statuses_list[i] = 'Filtered but not representative'
+                else:
+                    statuses_list[i] = 'Returned after genome consistency procedure'
+            else:
+                statuses_list[i] = 'Representative'
+        data['status'] = statuses_list
+
+        # set of colors for a plot
+        COLORS = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8']
+        status_color_dict = {}
+        for i in range(len(status)):
+            status_color_dict[status[i]] = COLORS[i]
+
+        xs = list(data['lg_evalue'])
+        ys = list(data['query_coverage'])
+        zs = list(data['length'])
+        data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
+
+        plot_3d(data_points, data, color_axis='status', color_dict=status_color_dict)
 
         pdf.close()
 
 
     except Exception as e:
         ecx_type = str(type(e))
+        print(e)
         print(f"EXCEPTION {ecx_type} RAISED")
 
         with open(exitlog_path, 'a') as outfile:
