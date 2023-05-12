@@ -19,7 +19,7 @@ def update_status():
     Iterate project directories, look at `status.txt` files.
     Return dataframe with status of steps in projects."""
 
-    data = pd.DataFrame(STEPS, index=list(range(1, 16)))
+    data = pd.DataFrame(STEPS, index=list(range(1, 17)))
 
     for project in projects:
 
