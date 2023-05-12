@@ -28,6 +28,9 @@ PEGP (protein evolutionary genomics pipeline). A software tool for
 - numpy, pandas, seaborn `conda install seaborn`
 - prettytable `conda install prettytable`
 - colorama `conda install colorama`
+- typing-extensions `conda install -c conda-forge typing-extensions`
+- PyPDF2 `conda install PyPDF2`
+- weasyprint `conda install -c conda-forge weasyprint`
 
 ## Installation
 - `git clone https://github.com/stovc/pegp`
