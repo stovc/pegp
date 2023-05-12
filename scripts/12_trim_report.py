@@ -1,13 +1,14 @@
 """Plot results of triming
 
-- input:  "aligned.fa", "trimed.fa"
+- input:  "aligned.fa", "trimed.fa", "trim.html"
 - output: "triming_report.pdf"
 
-Output contains folowing information:
+Output contains folowing:
     - triming program
     - triming threshold
     - number of columns before triming
     - number of columns after triming
+    - trimAl program report
 
 """
 
@@ -18,6 +19,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.backends.backend_pdf
 import traceback
+from weasyprint import HTML, CSS
+import PyPDF2
+import os
 
 
 if __name__ == '__main__':
@@ -33,9 +37,12 @@ if __name__ == '__main__':
         aligned_path = Path('projects') / project / 'aligned.fa'  # path to fasta file with aligned reads before trimming
         trimed_path = Path('projects') / project / 'trimed.fa'  # path to fasta file with aligned reads after trimming
 
-        # create output to plot to
-        out_path = Path('projects') / project / 'triming_report.pdf'  # path to the output report pdf
-        pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
+        # path to the output report pdf
+        out_path = Path('projects') / project / 'triming_report.pdf'  
+
+        #create path to temporary pdf file with triming information 
+        temp_out_path = Path('projects') / project / 'temp_triming_info_report.pdf'
+        pdf = matplotlib.backends.backend_pdf.PdfPages(temp_out_path)  # report pdf object
 
         # create a page to output information
         page = plt.figure(figsize=(11.69,8.27))
@@ -66,11 +73,41 @@ if __name__ == '__main__':
         trimed_seq = [record.seq for record in SeqIO.parse(trimed_path, 'fasta')]
         trimed_len = len(trimed_seq[0])
         txt = f"Number of columns after triming: {trimed_len}"
-        page.text(0.1, 0.55, txt, transform=page.transFigure, size=20, ha="left")
+        page.text(0.1, 0.55, txt, transform=page.transFigure, size=20, ha="left") 
 
         pdf.savefig()
-
         pdf.close()
+        
+        # convert trimAl html report to .pdf
+        trimAl_report_path = Path('projects') / project / 'trim.html' 
+        trimAl_pdf_report_path = Path('projects') / project / 'trim_temp.pdf' 
+        css = CSS(string='''@page {size: 15in 8.27in; margin: 0in 0in 0in 0in;}''')
+        trimAl_pdf_report = HTML(trimAl_report_path).write_pdf(stylesheets=[css])
+        with open(trimAl_pdf_report_path, 'wb') as f:
+            f.write(trimAl_pdf_report)
+
+        # merge triming information file with trimAl report
+        merger = PyPDF2.PdfFileWriter()
+        temp_out = open(temp_out_path, 'rb')
+        temp_out_reader = PyPDF2.PdfFileReader(temp_out)
+        for page_num in range(temp_out_reader.numPages):
+            page = temp_out_reader.getPage(page_num)
+            merger.addPage(page)
+
+        trimAl_pdf_report = open(trimAl_pdf_report_path, 'rb')
+        trimAl_pdf_report_reader = PyPDF2.PdfFileReader(trimAl_pdf_report)
+        for page_num in range(trimAl_pdf_report_reader.numPages):
+            page = trimAl_pdf_report_reader.getPage(page_num)
+            merger.addPage(page)
+
+        with open(out_path, 'wb') as f:
+            merger.write(f)
+
+        temp_out.close()
+        trimAl_pdf_report.close()
+
+        os.remove(temp_out_path)
+        os.remove(trimAl_pdf_report_path)
 
     except Exception as e:
         ecx_type = str(type(e))

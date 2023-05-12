@@ -276,3 +276,120 @@ Traceback (most recent call last):
   File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 52, in <module>
     txt = f"Triming program: {trimming_log[1]}"
 NameError: name 'trimming_log' is not defined
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 84, in <module>
+    f.write(trimAl_pdf_report)
+TypeError: write() argument must be str, not None
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 82, in <module>
+    HTML(trimAl_report_path).write_pdf(trimAl_pdf_report_path)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/__init__.py", line 252, in write_pdf
+    self.render(font_config, counter_style, **options)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/__init__.py", line 209, in render
+    return Document._render(self, font_config, counter_style, options)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/document.py", line 260, in _render
+    context = cls._build_layout_context(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/document.py", line 239, in _build_layout_context
+    style_for = get_all_computed_styles(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/css/__init__.py", line 1120, in get_all_computed_styles
+    for sheet in find_stylesheets(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/css/__init__.py", line 257, in find_stylesheets
+    for wrapper in wrapper_element.query_all('style', 'link'):
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 241, in <genexpr>
+    if any(test(element) for test in tests)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 241, in <genexpr>
+    if any(test(element) for test in tests)
+  File "<string>", line 1, in <lambda>
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 28, in __get__
+    value = self.func(obj)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 277, in local_name
+    namespace_url, local_name = _split_etree_tag(self.etree_element.tag)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 350, in _split_etree_tag
+    assert tag[0] == '{'
+AssertionError
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 84, in <module>
+    HTML(trimAl_report_path).write_pdf(trimAl_pdf_report_path)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/__init__.py", line 252, in write_pdf
+    self.render(font_config, counter_style, **options)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/__init__.py", line 209, in render
+    return Document._render(self, font_config, counter_style, options)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/document.py", line 260, in _render
+    context = cls._build_layout_context(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/document.py", line 239, in _build_layout_context
+    style_for = get_all_computed_styles(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/css/__init__.py", line 1120, in get_all_computed_styles
+    for sheet in find_stylesheets(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/css/__init__.py", line 257, in find_stylesheets
+    for wrapper in wrapper_element.query_all('style', 'link'):
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 241, in <genexpr>
+    if any(test(element) for test in tests)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 241, in <genexpr>
+    if any(test(element) for test in tests)
+  File "<string>", line 1, in <lambda>
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 28, in __get__
+    value = self.func(obj)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 277, in local_name
+    namespace_url, local_name = _split_etree_tag(self.etree_element.tag)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 350, in _split_etree_tag
+    assert tag[0] == '{'
+AssertionError
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 86, in <module>
+    trimAl_report.write_pdf(trimAl_pdf_report_path)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/__init__.py", line 252, in write_pdf
+    self.render(font_config, counter_style, **options)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/__init__.py", line 209, in render
+    return Document._render(self, font_config, counter_style, options)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/document.py", line 260, in _render
+    context = cls._build_layout_context(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/document.py", line 239, in _build_layout_context
+    style_for = get_all_computed_styles(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/css/__init__.py", line 1120, in get_all_computed_styles
+    for sheet in find_stylesheets(
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/css/__init__.py", line 257, in find_stylesheets
+    for wrapper in wrapper_element.query_all('style', 'link'):
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 241, in <genexpr>
+    if any(test(element) for test in tests)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 241, in <genexpr>
+    if any(test(element) for test in tests)
+  File "<string>", line 1, in <lambda>
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 28, in __get__
+    value = self.func(obj)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 277, in local_name
+    namespace_url, local_name = _split_etree_tag(self.etree_element.tag)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/cssselect2/tree.py", line 350, in _split_etree_tag
+    assert tag[0] == '{'
+AssertionError
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 87, in <module>
+    trimAl_report.write_pdf(f)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/__init__.py", line 252, in write_pdf
+    self.render(font_config, counter_style, **options)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/weasyprint/document.py", line 413, in write_pdf
+    pdf.write(target, pdf.version, identifier, compress)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/pydyf/__init__.py", line 504, in write
+    self.write_line(b'%PDF-' + version, output)
+  File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/pydyf/__init__.py", line 488, in write_line
+    output.write(content + b'\n')
+TypeError: write() argument must be str, not bytes
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 87, in <module>
+    trimal_pdf_report = trimal_pdf_report.render()
+AttributeError: 'bytes' object has no attribute 'render'
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 92, in <module>
+    merger.append(temp_out)
+AttributeError: 'PdfWriter' object has no attribute 'append'
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 89, in <module>
+    merger = PdfFileWriter()
+NameError: name 'PdfFileWriter' is not defined
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 97, in <module>
+    trimAl_pdf_report = open(trimAl_pdf_report_path, 'rb')
+NameError: name 'trimAl_pdf_report_path' is not defined
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/12_trim_report.py", line 108, in <module>
+    os.remove(temp_out)
+TypeError: remove: path should be string, bytes or os.PathLike, not BufferedReader
