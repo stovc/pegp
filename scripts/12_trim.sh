@@ -17,5 +17,9 @@ echo 12 started >> projects/"$PROJECT"/exit_log.txt
 # trim
 trimal -in projects/"$PROJECT"/aligned.fa -out projects/"$PROJECT"/trimed.fa -htmlout projects/"$PROJECT"/trim.html -gt "$THRESHOLD"
 
+# log trimmint threshold
+trimal --version | cat > projects/"$1"/triming_log.txt
+echo "$THRESHOLD" >> projects/"$1"/triming_log.txt
+
 # write step number and exit status to the exit log
 echo 12 $? >> projects/"$1"/exit_log.txt

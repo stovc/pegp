@@ -62,13 +62,12 @@ def update_status():
 def draw_table(data):
     """Print a string containing the status table to print.
     Get status dataframe."""
-    print(data)
+
     table = PrettyTable(['Step'] + projects)
     table.align["Step"] = "l"
     for row in data.iterrows():
         lst_row = list(row[1])
         status = lst_row[1]
-        print(status)
         status = status.replace('done', Fore.GREEN + 'Done' + Style.RESET_ALL)
         status = status.replace('ready', Fore.YELLOW + 'Ready' + Style.RESET_ALL)
         status = status.replace('queued', Fore.BLUE + Style.BRIGHT + 'Queued' + Style.RESET_ALL)
