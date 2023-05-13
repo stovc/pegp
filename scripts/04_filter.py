@@ -69,8 +69,15 @@ if __name__ == '__main__':
         df.to_csv(df_path)
 
         out.close()
+        
+        filtering_log_path = Path('projects') / project / 'filtering_log.txt'
+        with open(filtering_log_path, 'w') as filtering_log:
+            filtering_log.write("Coverage threshold: " + str(coverage_threshold) + '\n')
+            filtering_log.write("e-value threshold: " + str(evalue_threshold))
+
     except Exception as e:
         ecx_type = str(type(e))
+        print(f"RAISE {ecx_type} EXCEPTION")
 
         with open(exitlog_path, 'a') as outfile:
             outfile.write('4 ' + ecx_type + '\n')

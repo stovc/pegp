@@ -11,7 +11,7 @@
 PROJECT=$1
 
 # log step number and started status
-echo 15 started >> projects/"$PROJECT"/exit_log.txt
+echo 16 started >> projects/"$PROJECT"/exit_log.txt
 
 # make directory if does not exist
 mkdir -p projects/"$PROJECT"/tree
@@ -20,4 +20,4 @@ mkdir -p projects/"$PROJECT"/tree
 iqtree -s projects/"$PROJECT"/trimed.fa -B 1000 -T AUTO --prefix projects/"$PROJECT"/tree/tree
 
 # write step number and exit status to the exit log
-echo 15 $? >> projects/"$PROJECT"/exit_log.txt
+echo 16 $? >> projects/"$PROJECT"/exit_log.txt
