@@ -272,3 +272,11 @@ Traceback (most recent call last):
   File "/home/aberdichevskaya/anaconda3/envs/pegp/lib/python3.9/site-packages/pandas/core/generic.py", line 1527, in __nonzero__
     raise ValueError(
 ValueError: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/03_plot_search.py", line 288, in <module>
+    number_of_HSPs = len(df_handle.info)
+TypeError: object of type 'method' has no len()
+Traceback (most recent call last):
+  File "/Bmo/aberdichevskaya/pegp/scripts/03_plot_search.py", line 288, in <module>
+    number_of_HSPs = len(df_handle.info)
+TypeError: object of type 'method' has no len()
