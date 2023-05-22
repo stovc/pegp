@@ -126,3 +126,6 @@ Finally, in result tool running user get:
 
 Example of phylogenetic tree reconstruction (you can learn more by going to the R repository: https://github.com/stovc/tree-annotation):
 ![](https://hackmd.io/_uploads/SkgRb1tS2.png)
+
+For assessment:
+The scripts and data received by Evgeny Kovalenko student are located in a separate directory `Evgeny_work`
