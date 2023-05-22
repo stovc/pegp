@@ -128,4 +128,5 @@ Example of phylogenetic tree reconstruction (you can learn more by going to the 
 ![](https://hackmd.io/_uploads/SkgRb1tS2.png)
 
 For assessment:
-The scripts and data received by Evgeny Kovalenko student are located in a separate directory `Evgeny_work`
+
+The scripts (written together with the supervisor) and example of data received by Evgeny Kovalenko student are located in a separated directory `Evgeny_work`
