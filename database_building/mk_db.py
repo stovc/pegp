@@ -45,9 +45,14 @@ import os, sys
 from pathlib import Path
 import string
 import itertools
-from Bio import Seq, SeqIO
-from Bio import SeqFeature
+from Bio import Seq, SeqIO, \
+                SearchIO, SeqFeature
+from Bio.SeqUtils import GC
 import pandas as pd
+import subprocess
+import math
+import traceback
+from ete3 import NCBITaxa
 
 
 def distance(start1, end1, start2, end2, circular_length=None):
@@ -88,6 +93,24 @@ def get_first(dict_arg, key):
     except:
         return get
 
+def get_replicon(replicon):
+    """Get replicon type and name by replicon annotation of the source feature in a Genbank file.
+    e.g.
+    in - 'chromosome_II'
+    out - ('chromosome', 'II')
+
+    but 'main' --> ('main', 'main')
+    """
+
+    if replicon == 'main':
+        replicon_type = 'main'
+        replicon_name = 'main'
+    else:
+        print(replicon)
+        replicon_type = replicon.split('_')[0]
+        replicon_name = ''.join(replicon.split('_')[1:])
+    return replicon_type, replicon_name
+
 
 def concatenate(folder, extension):
     """Concatenates all files of 'folder' into a single file of 'extension' extension."""
@@ -110,6 +133,15 @@ def concatenate_csv(folder):
     df_concat = pd.concat([pd.read_csv(database_path / folder / f) for f in record_list], ignore_index=True)
     df_concat.to_csv(database_path / f'{folder}.csv', index=False)
 
+def start_and_stop_codons(sequence, strand):
+    """
+    Read start and stop codons of gene in dependence on strand
+    """
+    if strand == 1:
+        return sequence[:3], sequence[-3:]
+    else:
+        complement = str.maketrans('ATGC', 'TACG')
+        return sequence[-3:].translate(complement)[::-1], sequence[:3].translate(complement)[::-1]
 
 # constants
 GENOMES_LOCATION = Path("genomes/")      # folder containing genome collections to construct a database from
@@ -118,11 +150,15 @@ GENOME_SIGNATURE = '.gbff'               # used to filter out genome files
 SYMBOLS = string.digits + string.ascii_uppercase  # symbols used for generating headers
 UTR_WINDOW = 200                         # window for recording 3' and 5' UTRs
 CONTEXT_WINDOW = 10000                   # window for recording genomic context
-COLUMNS = ['ID', 'locus_tag',
+COLUMNS = ['lcs', 'locus_tag',
            'assembly', 'accession',
            'start', 'end', 'strand',
-           'taxid', 'replicon',
-           'feature', 'gene', 'product', "length", 'protein_id']  # columns in the annotation dataframe
+           'taxid', 'replicon_type', 'replicon_name',
+           'feature', 'gene',
+           'start_codon', 'stop_codon',
+           'gene_gc', 'product',
+           'genome_length', 'genome_gc',
+           "length", 'protein_accession']  # columns in the annotation dataframe
 
 # parse arguments
 # expected arguments: 1) database name; 2-N) genome folders to extract the genomes from
@@ -175,6 +211,13 @@ for genome_path in genome_paths:
     print(f'{iteration} {genome_path}')
     iteration += 1
     # iterate seq. records (replicons) in a genbank file
+    summary_seq = ''
+    for seq_record in SeqIO.parse(genome_path, 'genbank'):
+        summary_seq += str(seq_record.seq)
+
+    genome_length = len(summary_seq)
+    gc_genome = GC(summary_seq)
+
     for seq_record in SeqIO.parse(genome_path, 'genbank'):
 
         seq_record_data = []
@@ -234,6 +277,8 @@ for genome_path in genome_paths:
                 else:
                     replicon = 'main'
 
+                replicon_type, replicon_name = get_replicon(replicon)
+
             elif feature.type not in ['source', 'gene']:
                 ID = next(id_iterator)
                 ID = ''.join(ID)
@@ -246,6 +291,10 @@ for genome_path in genome_paths:
                 seq_record_seq = str(seq_record.seq)
                 upstream = circular_slice(seq_record_seq, start - UTR_WINDOW, start)
                 sequence = seq_record_seq[start:end]
+
+                start_codon, stop_codon = start_and_stop_codons(sequence, strand)
+                gc_content = GC(sequence)
+
                 downstream = circular_slice(seq_record_seq, end, end + UTR_WINDOW)
 
                 # define feature type
@@ -278,15 +327,19 @@ for genome_path in genome_paths:
 
                 annotation = [ID, locus_tag,
                               assembly, accession, start, end, strand,
-                              taxid, replicon,
+                              taxid, replicon_type, replicon_name,
                               feature_type, gene,
-                              product, protein_length, protein_id]
+                              start_codon, stop_codon,
+                              gc_content, product,
+                              genome_length, gc_genome,
+                              protein_length, protein_id]
+
                 seq_record_data.append(annotation)
 
         seq_record_data = pd.DataFrame(seq_record_data, columns=COLUMNS)
         context = ''
 
-        short_data = seq_record_data[['ID', 'start', 'end']]
+        short_data = seq_record_data[['lcs', 'start', 'end']]
         short_data = short_data.assign(context='')
 
         length = len(short_data.index)
@@ -332,7 +385,7 @@ for genome_path in genome_paths:
             context = context[:-1]  # remove last comma
             short_data.iat[i, 3] = context
             context = ''
-        seq_record_data = pd.merge(seq_record_data, short_data[['ID', 'context']], on='ID')
+        seq_record_data = pd.merge(seq_record_data, short_data[['lcs', 'context']], on='lcs')
         annotation_out.write(seq_record_data.to_csv(index=False))
         annotation_out.close()
         upstream_out.close()

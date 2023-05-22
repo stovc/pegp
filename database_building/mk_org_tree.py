@@ -4,13 +4,12 @@ The trees differ by the taxonomic rank to which they are collapsed
 input - taxid.txt
 output - org_tree_[TAXONOMIC RANK].nwk + 'org_tree_[TAXONOMIC RANK]_data.csv' where
 the taxonomic ranks are [full, genus, family, order, class, phylum]
-
-TODO: The job of `mk_org_tree.py` should be done in `mk_db.py`
 """
 
 import os
 import sys
 from pathlib import Path
+import pandas as pd
 from ete3 import NCBITaxa, PhyloNode
 
 
@@ -97,8 +96,22 @@ if __name__ == '__main__':
 
     # read taxids from txt to a list
     input_path = database_path / 'taxids.txt'
+    annotation = pd.read_csv(database_path / 'annotation.csv')
+    result_dict = {'taxid': [], 'name': [], 'rank': [], 'genome_length': [], 'genome_gc': []}
+
     with open(input_path, 'r') as input_file:
         taxids = input_file.readlines()
+
+    for taxid in taxids:
+        taxid = taxid.strip()
+        result_dict['taxid'].append(taxid)
+        result_dict['name'].append(get_taxid_name(taxid))
+        result_dict['rank'].append(get_rank(taxid))
+        result_dict['genome_length'].append(annotation[annotation.taxid == int(taxid)].iloc[0].genome_length)
+        result_dict['genome_gc'].append(annotation[annotation.taxid == int(taxid)].iloc[0].genome_gc)
+
+    info_table = pd.DataFrame(result_dict)
+
 
     # get tree topology as PhyloNode object
     tree = ncbi.get_topology(taxids, intermediate_nodes=True)
@@ -115,6 +128,9 @@ if __name__ == '__main__':
     out_folder = database_path / 'org_trees'
     if not os.path.exists(out_folder):
         os.makedirs(out_folder)
+
+    out_info_table_path = out_folder / 'info_dataframe.csv'
+    info_table.to_csv(out_info_table_path, index=False)
 
     # export trees pruned to different taxonomic levels
     export_tree(tree_full, out_folder / 'org_tree_full.nwk')
