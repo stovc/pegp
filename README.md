@@ -81,14 +81,7 @@ To help install packages and additional scripts of R, please, go to the link: ht
 - If you want to run a test analysis, build HMM-profile by running `bash utility_scripts/mk_pfam.sh` from the root of the repo 
 
 ## Preparation of the query
-Prepare your query protein domain.
-- Download (or copy to clipboard) an amino acid sequence of the protein of interest from https://www.ncbi.nlm.nih.gov/gene/ 
-- Predict its domain architecture at https://www.ebi.ac.uk/interpro/
-
-- Subset the amino acid sequence corresponding to the domain of interest according to Pfam 
-
-- Create a fasta amino acid file (.faa) with your domain
-- Create a query HMM-profile from fasta file
+HMM-profile of the protein (domain) of interest is used as a query for homology search.
 
 
 ## Run tool
