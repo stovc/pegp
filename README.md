@@ -49,6 +49,10 @@ For tree visualisation:
 - colorama v0.4.6
 `conda install colorama`
 
+Instead of installing these packages manualy, it is an option to set up a conda enviroment from `pegp_environment.yml` file:
+- run `conda env create -f pegp_environment.yml` 
+- activate an enviroment by running `conda activate pegp_env`
+
 ### R pakages
  - tidytree
  - dplyr
@@ -139,6 +143,3 @@ Finally, in result tool running user get:
 Example of phylogenetic tree reconstruction (you can learn more by going to the R repository: https://github.com/stovc/tree-annotation):
 ![](https://hackmd.io/_uploads/SkgRb1tS2.png)
 
-For assessment:
-
-The scripts (written together with the supervisor) and example of data received by Evgeny Kovalenko student are located in a separated directory `Evgeny_work`
