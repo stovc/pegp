@@ -66,7 +66,7 @@ Visualization of phylogenetic trees
 To help install packages and additional scripts of R, please, go to the link: https://github.com/stovc/tree-annotation. There is a link to the repository dedicated to the visualization of trees in R with a description of the dependencies installation.
 
 ## Installation
-`git clone https://github.com/stovc/pegp`
+`git clone -b readme_for_BI https://github.com/stovc/pegp`
 
 ## Database assembly
 - Download GenBank (.gbff) genomes of interest into a directory 
