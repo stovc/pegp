@@ -43,7 +43,7 @@ For tree visualisation:
 - matplotlib v3.7.0
 `conda install matplotlib`
 - numpy v1.23.5, pandas v1.5.3, seaborn v0.12.2 
-`conda install numpy pandas seaborn
+`conda install numpy pandas seaborn`
 - prettytable v3.6.0
 `conda install prettytable`
 - colorama v0.4.6
@@ -83,6 +83,7 @@ To help install packages and additional scripts of R, please, go to the link: ht
 ## Preparation of the query
 HMM-profile of the protein (domain) of interest is used as a query for homology search.
 
+To create a profile, it is best to use `hmmbuild` using this guide: http://www.csb.yale.edu/userguides/seq/hmmer/docs/node19.html
 
 ## Run tool
 Run the pipeline manager
@@ -92,6 +93,24 @@ Run the pipeline manager
 ### Create a project
 Create a new project by typing 
 `n [project_name] [query_path]`
+
+### Steps of pipeline
+* Search - a homology search using the HMMER software against the RefSeq database
+* Hit data - make the dataframe of hits with annotations
+* Search report - plot HMMER hits and their properties
+* Filter - filter HMMER hits by parameters: query coverage, e-value
+* Cluster - cluster sequences into clusters of 90% and more similarity and pick representatives using cd-hit
+* Genome consistence - ensure that all filtered hits that are present with clustered hits in the same genome are kept for the analysis
+* Cluster data - construct a .csv containing cluster representative information for non-clustered proteins
+* Filtering and clustering report - plot results of filtering and clustering
+* Align - align clustered and genome-consistent hits by MAFFT
+* Genome context - 
+* Trim - trim the alignment by removing columns that contain fraction of gaps lower than threshold
+* Trim report - plot results of triming
+* Domain search - search protein domains in proteins
+* Prottest - testing which substitution model suits the alignment better for maximum likelihood inference
+* Domain data - make a file with domain data
+* Tree - construct maximum likelihood tree with 1000 ultrafast bootstrap replicates
 
 ### Run the analysis
 To run a step, type
