@@ -39,6 +39,14 @@ _Annotations_ are in the annotation.csv file and include:
     - feature type
     - gene
     - product
+
+Generate species trees as .nwk and corresponding annotation data as .csv from `taxid.txt` related to the database.
+The trees differ by the taxonomic rank to which they are collapsed
+
+input - taxid.txt
+output - org_tree_[TAXONOMIC RANK].nwk + 'org_tree_[TAXONOMIC RANK]_data.csv' where
+the taxonomic ranks are [full, genus, family, order, class, phylum]
+
 """
 
 import os, sys
@@ -48,6 +56,7 @@ import itertools
 from Bio import Seq, SeqIO
 from Bio import SeqFeature
 import pandas as pd
+from ete3 import NCBITaxa, PhyloNode
 
 
 def distance(start1, end1, start2, end2, circular_length=None):
@@ -111,6 +120,80 @@ def concatenate_csv(folder):
     df_concat.to_csv(database_path / f'{folder}.csv', index=False)
 
 
+# ORG TREE
+def prune_tree(tree: PhyloNode, keep: list) -> PhyloNode:
+    """Remove nodes not listed in `keep`
+    If `keep` contains 'leaf', tips of the tree are not removed.
+    Return prunned tree."""
+    tree2 = tree.copy()
+
+    # list of nodes to be discarded
+    to_prune = []
+
+    # iterate nodes and add their names into to_prune list if their rank is not in to prune
+    for node in tree2.traverse():
+        rank = get_rank(node.name)
+        if 'leaf' in keep and node.is_leaf():  # node is removed if it is leaf and `keep` doe not contain `leaf`
+            to_prune.append(node.name)
+        if rank in keep:
+            to_prune.append(node.name)
+
+    tree2.prune(to_prune)
+
+    return tree2
+
+
+def export_tree(tree: PhyloNode, path) -> None:
+    """Export tree as .nwk to specified path."""
+    nwk_string = tree.write(format=1)
+    with open(path, 'w') as out_file:
+        out_file.write(nwk_string)
+    return None
+
+
+def export_annotation(tree: PhyloNode, path) -> None:
+    """Export annotation .csv annotation for tree to specified path.
+    The annotation .csv contains [taxid,name,rank] for each node of the tree"""
+
+    with open(path, 'w') as out_file:
+        out_file.write('taxid;name;rank\n')
+        for node in tree.traverse():
+            taxid = node.name
+            name = get_taxid_name(taxid)
+            rank = get_rank(taxid)
+
+            if node.is_leaf():    # all leaves get the "species" rank. it is done for simplicity
+                rank = 'species'  # it is now compatible with the  R scripts. TODO: ranking at the strain level
+
+            if name == 'root':
+                rank = 'root'
+            out_file.write(f'{taxid};{name};{rank}\n')
+    return None
+
+
+def get_taxid_name(taxid: int) -> str:
+    """Return name of taxid.
+    Return 'missing' if taxid is missing in the database"""
+    name = ncbi.get_taxid_translator([taxid])
+    name = list(name.values())
+    if len(name) == 1:
+        name = name[0]
+    else:
+        name = 'missing'
+    return name
+
+
+def get_rank(taxid: int) -> str:
+    """Return rank of taxid."""
+    rank = ncbi.get_rank([taxid])
+    rank = list(rank.values())
+    if len(rank) == 1:
+        rank = rank[0]
+    else:
+        rank = 'missing'
+    return rank
+
+
 # constants
 GENOMES_LOCATION = Path("genomes/")      # folder containing genome collections to construct a database from
 DATABASES_LOCATION = Path("../databases/")  # folder containing databases
@@ -134,7 +217,7 @@ database_path = Path(DATABASES_LOCATION) / database_name
 # make temporary folders and an assembly progress file
 if not os.path.exists(database_path):
     os.makedirs(database_path)
-    for i in ['protein', 'taxid_map', 'upstream', 'sequence', 'downstream', 'translation', 'annotation']:
+    for i in ['protein', 'upstream', 'sequence', 'downstream', 'translation', 'annotation']:
         os.makedirs(database_path / i)
     open(database_path / 'completed_paths.txt', 'a').close()
 
@@ -188,8 +271,6 @@ for genome_path in genome_paths:
         # open output files
         ## fasta file with all protein sequences
         protein_output = open(database_path / 'protein' / f'{assembly}-{accession}', 'w')
-        ## taxid map file with taxids for BLAST database
-        map_output = open(database_path / 'taxid_map' / f'{assembly}-{accession}', 'w')
         ## other annotations discribed
         upstream_out = open(database_path / 'upstream' / f'{assembly}-{accession}', 'w')
         sequence_out = open(database_path / 'sequence' / f'{assembly}-{accession}', 'w')
@@ -266,7 +347,6 @@ for genome_path in genome_paths:
 
                 if translation is not None:
                     protein_output.write(f'>{ID}\n{translation}\n')  # write a fasta record with translation
-                    map_output.write(ID + ' ' + taxid + '\n')
                     translation_out.write(f'{ID},{translation}\n')
                     protein_length = len(translation)
                 else:
@@ -340,13 +420,11 @@ for genome_path in genome_paths:
         downstream_out.close()
         translation_out.close()
         protein_output.close()
-        map_output.close()
     completed_paths.write(str(genome_path) + '\n')
 
 log.close()
 
 concatenate('protein', 'faa')
-concatenate('taxid_map', 'txt')
 
 concatenate('upstream', 'csv')
 concatenate('sequence', 'csv')
@@ -356,3 +434,44 @@ concatenate('translation', 'csv')
 FOLDERS_TO_CONCATENATE_CSV = ['annotation']
 for folder in FOLDERS_TO_CONCATENATE_CSV:
     concatenate_csv(folder)
+
+# GETTING TAXIDS
+data_path = database_path / 'annotation.csv'
+df = pd.read_csv(data_path)
+
+taxids = df['taxid'].unique()
+print('got taxids')
+print(taxids)
+print(type(taxids))
+
+# MAKE ORG TREE
+
+# NCBI taxonomy database object
+ncbi = NCBITaxa()
+
+# get tree topology as PhyloNode object
+tree = ncbi.get_topology(taxids, intermediate_nodes=True)
+
+tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_genus = prune_tree(tree, ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_family = prune_tree(tree, ['family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_order = prune_tree(tree, ['order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_class = prune_tree(tree, ['class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_phylum = prune_tree(tree, ['phylum', 'superkingdom', 'kingdom', 'root'])
+
+# EXPORT TREES AND ANNOTATIONS
+# construct path for the output folder and make it
+out_folder = database_path / 'org_trees'
+if not os.path.exists(out_folder):
+    os.makedirs(out_folder)
+
+# export trees pruned to different taxonomic levels
+export_tree(tree_full, out_folder / 'org_tree_full.nwk')
+export_tree(tree_genus, out_folder / 'org_tree_genus.nwk')
+export_tree(tree_family, out_folder / 'org_tree_family.nwk')
+export_tree(tree_order, out_folder / 'org_tree_order.nwk')
+export_tree(tree_class, out_folder / 'org_tree_class.nwk')
+export_tree(tree_phylum, out_folder / 'org_tree_phylum.nwk')
+
+# export .csv annotations for the trees pruned to different taxonomic levels
+export_annotation(tree_full, out_folder / 'org_tree_full_data.csv')
