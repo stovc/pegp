@@ -449,10 +449,9 @@ for folder in FOLDERS_TO_CONCATENATE_CSV:
 data_path = database_path / 'annotation.csv'
 df = pd.read_csv(data_path)
 
+df = df[df.gtdb_taxonomy.notnull()]
+
 taxids = df['taxid'].unique()
-print('got taxids')
-print(taxids)
-print(type(taxids))
 
 # MAKE ORG TREE
 
