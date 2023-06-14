@@ -247,7 +247,7 @@ id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
 # open metadata
-metadata = pd.read_csv(Path(metadata_path) / 'metadata.csv')
+metadata = pd.read_csv(Path(metadata_path) / 'metadata.csv', index_col='accession')
 
 # make the list of columns
 columns = ['lcs', 'assembly'] + metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
