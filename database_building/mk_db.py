@@ -206,7 +206,8 @@ CONTEXT_WINDOW = 10000                   # window for recording genomic context
 # expected arguments: 1) database name; 2-N) genome folders to extract the genomes from
 arguments = sys.argv
 database_name = arguments[1]
-genome_folders = arguments[2:]
+metadata_path = arguments[2]
+genome_folders = arguments[3:]
 database_path = Path(DATABASES_LOCATION) / database_name
 
 # make temporary folders and an assembly progress file
@@ -246,7 +247,7 @@ id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
 # open metadata
-metadata = pd.read_csv(GENOMES_LOCATION / 'metadata.csv')
+metadata = pd.read_csv(metadata_path / 'metadata.csv')
 
 # make the list of columns
 columns = ['lcs', 'assembly'] + metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
