@@ -267,6 +267,8 @@ for genome_path in genome_paths:
         accession = accession.split('_')[0] + accession.split('_')[1]  # genome name, e.g. GCF_000701165.1
         log.write('Assembly: ' + accession + ' ')
 
+        print(accession, type(accession))
+
         # open output files
         ## fasta file with all protein sequences
         protein_output = open(database_path / 'protein' / f'{accession}', 'w')
