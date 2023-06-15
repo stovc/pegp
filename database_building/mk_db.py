@@ -329,7 +329,7 @@ for genome_path in genome_paths:
             elif feature.type not in ['source', 'gene']:
                 # generate lcs id
                 lcs = next(id_iterator)
-                lcs = ''.join(ID)
+                lcs = ''.join(lcs)
                 lcs = id_prefix + lcs
 
                 # feature type
