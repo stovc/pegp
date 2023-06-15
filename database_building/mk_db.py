@@ -378,6 +378,7 @@ for genome_path in genome_paths:
 
         seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
 
+        """
         # INFER GENOME CONTEXT
         context = ''
 
@@ -394,7 +395,7 @@ for genome_path in genome_paths:
                     j += 1
                 else:
                     j = 0
-
+                
                 start1 = short_data.iat[i, 1]
                 end1 = short_data.iat[i, 2]
                 start2 = short_data.iat[j, 1]
@@ -427,7 +428,9 @@ for genome_path in genome_paths:
             context = context[:-1]  # remove last comma
             short_data.iat[i, 3] = context
             context = ''
+        
         seq_record_data = pd.merge(seq_record_data, short_data[['ID', 'context']], on='lcs')
+        """
         annotation_out.write(seq_record_data.to_csv(index=False))
         annotation_out.close()
         upstream_out.close()
