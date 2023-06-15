@@ -269,8 +269,6 @@ for genome_path in genome_paths:
 
         accession = accession[:3] + '_' + accession[3:]
 
-        print(accession, type(accession))
-
         # open output files
         ## fasta file with all protein sequences
         protein_output = open(database_path / 'protein' / f'{accession}', 'w')
