@@ -327,8 +327,10 @@ for genome_path in genome_paths:
             # EXTRACT FEATURE METADATA
 
             elif feature.type not in ['source', 'gene']:
-                # locus_tag - the lcs id
-                lcs = get_first(feature.qualifiers, 'locus_tag')
+                # generate lcs id
+                lcs = next(id_iterator)
+                lcs = ''.join(ID)
+                lcs = id_prefix + lcs
 
                 # feature type
                 if feature.type == 'repeat_region':
