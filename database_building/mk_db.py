@@ -457,7 +457,7 @@ for folder in FOLDERS_TO_CONCATENATE_CSV:
 data_path = database_path / 'annotation.csv'
 df = pd.read_csv(data_path)
 
-df = df[df.gtdb_taxonomy.notnull()]
+# df = df[df.gtdb_taxonomy.notnull()]
 
 taxids = df['taxid'].unique()
 
