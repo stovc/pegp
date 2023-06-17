@@ -65,7 +65,9 @@ def pairplot(data, columns, hue, palette):
     g.map_diag(sns.histplot, hue=None)
     g.set(rasterized=True)
 
-    pdf.savefig(dpi=300, bbox_inches='tight')
+    # pdf.savefig(dpi=300, bbox_inches='tight')
+    plt.savefig('pairplot.jpg', dpi=300)
+
 
 def plot_hist(data, key, y_label):
     """Plot distribution of unique values.
@@ -88,7 +90,9 @@ def plot_hist(data, key, y_label):
     ax.set_xlabel('Number of hits')
     ax.set_ylabel(y_label)
     ax.set_xlim(0, len(N_hits)+1)
-    pdf.savefig(dpi=300, bbox_inches='tight')
+
+    plt.savefig(f'hist_{key}.jpg', dpi=300, bbox_inches='tight')
+    # pdf.savefig(dpi=300, bbox_inches='tight')
 
 
 def find_overlaps(starts, ends, length):
@@ -212,7 +216,8 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
                      format='%.0e', pad=0.1)
     plt.tight_layout()
 
-    pdf.savefig(dpi=400, bbox_inches='tight')
+    plt.savefig('3d_plot.jpg', dpi=400)
+    # pdf.savefig(dpi=400, bbox_inches='tight')
 
 
 if __name__ == '__main__':
@@ -248,7 +253,7 @@ if __name__ == '__main__':
        
         # create output to plot to
         out_path = Path('projects') / project / 'search_report.pdf'  # path to the output report pdf
-        pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
+        # pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
         
         # set of colors for plots
         COLORS20 = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4',
@@ -297,7 +302,8 @@ if __name__ == '__main__':
         txt = f"Number of hit genomes: {str(hit_genomes_number)}"
         firstPage.text(0.1, 0.2, txt, transform=firstPage.transFigure, size=20, ha="left")      
 
-        pdf.savefig()
+        # pdf.savefig()
+        plt.savefig('1.jpg')
 
         # plot genomes distribution
         plot_hist(df_handle, 'assembly', 'Number of genomes')
@@ -361,7 +367,8 @@ if __name__ == '__main__':
             label.set_horizontalalignment('right')
 
         plt.tight_layout()
-        pdf.savefig(bbox_inches='tight')
+        plt.savefig('hits_in_phyla.jpg')
+        # pdf.savefig(bbox_inches='tight')
        
         # plot average N_hits per genome in phyla
         genome_distribution = df_handle['assembly'].value_counts(sort=True).to_dict()
@@ -386,7 +393,8 @@ if __name__ == '__main__':
         ax.set_ylabel('N hits')
         ax.set_xlabel('Phylum')
 
-        pdf.savefig(bbox_inches='tight')
+        plt.savefig('hits_per_genome.jpg')
+        # pdf.savefig(bbox_inches='tight')
 
        # plot annotation distribution
         annotation_destribution = df_handle['product'].value_counts(sort=True)
@@ -416,8 +424,10 @@ if __name__ == '__main__':
         for label in ax.get_xticklabels():  # rotate ticks
             label.set_rotation(40)
             label.set_horizontalalignment('right')
-        pdf.savefig(bbox_inches='tight')
-        
+        plt.savefig('annotations.jpg')
+        # pdf.savefig(bbox_inches='tight')
+
+        '''
         # output the list of all functional annotations
         i = 0
         while i < len(products):
@@ -432,7 +442,8 @@ if __name__ == '__main__':
                 i += 1
             page.text(0.1, 0.1, txt, transform=page.transFigure, size=15, ha="left")
             pdf.savefig()
-        
+        '''
+
         # 3d plot of identity, query_coverage, and length colored by functional annotation
         function_color_dict = {}
         for i in range(len(functions)):
@@ -440,7 +451,7 @@ if __name__ == '__main__':
         plot_3d(data_points, df_handle, color_axis='function', 
                                         color_dict=function_color_dict)
 
-        pdf.close()
+        # pdf.close()
         
     except Exception as e:
         ecx_type = str(type(e))
