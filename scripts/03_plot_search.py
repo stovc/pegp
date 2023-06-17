@@ -333,7 +333,7 @@ if __name__ == '__main__':
         # 3d plot
         xs = list(df_handle['lg_evalue'])
         ys = list(df_handle['query_coverage'])
-        zs = list(df_handle['length'])
+        zs = list(df_handle['protein_length'])
 
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
         plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
