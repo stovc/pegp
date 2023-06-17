@@ -342,7 +342,7 @@ if __name__ == '__main__':
         # plot_3d(data_points, df_handle, color_axis='lg_evalue')
 
         # plot pairplot with taxonomy information
-        cols = ['lg_evalue', 'query_coverage', 'length', 'taxon']  # 'evalue^0.1', 'length', 'identity',
+        cols = ['lg_evalue', 'query_coverage', 'protein_length', 'taxon']  # 'evalue^0.1', 'length', 'identity',
         pairplot(df_handle, cols, 'taxon', taxon_color_dict)
 
       
