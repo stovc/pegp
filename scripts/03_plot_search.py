@@ -303,7 +303,7 @@ if __name__ == '__main__':
         plot_hist(df_handle, 'assembly', 'Number of genomes')
         
         # plot proteins distribution
-        plot_hist(df_handle, 'hsp', 'Number of proteins')
+        plot_hist(df_handle, 'lcs', 'Number of proteins')
        
         # plot hits overlaps lengthes distribution
         plot_overlaps(df_handle)
