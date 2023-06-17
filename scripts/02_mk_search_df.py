@@ -69,7 +69,7 @@ if __name__ == '__main__':
         # read input dataframe
         data_path = Path('databases') / database / 'annotation.csv'  # database will be stored in analysis configs
         prot_df = pd.read_csv(data_path, index_col=0)
-        prot_df['hsp'] = prot_df.index
+        prot_df['lcs'] = prot_df.index
 
         # create output dataframe
         out_df = pd.DataFrame(
@@ -93,7 +93,6 @@ if __name__ == '__main__':
                         'evalue': hsp.evalue,
                         'lg_evalue': math.log10(hsp.evalue),
                         'query_coverage': 100 * hsp.query_span / search_result.seq_len,
-                        # 'identity': hsp.ident_num / hsp.aln_span,  # THIS ONE WE USE ONLY FOR BLAST
                         'targ_dom_pos': (hsp.hit_start + hsp.query_span // 2)  # coordinate of the center of the query
                     },
                     index=[0]
