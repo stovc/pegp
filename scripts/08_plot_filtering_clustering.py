@@ -98,7 +98,7 @@ if __name__ == '__main__':
         
         exitlog_path = Path('projects') / project / 'exit_log.txt'
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('13 started\n')
+            outfile.write('8 started\n')
 
         # read data
         data_path = Path('projects') / project / 'hits_df.csv'  # path to the dataframe with hits
