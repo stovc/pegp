@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
         # create output dataframe
         out_df = pd.DataFrame(
-            columns=['ID', 'protID', 'evalue', 'lg_evalue', 'query_coverage', 'targ_dom_pos'])
+            columns=['hsp', 'lcs', 'evalue', 'lg_evalue', 'query_coverage', 'targ_dom_pos'])
 
         # open homology search output to be parsed
         search_result_path = Path('projects') / project / 'hits.txt'
