@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
         xs = list(data['lg_evalue'])
         ys = list(data['query_coverage'])
-        zs = list(data['length'])
+        zs = list(data['protein_length'])
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
         plot_3d(data_points, data, color_axis='status', color_dict=status_color_dict)
