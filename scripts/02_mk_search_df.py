@@ -69,7 +69,7 @@ if __name__ == '__main__':
         # read input dataframe
         data_path = Path('databases') / database / 'annotation.csv'  # database will be stored in analysis configs
         prot_df = pd.read_csv(data_path, index_col=0)
-        prot_df['lcs'] = prot_df.index
+        prot_df['hsp'] = prot_df.index
 
         # create output dataframe
         out_df = pd.DataFrame(
