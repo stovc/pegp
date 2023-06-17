@@ -289,7 +289,7 @@ if __name__ == '__main__':
         txt = f"Number of HSPs: {str(number_of_HSPs)}"
         firstPage.text(0.1, 0.4, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        hit_proteins_number = len(df_handle['hsp'].unique())
+        hit_proteins_number = len(df_handle['lcs'].unique())
         txt = f"Number of hit proteins: {str(hit_proteins_number)}"
         firstPage.text(0.1, 0.3, txt, transform=firstPage.transFigure, size=20, ha="left")   
 
