@@ -305,8 +305,8 @@ if __name__ == '__main__':
         # plot proteins distribution
         plot_hist(df_handle, 'lcs', 'Number of proteins')
        
-        # plot hits overlaps lengthes distribution
-        plot_overlaps(df_handle)
+        # plot hits overlaps lengths distribution
+        # plot_overlaps(df_handle)
 
         # 3d plot of identity, query_coverage, and length colored by taxon
         # Taxon distribution
