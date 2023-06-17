@@ -346,7 +346,7 @@ UNLOCKS = {
 }
 
 # init
-database = 'family'  # this is hardcoded now! should be specified by user
+database = 'rf'  # this is hardcoded now! should be specified by user
 folders = [name for name in os.listdir(PROJECTS_PATH) if os.path.isdir(os.path.join(PROJECTS_PATH, name))]
 projects = [i for i in folders if i[0] != '.']
 
