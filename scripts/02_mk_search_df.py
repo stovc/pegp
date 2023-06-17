@@ -52,27 +52,6 @@ def get_lineage(taxid):
     return lineage_names
 
 
-def get_replicon(replicon):
-    """Get replicon type and name by replicon annotation of the source feature in a Genbank file.
-    e.g.
-    in - 'chromosome_II'
-    out - ('chromosome', 'II')
-
-    but 'main' --> ('main', 'main')
-
-    TODO: this should be done in database_building/mk_db.py
-    """
-
-    if replicon == 'main':
-        replicon_type = 'main'
-        replicon_name = 'main'
-    else:
-        print(replicon)
-        replicon_type = replicon.split('_')[0]
-        replicon_name = ''.join(replicon.split('_')[1:])
-    return replicon_type, replicon_name
-
-
 if __name__ == '__main__':
     try:
         # args
@@ -109,8 +88,8 @@ if __name__ == '__main__':
                 # row to be added to the dataframe
                 new_row = pd.DataFrame(
                     {
-                        'ID': hit.id + str(hsp_no),  # hit id = protein_id + hsp number
-                        'protID': hit.id,  # id of the protein the hsp belongs to
+                        'hsp': hit.id + str(hsp_no),  # hit id = protein_id + hsp number
+                        'lcs': hit.id,  # id of the protein the hsp belongs to
                         'evalue': hsp.evalue,
                         'lg_evalue': math.log10(hsp.evalue),
                         'query_coverage': 100 * hsp.query_span / search_result.seq_len,
@@ -122,15 +101,11 @@ if __name__ == '__main__':
                 out_df = pd.concat([out_df, new_row])
 
         # add annotations from `annotation.csv` to the hit dataframe
-        out_df = pd.merge(out_df, prot_df, how='left', on='protID')
+        out_df = pd.merge(out_df, prot_df, how='left', on='hsp')
 
         # add columns with taxa of different taxonomic levels based on taxid
         out_df['superkingdom'], out_df['phylum'], out_df['class'], out_df['order'], \
             out_df['family'], out_df['genus'], out_df['species'] = zip(*map(get_lineage, out_df['taxid']))
-
-        # add columns with replicon type and name based on the value in the dataframe
-        out_df['replicon_type'], out_df['replicon_name'] = zip(*map(get_replicon, out_df['replicon']))
-        out_df = out_df.drop('replicon', axis=1)
 
         # export output dataframe to csv
         out_df_path = Path('projects') / project / 'hits_df.csv'
