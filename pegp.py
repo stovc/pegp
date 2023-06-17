@@ -241,7 +241,7 @@ SCRIPTS = {
     6: '06_mk_genome_consistent.py',
     7: '07_cluster_dict.py',
     8: '08_plot_filtering_clustering.py',
-    9: '09_align.sh',
+    9: '09_align.batch',                     # '09_align.sh',
     10: '10_get_translations.py',
     11: '11_get_gen_context.py',
     12: '12_trim.sh',
