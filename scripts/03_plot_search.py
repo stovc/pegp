@@ -289,7 +289,7 @@ if __name__ == '__main__':
         txt = f"Number of HSPs: {str(number_of_HSPs)}"
         firstPage.text(0.1, 0.4, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        hit_proteins_number = len(df_handle['protID'].unique())
+        hit_proteins_number = len(df_handle['hsp'].unique())
         txt = f"Number of hit proteins: {str(hit_proteins_number)}"
         firstPage.text(0.1, 0.3, txt, transform=firstPage.transFigure, size=20, ha="left")   
 
@@ -303,7 +303,7 @@ if __name__ == '__main__':
         plot_hist(df_handle, 'assembly', 'Number of genomes')
         
         # plot proteins distribution
-        plot_hist(df_handle, 'protID', 'Number of proteins')
+        plot_hist(df_handle, 'hsp', 'Number of proteins')
        
         # plot hits overlaps lengthes distribution
         plot_overlaps(df_handle)
