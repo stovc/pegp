@@ -66,7 +66,7 @@ def pairplot(data, columns, hue, palette):
     g.set(rasterized=True)
 
     # pdf.savefig(dpi=300, bbox_inches='tight')
-    plt.savefig('pairplot.jpg', dpi=300)
+    plt.savefig('pairplot.jpg', dpi=300, bbox_inches='tight')
 
 
 def plot_hist(data, key, y_label):
@@ -216,7 +216,7 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
                      format='%.0e', pad=0.1)
     plt.tight_layout()
 
-    plt.savefig('3d_plot.jpg', dpi=400)
+    plt.savefig('3d_plot.jpg', dpi=400, bbox_inches='tight')
     # pdf.savefig(dpi=400, bbox_inches='tight')
 
 
@@ -303,7 +303,7 @@ if __name__ == '__main__':
         firstPage.text(0.1, 0.2, txt, transform=firstPage.transFigure, size=20, ha="left")      
 
         # pdf.savefig()
-        plt.savefig('1.jpg')
+        plt.savefig('1.jpg', bbox_inches='tight')
 
         # plot genomes distribution
         plot_hist(df_handle, 'assembly', 'Number of genomes')
@@ -367,7 +367,7 @@ if __name__ == '__main__':
             label.set_horizontalalignment('right')
 
         plt.tight_layout()
-        plt.savefig('hits_in_phyla.jpg')
+        plt.savefig('hits_in_phyla.jpg', bbox_inches='tight')
         # pdf.savefig(bbox_inches='tight')
        
         # plot average N_hits per genome in phyla
@@ -393,7 +393,7 @@ if __name__ == '__main__':
         ax.set_ylabel('N hits')
         ax.set_xlabel('Phylum')
 
-        plt.savefig('hits_per_genome.jpg')
+        plt.savefig('hits_per_genome.jpg', bbox_inches='tight')
         # pdf.savefig(bbox_inches='tight')
 
        # plot annotation distribution
@@ -424,7 +424,7 @@ if __name__ == '__main__':
         for label in ax.get_xticklabels():  # rotate ticks
             label.set_rotation(40)
             label.set_horizontalalignment('right')
-        plt.savefig('annotations.jpg')
+        plt.savefig('annotations.jpg', bbox_inches='tight')
         # pdf.savefig(bbox_inches='tight')
 
         '''
