@@ -270,37 +270,37 @@ if __name__ == '__main__':
         firstPage = plt.figure(figsize=(11.69,8.27))
         firstPage.clf()
 
-        txt = "Preliminary filtering was carried out by e-value < 0.1"
+        txt = f"Homology search using: {hmmer_results.program} {hmmer_results.version}"
         firstPage.text(0.1, 0.9, txt, transform=firstPage.transFigure, size=20, ha="left")
-
-        txt = f"Database: {database}"
-        firstPage.text(0.1, 0.8, txt, transform=firstPage.transFigure, size=20, ha="left")
-
-        protein_faa_path = Path('databases') / database / 'protein.faa'
-        with open(protein_faa_path) as file:
-            database_size = sum([1 for record in SeqIO.parse(file, 'fasta')])
-        txt = f"Database size: {str(database_size)}"
-        firstPage.text(0.1, 0.7, txt, transform=firstPage.transFigure, size=20, ha="left")
 
         hmmer_results_path = Path('projects') / project / 'hits.txt'
         hmmer_results = SearchIO.read(hmmer_results_path, "hmmer3-text")
         txt = f"Query: {hmmer_results._id}"
+        firstPage.text(0.1, 0.8, txt, transform=firstPage.transFigure, size=20, ha="left")
+
+        txt = f"Database: {database}"
+        firstPage.text(0.1, 0.7, txt, transform=firstPage.transFigure, size=20, ha="left")
+
+        txt = "Preliminary e-value cutoff: < 0.1"
         firstPage.text(0.1, 0.6, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        txt = f"Homology search using: {hmmer_results.program} {hmmer_results.version}"
+        protein_faa_path = Path('databases') / database / 'protein.faa'
+        with open(protein_faa_path) as file:
+            database_size = sum([1 for record in SeqIO.parse(file, 'fasta')])
+        txt = f"Database size: {str(database_size)} proteins"
         firstPage.text(0.1, 0.5, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        number_of_HSPs = len(df_handle.index)
-        txt = f"Number of HSPs: {str(number_of_HSPs)}"
+        hit_genomes_number = len(df_handle['assembly'].unique())
+        txt = f"Hit genomes: {str(hit_genomes_number)}"
         firstPage.text(0.1, 0.4, txt, transform=firstPage.transFigure, size=20, ha="left")
 
         hit_proteins_number = len(df_handle['lcs'].unique())
-        txt = f"Number of hit proteins: {str(hit_proteins_number)}"
-        firstPage.text(0.1, 0.3, txt, transform=firstPage.transFigure, size=20, ha="left")   
+        txt = f"Hit proteins: {str(hit_proteins_number)}"
+        firstPage.text(0.1, 0.3, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        hit_genomes_number = len(df_handle['assembly'].unique())
-        txt = f"Number of hit genomes: {str(hit_genomes_number)}"
-        firstPage.text(0.1, 0.2, txt, transform=firstPage.transFigure, size=20, ha="left")      
+        number_of_HSPs = len(df_handle.index)
+        txt = f"HSPs: {str(number_of_HSPs)}"
+        firstPage.text(0.1, 0.2, txt, transform=firstPage.transFigure, size=20, ha="left")
 
         # pdf.savefig()
         plt.savefig('1.jpg', bbox_inches='tight')
