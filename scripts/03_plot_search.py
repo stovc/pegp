@@ -270,11 +270,11 @@ if __name__ == '__main__':
         firstPage = plt.figure(figsize=(11.69,8.27))
         firstPage.clf()
 
+        hmmer_results_path = Path('projects') / project / 'hits.txt'
+        hmmer_results = SearchIO.read(hmmer_results_path, "hmmer3-text")
         txt = f"Homology search using: {hmmer_results.program} {hmmer_results.version}"
         firstPage.text(0.1, 0.9, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        hmmer_results_path = Path('projects') / project / 'hits.txt'
-        hmmer_results = SearchIO.read(hmmer_results_path, "hmmer3-text")
         txt = f"Query: {hmmer_results._id}"
         firstPage.text(0.1, 0.8, txt, transform=firstPage.transFigure, size=20, ha="left")
 
