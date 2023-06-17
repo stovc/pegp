@@ -101,7 +101,7 @@ if __name__ == '__main__':
                 out_df = pd.concat([out_df, new_row])
 
         # add annotations from `annotation.csv` to the hit dataframe
-        out_df = pd.merge(out_df, prot_df, how='left', on='hsp')
+        out_df = pd.merge(out_df, prot_df, how='left', on='lcs')
 
         # add columns with taxa of different taxonomic levels based on taxid
         out_df['superkingdom'], out_df['phylum'], out_df['class'], out_df['order'], \
