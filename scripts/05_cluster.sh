@@ -7,12 +7,13 @@
 
 # arg
 PROJECT=$1
+THRESHOLD=$3
 
 # log step number and started status
 echo 5 started >> projects/"$PROJECT"/exit_log.txt
 
 # cluster sequences
-cd-hit -i projects/"$PROJECT"/filtered_hits.faa -o projects/"$PROJECT"/clustered90.faa -c 0.9 -n 5 -M 16000
+cd-hit -i projects/"$PROJECT"/filtered_hits.faa -o projects/"$PROJECT"/clustered90.faa -c "$THRESHOLD" -n 5 -M 16000
 
 # log clustering program version
 cd-hit | cat > projects/"$PROJECT"/clustering_log.txt
