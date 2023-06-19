@@ -65,7 +65,9 @@ def pairplot(data, columns, hue, palette):
     g.map_diag(sns.histplot, hue=None)
     g.set(rasterized=True)
 
-    pdf.savefig(dpi=300, bbox_inches='tight')
+    # pdf.savefig(dpi=300, bbox_inches='tight')
+    plt.savefig('pairplot.jpg', dpi=300, bbox_inches='tight')
+
 
 def plot_hist(data, key, y_label):
     """Plot distribution of unique values.
@@ -88,7 +90,9 @@ def plot_hist(data, key, y_label):
     ax.set_xlabel('Number of hits')
     ax.set_ylabel(y_label)
     ax.set_xlim(0, len(N_hits)+1)
-    pdf.savefig(dpi=300, bbox_inches='tight')
+
+    plt.savefig(f'hist_{key}.jpg', dpi=300, bbox_inches='tight')
+    # pdf.savefig(dpi=300, bbox_inches='tight')
 
 
 def find_overlaps(starts, ends, length):
@@ -212,7 +216,8 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
                      format='%.0e', pad=0.1)
     plt.tight_layout()
 
-    pdf.savefig(dpi=400, bbox_inches='tight')
+    plt.savefig('3d_plot.jpg', dpi=400, bbox_inches='tight')
+    # pdf.savefig(dpi=400, bbox_inches='tight')
 
 
 if __name__ == '__main__':
@@ -248,7 +253,7 @@ if __name__ == '__main__':
        
         # create output to plot to
         out_path = Path('projects') / project / 'search_report.pdf'  # path to the output report pdf
-        pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
+        # pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
         
         # set of colors for plots
         COLORS20 = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4',
@@ -265,48 +270,49 @@ if __name__ == '__main__':
         firstPage = plt.figure(figsize=(11.69,8.27))
         firstPage.clf()
 
-        txt = "Preliminary filtering was carried out by e-value < 0.1"
+        hmmer_results_path = Path('projects') / project / 'hits.txt'
+        hmmer_results = SearchIO.read(hmmer_results_path, "hmmer3-text")
+        txt = f"Homology search using: {hmmer_results.program} {hmmer_results.version}"
         firstPage.text(0.1, 0.9, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        txt = f"Database: {database}"
+        txt = f"Query: {hmmer_results._id}"
         firstPage.text(0.1, 0.8, txt, transform=firstPage.transFigure, size=20, ha="left")
+
+        txt = f"Database: {database}"
+        firstPage.text(0.1, 0.7, txt, transform=firstPage.transFigure, size=20, ha="left")
+
+        txt = "Preliminary e-value cutoff: < 0.1"
+        firstPage.text(0.1, 0.6, txt, transform=firstPage.transFigure, size=20, ha="left")
 
         protein_faa_path = Path('databases') / database / 'protein.faa'
         with open(protein_faa_path) as file:
             database_size = sum([1 for record in SeqIO.parse(file, 'fasta')])
-        txt = f"Database size: {str(database_size)}"
-        firstPage.text(0.1, 0.7, txt, transform=firstPage.transFigure, size=20, ha="left")
-
-        hmmer_results_path = Path('projects') / project / 'hits.txt'
-        hmmer_results = SearchIO.read(hmmer_results_path, "hmmer3-text")
-        txt = f"Query: {hmmer_results._id}"
-        firstPage.text(0.1, 0.6, txt, transform=firstPage.transFigure, size=20, ha="left")
-
-        txt = f"Homology search using: {hmmer_results.program} {hmmer_results.version}"
+        txt = f"Database size: {str(database_size)} proteins"
         firstPage.text(0.1, 0.5, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        number_of_HSPs = len(df_handle.index)
-        txt = f"Number of HSPs: {str(number_of_HSPs)}"
+        hit_genomes_number = len(df_handle['assembly'].unique())
+        txt = f"Hit genomes: {str(hit_genomes_number)}"
         firstPage.text(0.1, 0.4, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        hit_proteins_number = len(df_handle['protID'].unique())
-        txt = f"Number of hit proteins: {str(hit_proteins_number)}"
-        firstPage.text(0.1, 0.3, txt, transform=firstPage.transFigure, size=20, ha="left")   
+        hit_proteins_number = len(df_handle['lcs'].unique())
+        txt = f"Hit proteins: {str(hit_proteins_number)}"
+        firstPage.text(0.1, 0.3, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        hit_genomes_number = len(df_handle['assembly'].unique())
-        txt = f"Number of hit genomes: {str(hit_genomes_number)}"
-        firstPage.text(0.1, 0.2, txt, transform=firstPage.transFigure, size=20, ha="left")      
+        number_of_HSPs = len(df_handle.index)
+        txt = f"HSPs: {str(number_of_HSPs)}"
+        firstPage.text(0.1, 0.2, txt, transform=firstPage.transFigure, size=20, ha="left")
 
-        pdf.savefig()
+        # pdf.savefig()
+        plt.savefig('1.jpg', bbox_inches='tight')
 
         # plot genomes distribution
         plot_hist(df_handle, 'assembly', 'Number of genomes')
         
         # plot proteins distribution
-        plot_hist(df_handle, 'protID', 'Number of proteins')
+        plot_hist(df_handle, 'lcs', 'Number of proteins')
        
-        # plot hits overlaps lengthes distribution
-        plot_overlaps(df_handle)
+        # plot hits overlaps lengths distribution
+        # plot_overlaps(df_handle)
 
         # 3d plot of identity, query_coverage, and length colored by taxon
         # Taxon distribution
@@ -333,7 +339,7 @@ if __name__ == '__main__':
         # 3d plot
         xs = list(df_handle['lg_evalue'])
         ys = list(df_handle['query_coverage'])
-        zs = list(df_handle['length'])
+        zs = list(df_handle['protein_length'])
 
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
         plot_3d(data_points, df_handle, color_axis='taxon', color_dict=taxon_color_dict)
@@ -342,7 +348,7 @@ if __name__ == '__main__':
         # plot_3d(data_points, df_handle, color_axis='lg_evalue')
 
         # plot pairplot with taxonomy information
-        cols = ['lg_evalue', 'query_coverage', 'length', 'taxon']  # 'evalue^0.1', 'length', 'identity',
+        cols = ['lg_evalue', 'query_coverage', 'protein_length', 'taxon']  # 'evalue^0.1', 'length', 'identity',
         pairplot(df_handle, cols, 'taxon', taxon_color_dict)
 
       
@@ -361,7 +367,8 @@ if __name__ == '__main__':
             label.set_horizontalalignment('right')
 
         plt.tight_layout()
-        pdf.savefig(bbox_inches='tight')
+        plt.savefig('hits_in_phyla.jpg', bbox_inches='tight')
+        # pdf.savefig(bbox_inches='tight')
        
         # plot average N_hits per genome in phyla
         genome_distribution = df_handle['assembly'].value_counts(sort=True).to_dict()
@@ -386,7 +393,8 @@ if __name__ == '__main__':
         ax.set_ylabel('N hits')
         ax.set_xlabel('Phylum')
 
-        pdf.savefig(bbox_inches='tight')
+        plt.savefig('hits_per_genome.jpg', bbox_inches='tight')
+        # pdf.savefig(bbox_inches='tight')
 
        # plot annotation distribution
         annotation_destribution = df_handle['product'].value_counts(sort=True)
@@ -416,8 +424,10 @@ if __name__ == '__main__':
         for label in ax.get_xticklabels():  # rotate ticks
             label.set_rotation(40)
             label.set_horizontalalignment('right')
-        pdf.savefig(bbox_inches='tight')
-        
+        plt.savefig('annotations.jpg', bbox_inches='tight')
+        # pdf.savefig(bbox_inches='tight')
+
+        '''
         # output the list of all functional annotations
         i = 0
         while i < len(products):
@@ -432,7 +442,8 @@ if __name__ == '__main__':
                 i += 1
             page.text(0.1, 0.1, txt, transform=page.transFigure, size=15, ha="left")
             pdf.savefig()
-        
+        '''
+
         # 3d plot of identity, query_coverage, and length colored by functional annotation
         function_color_dict = {}
         for i in range(len(functions)):
@@ -440,7 +451,7 @@ if __name__ == '__main__':
         plot_3d(data_points, df_handle, color_axis='function', 
                                         color_dict=function_color_dict)
 
-        pdf.close()
+        # pdf.close()
         
     except Exception as e:
         ecx_type = str(type(e))

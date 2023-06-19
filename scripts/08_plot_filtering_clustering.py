@@ -87,7 +87,8 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
                      format='%.0e')
     plt.tight_layout()
 
-    pdf.savefig(dpi=400, bbox_inches='tight')
+    plt.savefig('3df.jpg', dpi=400, bbox_inches='tight')
+    # pdf.savefig(dpi=400, bbox_inches='tight')
 
 
 if __name__ == '__main__':
@@ -97,7 +98,7 @@ if __name__ == '__main__':
         
         exitlog_path = Path('projects') / project / 'exit_log.txt'
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('13 started\n')
+            outfile.write('8 started\n')
 
         # read data
         data_path = Path('projects') / project / 'hits_df.csv'  # path to the dataframe with hits
@@ -105,7 +106,7 @@ if __name__ == '__main__':
 
         # create output to plot to
         out_path = Path('projects') / project / 'filtering_clustering_report.pdf'  # path to the output report pdf
-        pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
+        # pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
 
         # output information about filtering results
         page = plt.figure(figsize=(11.69,8.27))
@@ -131,7 +132,8 @@ if __name__ == '__main__':
         txt = f"Number of filtering output hits: {filtering_output_hits_cnt}"
         page.text(0.1, 0.5, txt, transform=page.transFigure, size=20, ha="left")
 
-        pdf.savefig()
+        plt.savefig('txt_f.jpg')
+        # pdf.savefig()
 
         # output information about clustering and genome consistancy 
         page = plt.figure(figsize=(11.69,8.27))
@@ -168,9 +170,10 @@ if __name__ == '__main__':
         # number of hits after genome consistency
         genome_consistency_output_hits_cnt = len(data[data.filtered_clustered == True].index)
         txt = f"Number of hits after genome consistency procedure: {genome_consistency_output_hits_cnt}"
-        page.text(0.1, 0.4, txt, transform=page.transFigure, size=20, ha="left") 
+        page.text(0.1, 0.4, txt, transform=page.transFigure, size=20, ha="left")
 
-        pdf.savefig()
+        plt.savefig('txt2_f.jpg')
+        # pdf.savefig()
 
         # 3d plot of log_evalue, query coverage, length colored by filtering, clustering, and genome 
         # consistency procedure
@@ -202,12 +205,12 @@ if __name__ == '__main__':
 
         xs = list(data['lg_evalue'])
         ys = list(data['query_coverage'])
-        zs = list(data['length'])
+        zs = list(data['protein_length'])
         data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
         plot_3d(data_points, data, color_axis='status', color_dict=status_color_dict)
 
-        pdf.close()
+        # pdf.close()
 
 
     except Exception as e:
@@ -216,11 +219,11 @@ if __name__ == '__main__':
         print(f"EXCEPTION {ecx_type} RAISED")
 
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('13 ' + ecx_type + '\n')
+            outfile.write('8 ' + ecx_type + '\n')
 
         with open('log.txt', 'a') as outfile:
             traceback.print_exc(file=outfile)
 
     else:
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('13 0\n')
+            outfile.write('8 0\n')

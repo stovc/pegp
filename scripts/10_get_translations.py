@@ -36,16 +36,16 @@ if __name__ == '__main__':
         out_path = Path('projects') / project / 'clustered_full.faa'
 
         translation_db = pd.read_csv(data_path, index_col=0, names=['translation'])
-        clustered_db = pd.read_csv(in_path, usecols=['ID', 'filtered_clustered'], index_col=0)
+        clustered_db = pd.read_csv(in_path, usecols=['hsp', 'filtered_clustered'], index_col=0)
         clustered_db = clustered_db[clustered_db.filtered_clustered == True]
 
         ids = list(clustered_db.index)
 
         with open(out_path, 'w') as f:
             for id in ids:
-                protID = id[:-1]
+                lcs = id[:-1]
                 f.write('>' + id + '\n')  # get a separate record for each hsp to be compatible with tree-annotation
-                f.write(translation_db.loc[protID, 'translation'] + '\n')
+                f.write(translation_db.loc[lcs, 'translation'] + '\n')
     except Exception as e:
         ecx_type = str(type(e))
 

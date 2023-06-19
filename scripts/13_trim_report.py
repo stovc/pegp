@@ -27,7 +27,7 @@ if __name__ == '__main__':
         
         exitlog_path = Path('projects') / project / 'exit_log.txt'
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('8 started\n')
+            outfile.write('13 started\n')
 
         # read data
         aligned_path = Path('projects') / project / 'aligned.fa'  # path to fasta file with aligned reads before trimming
@@ -78,11 +78,11 @@ if __name__ == '__main__':
         print(f"EXCEPTION {ecx_type} RAISED")
 
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('8 ' + ecx_type + '\n')
+            outfile.write('13 ' + ecx_type + '\n')
 
         with open('log.txt', 'a') as outfile:
             traceback.print_exc(file=outfile)
 
     else:
         with open(exitlog_path, 'a') as outfile:
-            outfile.write('8 0\n')
+            outfile.write('13 0\n')

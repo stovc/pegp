@@ -39,6 +39,14 @@ _Annotations_ are in the annotation.csv file and include:
     - feature type
     - gene
     - product
+
+Generate species trees as .nwk and corresponding annotation data as .csv from `taxid.txt` related to the database.
+The trees differ by the taxonomic rank to which they are collapsed
+
+input - taxid.txt
+output - org_tree_[TAXONOMIC RANK].nwk + 'org_tree_[TAXONOMIC RANK]_data.csv' where
+the taxonomic ranks are [full, genus, family, order, class, phylum]
+
 """
 
 import os, sys
@@ -48,6 +56,7 @@ import itertools
 from Bio import Seq, SeqIO
 from Bio import SeqFeature
 import pandas as pd
+from ete3 import NCBITaxa, PhyloNode
 
 
 def distance(start1, end1, start2, end2, circular_length=None):
@@ -111,6 +120,80 @@ def concatenate_csv(folder):
     df_concat.to_csv(database_path / f'{folder}.csv', index=False)
 
 
+# ORG TREE
+def prune_tree(tree: PhyloNode, keep: list) -> PhyloNode:
+    """Remove nodes not listed in `keep`
+    If `keep` contains 'leaf', tips of the tree are not removed.
+    Return prunned tree."""
+    tree2 = tree.copy()
+
+    # list of nodes to be discarded
+    to_prune = []
+
+    # iterate nodes and add their names into to_prune list if their rank is not in to prune
+    for node in tree2.traverse():
+        rank = get_rank(node.name)
+        if 'leaf' in keep and node.is_leaf():  # node is removed if it is leaf and `keep` doe not contain `leaf`
+            to_prune.append(node.name)
+        if rank in keep:
+            to_prune.append(node.name)
+
+    tree2.prune(to_prune)
+
+    return tree2
+
+
+def export_tree(tree: PhyloNode, path) -> None:
+    """Export tree as .nwk to specified path."""
+    nwk_string = tree.write(format=1)
+    with open(path, 'w') as out_file:
+        out_file.write(nwk_string)
+    return None
+
+
+def export_annotation(tree: PhyloNode, path) -> None:
+    """Export a csv annotation for a tree to specified path.
+    The csv annotation contains [taxid,name,rank] for each node of the tree"""
+
+    with open(path, 'w') as out_file:
+        out_file.write('taxid;name;rank\n')
+        for node in tree.traverse():
+            taxid = node.name
+            name = get_taxid_name(taxid)
+            rank = get_rank(taxid)
+
+            if node.is_leaf():    # all leaves get the "species" rank. it is done for simplicity
+                rank = 'species'  # it is now compatible with the  R scripts. TODO: ranking at the strain level
+
+            if name == 'root':
+                rank = 'root'
+            out_file.write(f'{taxid};{name};{rank}\n')
+    return None
+
+
+def get_taxid_name(taxid: int) -> str:
+    """Return name of taxid.
+    Return 'missing' if taxid is missing in the database"""
+    name = ncbi.get_taxid_translator([taxid])
+    name = list(name.values())
+    if len(name) == 1:
+        name = name[0]
+    else:
+        name = 'missing'
+    return name
+
+
+def get_rank(taxid: int) -> str:
+    """Return rank of taxid."""
+    rank = ncbi.get_rank([taxid])
+    rank = list(rank.values())
+    if len(rank) == 1:
+        rank = rank[0]
+    else:
+        rank = 'missing'
+    return rank
+
+
 # constants
 GENOMES_LOCATION = Path("genomes/")      # folder containing genome collections to construct a database from
 DATABASES_LOCATION = Path("../databases/")  # folder containing databases
@@ -118,23 +201,19 @@ GENOME_SIGNATURE = '.gbff'               # used to filter out genome files
 SYMBOLS = string.digits + string.ascii_uppercase  # symbols used for generating headers
 UTR_WINDOW = 200                         # window for recording 3' and 5' UTRs
 CONTEXT_WINDOW = 10000                   # window for recording genomic context
-COLUMNS = ['ID', 'locus_tag',
-           'assembly', 'accession',
-           'start', 'end', 'strand',
-           'taxid', 'replicon',
-           'feature', 'gene', 'product', "length", 'protein_id']  # columns in the annotation dataframe
 
 # parse arguments
 # expected arguments: 1) database name; 2-N) genome folders to extract the genomes from
 arguments = sys.argv
 database_name = arguments[1]
-genome_folders = arguments[2:]
+metadata_path = arguments[2]
+genome_folders = arguments[3:]
 database_path = Path(DATABASES_LOCATION) / database_name
 
 # make temporary folders and an assembly progress file
 if not os.path.exists(database_path):
     os.makedirs(database_path)
-    for i in ['protein', 'taxid_map', 'upstream', 'sequence', 'downstream', 'translation', 'annotation']:
+    for i in ['protein', 'upstream', 'sequence', 'downstream', 'translation', 'annotation']:
         os.makedirs(database_path / i)
     open(database_path / 'completed_paths.txt', 'a').close()
 
@@ -151,9 +230,8 @@ for genome_folder in genome_folders:  # iterate genome folders
     genome_paths += genome_paths_in_folder
 
 # generate a list paths of genomes completed in previous runs
-f = open(database_path / 'completed_paths.txt', 'r')
-completed_paths = f.readlines()
-f.close()
+with open(database_path / 'completed_paths.txt', 'r') as f:
+    completed_paths = f.readlines()
 completed_paths = [i.strip() for i in completed_paths]
 completed_paths = [Path(i) for i in completed_paths]
 
@@ -168,6 +246,13 @@ completed_paths = open(database_path / 'completed_paths.txt', 'a')
 id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
+# open metadata
+metadata = pd.read_csv(Path(metadata_path) / 'metadata.csv', index_col='accession')
+
+# make the list of columns
+columns = ['lcs', 'assembly'] + metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
+          ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
+
 iteration = 1
 # iterate genomes
 for genome_path in genome_paths:
@@ -178,24 +263,21 @@ for genome_path in genome_paths:
     for seq_record in SeqIO.parse(genome_path, 'genbank'):
 
         seq_record_data = []
-        assembly = genome_path.name
-        assembly = assembly.split('_')[0] + assembly.split('_')[1]  # genome name, e.g. GCF_000701165.1
-        log.write('Assembly: ' + assembly + ' ')
+        accession = genome_path.name
+        accession = accession.split('_')[0] + accession.split('_')[1]  # genome name, e.g. GCF_000701165.1
+        log.write('Assembly: ' + accession + ' ')
 
-        accession = seq_record.id  # genome id in NCBI, e.g. NZ_CP023193.1
-        log.write('Accession: ' + accession + ' ')
+        accession = accession[:3] + '_' + accession[3:]
 
         # open output files
         ## fasta file with all protein sequences
-        protein_output = open(database_path / 'protein' / f'{assembly}-{accession}', 'w')
-        ## taxid map file with taxids for BLAST database
-        map_output = open(database_path / 'taxid_map' / f'{assembly}-{accession}', 'w')
+        protein_output = open(database_path / 'protein' / f'{accession}', 'w')
         ## other annotations discribed
-        upstream_out = open(database_path / 'upstream' / f'{assembly}-{accession}', 'w')
-        sequence_out = open(database_path / 'sequence' / f'{assembly}-{accession}', 'w')
-        downstream_out = open(database_path / 'downstream' / f'{assembly}-{accession}', 'w')
-        translation_out = open(database_path / 'translation' / f'{assembly}-{accession}', 'w')
-        annotation_out = open(database_path / 'annotation' / f'{assembly}-{accession}', 'w')
+        upstream_out = open(database_path / 'upstream' / f'{accession}', 'w')
+        sequence_out = open(database_path / 'sequence' / f'{accession}', 'w')
+        downstream_out = open(database_path / 'downstream' / f'{accession}', 'w')
+        translation_out = open(database_path / 'translation' / f'{accession}', 'w')
+        annotation_out = open(database_path / 'annotation' / f'{accession}', 'w')
 
         definition = seq_record.description  # Bifidobacterium breve strain NRBB18 chromosome, complete genome
         log.write('Definition: ' + definition + '\n')
@@ -207,17 +289,17 @@ for genome_path in genome_paths:
 
         taxid = 'NONE'
         replicon = 'NONE'
+        replicon_metadata = ['NONE', 'NONE']
         for feature in seq_record.features:  # extract taxid and replicon from the source feature
             # "source" feature is single per seq_record/replicon and contains replicon related information
             # this feature is not written to the database; its properties are assigned to every database entry
+
+            # EXTRACT GENOME METADATA
+            genome_metadata = [accession] + metadata.loc[[accession]].values.flatten().tolist()
+
+            # EXTRACT REPLICON METADATA
+
             if feature.type == 'source':
-
-                db_xref_list = feature.qualifiers.get('db_xref')  # extract taxid from the source feature
-                for db_xref in db_xref_list:
-                    if db_xref.split(':')[0] == 'taxon':  # 'taxon:1685'
-                        taxid = db_xref.split(':')[1]     # 1685
-                log.write('Taxid: ' + taxid + '\n')
-
                 plasmid = feature.qualifiers.get('plasmid')
                 log.write(f'Plasmid: {plasmid}\n')
                 segment = feature.qualifiers.get('segment')
@@ -226,29 +308,29 @@ for genome_path in genome_paths:
                 log.write(f'Chromosome: {chromosome}\n')
 
                 if plasmid is not None:
-                    replicon = 'plasmid_' + plasmid[0]
+                    replicon_type = 'plasmid'
+                    replicon = plasmid[0]
                 elif segment is not None:
-                    replicon = 'segment_' + segment[0]
+                    replicon_type = 'segment'
+                    replicon = segment[0]
                 elif chromosome is not None:
-                    replicon = 'chromosome_' + chromosome[0]
+                    replicon_type = 'chromosome'
+                    replicon = chromosome[0]
                 else:
+                    replicon_type = 'chromosome'
                     replicon = 'main'
 
+                replicon_metadata = [replicon_type, replicon]
+
+            # EXTRACT FEATURE METADATA
+
             elif feature.type not in ['source', 'gene']:
-                ID = next(id_iterator)
-                ID = ''.join(ID)
-                ID = id_prefix + ID
+                # generate lcs id
+                lcs = next(id_iterator)
+                lcs = ''.join(lcs)
+                lcs = id_prefix + lcs
 
-                start = int(feature.location.start)
-                end = int(feature.location.end)
-                strand = feature.location.strand
-
-                seq_record_seq = str(seq_record.seq)
-                upstream = circular_slice(seq_record_seq, start - UTR_WINDOW, start)
-                sequence = seq_record_seq[start:end]
-                downstream = circular_slice(seq_record_seq, end, end + UTR_WINDOW)
-
-                # define feature type
+                # feature type
                 if feature.type == 'repeat_region':
                     feature_type = get_first(feature.qualifiers, 'rpt_family')
                 elif feature.type == 'regulatory':
@@ -258,35 +340,49 @@ for genome_path in genome_paths:
                 else:
                     feature_type = feature.type
 
-                locus_tag = get_first(feature.qualifiers, 'locus_tag')
+                # coordinates
+                start = int(feature.location.start)
+                end = int(feature.location.end)
+                strand = feature.location.strand
+                coordinates = [start, end, strand]
+
+                # sequence
+                seq_record_seq = str(seq_record.seq)
+                upstream = circular_slice(seq_record_seq, start - UTR_WINDOW, start)
+                sequence = seq_record_seq[start:end]
+                downstream = circular_slice(seq_record_seq, end, end + UTR_WINDOW)
+                translation = get_first(feature.qualifiers, 'translation')
+
+                # annotations
                 gene = get_first(feature.qualifiers, 'gene')
                 product = get_first(feature.qualifiers, 'product')
-                translation = get_first(feature.qualifiers, 'translation')
-                protein_id = get_first(feature.qualifiers, 'protein_id')
 
+                # annotations i dont use
+                # protein_id = get_first(feature.qualifiers, 'protein_id')
+
+                # WRITE METADATA
                 if translation is not None:
-                    protein_output.write(f'>{ID}\n{translation}\n')  # write a fasta record with translation
-                    map_output.write(ID + ' ' + taxid + '\n')
-                    translation_out.write(f'{ID},{translation}\n')
+                    protein_output.write(f'>{lcs}\n{translation}\n')  # write a fasta record with translation
+                    translation_out.write(f'{lcs},{translation}\n')
                     protein_length = len(translation)
                 else:
                     protein_length = None
 
-                upstream_out.write(f'{ID},{upstream}\n')
-                sequence_out.write(f'{ID},{sequence}\n')
-                downstream_out.write(f'{ID},{downstream}\n')
+                upstream_out.write(f'{lcs},{upstream}\n')
+                sequence_out.write(f'{lcs},{sequence}\n')
+                downstream_out.write(f'{lcs},{downstream}\n')
 
-                annotation = [ID, locus_tag,
-                              assembly, accession, start, end, strand,
-                              taxid, replicon,
-                              feature_type, gene,
-                              product, protein_length, protein_id]
+                feature_metadata = [feature_type, gene, product, start, end, strand, protein_length]
+                annotation = [lcs] + genome_metadata + replicon_metadata + feature_metadata
                 seq_record_data.append(annotation)
 
-        seq_record_data = pd.DataFrame(seq_record_data, columns=COLUMNS)
+        seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
+
+        """
+        # INFER GENOME CONTEXT
         context = ''
 
-        short_data = seq_record_data[['ID', 'start', 'end']]
+        short_data = seq_record_data[['lcs', 'start', 'end']]
         short_data = short_data.assign(context='')
 
         length = len(short_data.index)
@@ -299,7 +395,7 @@ for genome_path in genome_paths:
                     j += 1
                 else:
                     j = 0
-
+                
                 start1 = short_data.iat[i, 1]
                 end1 = short_data.iat[i, 2]
                 start2 = short_data.iat[j, 1]
@@ -332,7 +428,9 @@ for genome_path in genome_paths:
             context = context[:-1]  # remove last comma
             short_data.iat[i, 3] = context
             context = ''
-        seq_record_data = pd.merge(seq_record_data, short_data[['ID', 'context']], on='ID')
+        
+        seq_record_data = pd.merge(seq_record_data, short_data[['ID', 'context']], on='lcs')
+        """
         annotation_out.write(seq_record_data.to_csv(index=False))
         annotation_out.close()
         upstream_out.close()
@@ -340,13 +438,11 @@ for genome_path in genome_paths:
         downstream_out.close()
         translation_out.close()
         protein_output.close()
-        map_output.close()
     completed_paths.write(str(genome_path) + '\n')
 
 log.close()
 
 concatenate('protein', 'faa')
-concatenate('taxid_map', 'txt')
 
 concatenate('upstream', 'csv')
 concatenate('sequence', 'csv')
@@ -356,3 +452,43 @@ concatenate('translation', 'csv')
 FOLDERS_TO_CONCATENATE_CSV = ['annotation']
 for folder in FOLDERS_TO_CONCATENATE_CSV:
     concatenate_csv(folder)
+
+# GETTING TAXIDS
+data_path = database_path / 'annotation.csv'
+df = pd.read_csv(data_path)
+
+# df = df[df.gtdb_taxonomy.notnull()]
+
+taxids = df['taxid'].unique()
+
+# MAKE ORG TREE
+
+# NCBI taxonomy database object
+ncbi = NCBITaxa()
+
+# get tree topology as PhyloNode object
+tree = ncbi.get_topology(taxids, intermediate_nodes=True)
+
+tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_genus = prune_tree(tree, ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_family = prune_tree(tree, ['family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_order = prune_tree(tree, ['order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_class = prune_tree(tree, ['class', 'phylum', 'superkingdom', 'kingdom', 'root'])
+tree_phylum = prune_tree(tree, ['phylum', 'superkingdom', 'kingdom', 'root'])
+
+# EXPORT TREES AND ANNOTATIONS
+# construct path for the output folder and make it
+out_folder = database_path / 'org_trees'
+if not os.path.exists(out_folder):
+    os.makedirs(out_folder)
+
+# export trees pruned to different taxonomic levels
+export_tree(tree_full, out_folder / 'org_tree_full.nwk')
+export_tree(tree_genus, out_folder / 'org_tree_genus.nwk')
+export_tree(tree_family, out_folder / 'org_tree_family.nwk')
+export_tree(tree_order, out_folder / 'org_tree_order.nwk')
+export_tree(tree_class, out_folder / 'org_tree_class.nwk')
+export_tree(tree_phylum, out_folder / 'org_tree_phylum.nwk')
+
+# export .csv annotations for the trees pruned to different taxonomic levels
+export_annotation(tree_full, out_folder / 'org_tree_full_data.csv')
