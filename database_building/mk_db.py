@@ -226,21 +226,21 @@ database_path = Path(args.database)
 # make temporary folders and an assembly progress file
 if not os.path.exists(database_path):
     os.makedirs(database_path)
+
     for i in ['protein', 'upstream', 'sequence', 'downstream', 'translation', 'annotation']:
         os.makedirs(database_path / i)
+
     open(database_path / 'completed_paths.txt', 'a').close()
 
 log = open(database_path / 'database_assembly_log.txt', 'a')  # log
-print(f'Database assembly. db: {database_name}, folders: {genome_folders}')
-log.write(f'Database assembly. db: {database_name}, folders: {genome_folders}\n')
+print(f'Database assembly. database: {args.database}, genomes: {args.genomes}')
+log.write(f'Database assembly. db: {args.database}, folders: {args.genomes}\n')
 
-# generate a list of all paths of genomes to be processed
-genome_paths = []
-for genome_folder in genome_folders:  # iterate genome folders
-    genome_paths_in_folder = os.listdir(GENOMES_LOCATION / genome_folder)
-    genome_paths_in_folder = [i for i in genome_paths_in_folder if GENOME_SIGNATURE in i]
-    genome_paths_in_folder = [GENOMES_LOCATION / genome_folder / i for i in genome_paths_in_folder]
-    genome_paths += genome_paths_in_folder
+# generate a list of all genome paths to be processed
+
+file_names = os.listdir(args.genomes)
+genome_file_names = [i for i in file_names if GENOME_EXTENSION in i]
+genome_paths = [args.genomes / i for i in genome_file_names]
 
 # generate a list paths of genomes completed in previous runs
 with open(database_path / 'completed_paths.txt', 'r') as f:
@@ -248,9 +248,12 @@ with open(database_path / 'completed_paths.txt', 'r') as f:
 completed_paths = [i.strip() for i in completed_paths]
 completed_paths = [Path(i) for i in completed_paths]
 
-# infer genomes to be completed
+# log msg
 print(f'total genomes {len(genome_paths)}, completed genomes {len(completed_paths)}')
 log.write(f'total genomes {len(genome_paths)}, completed genomes {len(completed_paths)}\n')
+
+
+# infer genomes to be completed
 genome_paths = [i for i in genome_paths if i not in completed_paths]
 genome_paths.sort()
 completed_paths = open(database_path / 'completed_paths.txt', 'a')
@@ -260,11 +263,7 @@ id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
 # open metadata
-metadata = pd.read_csv(Path(metadata_path) / 'metadata.csv', index_col='accession')
-
-# make the list of columns
-columns = ['lcs', 'assembly'] + metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
-          ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
+metadata = pd.read_csv(args.metadata, index_col='accession')
 
 iteration = 1
 # iterate genomes
@@ -389,6 +388,9 @@ for genome_path in genome_paths:
                 annotation = [lcs] + genome_metadata + replicon_metadata + feature_metadata
                 seq_record_data.append(annotation)
 
+        # make a dataframe with metadata
+        columns = ['lcs', 'assembly'] + metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
+                  ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
         seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
 
         """
