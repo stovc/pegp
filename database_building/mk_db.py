@@ -428,7 +428,7 @@ for genome_path in genome_paths:
                             within_window = False
 
                     # increment the number of the j-th element. jump to start if reached the end
-                    if j + 1 < length:
+                    if j < length:
                         j += 1
                     else:
                         j = 0
