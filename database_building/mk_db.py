@@ -405,7 +405,6 @@ for genome_path in genome_paths:
 
             # i is the number of the iterated element the context is being inferred for
             for i in range(length):
-                print(f'i = {i}')
                 # iterate j elements to the right from the i-th element
                 short = False
                 within_window = True
@@ -416,10 +415,7 @@ for genome_path in genome_paths:
                         if circular_length is not None:
                             j = 0
                         else:
-                            print('linear break right')
                             break
-
-                    print(j)
 
                     # starts and ends of the i-th and j-th features
                     start_i = short_data.iat[i, 1]
@@ -442,7 +438,6 @@ for genome_path in genome_paths:
                     outside_window = False
                     j = i - 1
                     while not outside_window:
-                        print(j)
 
                         start1 = short_data.iat[i, 1]
                         end1 = short_data.iat[i, 2]
@@ -456,7 +451,6 @@ for genome_path in genome_paths:
                         j -= 1
 
                         if (j < 0) and (circular_length is None):
-                            print('linear break left')
                             outside_window = True
 
                 context = context[:-1]  # remove last comma
