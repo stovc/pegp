@@ -208,7 +208,7 @@ CONTEXT_WINDOW = 10000                   # window for recording genomic context
 
 parser = ArgumentParser()
 
-parser.add_argument('-h', '--help', help='Show this help message', action='help')
+# parser.add_argument('-h', '--help', help='Show this help message', action='help')
 parser.add_argument('genomes', help='Path to the directory containing genomes')
 parser.add_argument('metadata', help='Path to the file containing metadata')
 
