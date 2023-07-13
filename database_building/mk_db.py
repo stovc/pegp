@@ -455,7 +455,7 @@ for genome_path in genome_paths:
                             outside_window = True
                         j -= 1
 
-                        if circular_length is None:
+                        if (j < 0) and (circular_length is None):
                             print('linear break left')
                             outside_window = True
 
