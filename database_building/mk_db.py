@@ -413,7 +413,11 @@ for genome_path in genome_paths:
                 while within_window:
                     # jump to start if reached the end
                     if j >= length:
-                        j = 0
+                        if circular_length is not None:
+                            j = 0
+                        else:
+                            print('linear break right')
+                            break
 
                     print(j)
 
@@ -450,6 +454,10 @@ for genome_path in genome_paths:
                         else:
                             outside_window = True
                         j -= 1
+
+                        if circular_length is None:
+                            print('linear break left')
+                            outside_window = True
 
                 context = context[:-1]  # remove last comma
                 short_data.iat[i, 3] = context
