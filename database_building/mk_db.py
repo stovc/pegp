@@ -220,6 +220,7 @@ parser.add_argument('--nocontext', help='Do not compute genome context of the fe
 
 args: Namespace = parser.parse_args()
 
+genomes_path = Path(args.genomes)
 database_path = Path(args.database)
 
 
@@ -240,7 +241,7 @@ log.write(f'Database assembly. db: {args.database}, folders: {args.genomes}\n')
 
 file_names = os.listdir(args.genomes)
 genome_file_names = [i for i in file_names if GENOME_EXTENSION in i]
-genome_paths = [args.genomes / i for i in genome_file_names]
+genome_paths = [genomes_path / i for i in genome_file_names]
 
 # generate a list paths of genomes completed in previous runs
 with open(database_path / 'completed_paths.txt', 'r') as f:
