@@ -393,60 +393,69 @@ for genome_path in genome_paths:
                   ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
         seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
 
-        """
         # INFER GENOME CONTEXT
-        context = ''
-
-        short_data = seq_record_data[['lcs', 'start', 'end']]
-        short_data = short_data.assign(context='')
-
-        length = len(short_data.index)
-        for i in range(length):
-            short = False
-            done = False
-            j = i
-            while not done:
-                if j + 1 < length:
-                    j += 1
-                else:
-                    j = 0
-                
-                start1 = short_data.iat[i, 1]
-                end1 = short_data.iat[i, 2]
-                start2 = short_data.iat[j, 1]
-                end2 = short_data.iat[j, 2]
-
-                if distance(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
-                    context += short_data.iat[j, 0] + ';'
-                else:
-                    done = True
-
-                if j == i:
-                    done = True
-                    short = True
-
-            if not short:
-                done = False
-                j = i - 1
-                while not done:
-                    start1 = short_data.iat[i, 1]
-                    end1 = short_data.iat[i, 2]
-                    start2 = short_data.iat[j, 1]
-                    end2 = short_data.iat[j, 2]
-
-                    if distance(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
-                        context += seq_record_data.iat[j, 0] + ';'
-                    else:
-                        done = True
-                    j -= 1
-
-            context = context[:-1]  # remove last comma
-            short_data.iat[i, 3] = context
+        if not args.nocontext:
             context = ''
-        
-        seq_record_data = pd.merge(seq_record_data, short_data[['ID', 'context']], on='lcs')
-        """
+
+            short_data = seq_record_data[['lcs', 'start', 'end']]
+            short_data = short_data.assign(context='')
+
+            length = len(short_data.index)
+
+            # i is the number of the iterated element the context is being inferred for
+            for i in range(length):
+
+                # iterate j elements to the right from the i-th element
+                short = False
+                within_window = True
+                j = i + 1
+                while within_window:
+
+                    # starts and ends of the i-th and j-th features
+                    start_i = short_data.iat[i, 1]
+                    end_i = short_data.iat[i, 2]
+                    start_j = short_data.iat[j, 1]
+                    end_j = short_data.iat[j, 2]
+
+                    if j == i:
+                        within_window = False
+                        short = True
+                    else:
+                        if distance(start_i, end_i, start_j, end_j, circular_length) <= CONTEXT_WINDOW:
+                            context += short_data.iat[j, 0] + ';'
+                        else:
+                            within_window = False
+
+                    # increment the number of the j-th element. jump to start if reached the end
+                    if j + 1 < length:
+                        j += 1
+                    else:
+                        j = 0
+
+                # iterate j elements to the left from the i-th element IF IT THE REPLICON ISN'T TOO SHORT
+                if not short:
+                    outside_window = False
+                    j = i - 1
+                    while not outside_window:
+                        start1 = short_data.iat[i, 1]
+                        end1 = short_data.iat[i, 2]
+                        start2 = short_data.iat[j, 1]
+                        end2 = short_data.iat[j, 2]
+
+                        if distance(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
+                            context += seq_record_data.iat[j, 0] + ';'
+                        else:
+                            outside_window = True
+                        j -= 1
+
+                context = context[:-1]  # remove last comma
+                short_data.iat[i, 3] = context
+                context = ''
+
+            seq_record_data = pd.merge(seq_record_data, short_data[['ID', 'context']], on='lcs')
+
         annotation_out.write(seq_record_data.to_csv(index=False))
+
         annotation_out.close()
         upstream_out.close()
         sequence_out.close()
