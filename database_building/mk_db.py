@@ -405,7 +405,7 @@ for genome_path in genome_paths:
 
             # i is the number of the iterated element the context is being inferred for
             for i in range(length):
-
+                print(f'i = {i}')
                 # iterate j elements to the right from the i-th element
                 short = False
                 within_window = True
@@ -438,6 +438,8 @@ for genome_path in genome_paths:
                     outside_window = False
                     j = i - 1
                     while not outside_window:
+                        print(j)
+
                         start1 = short_data.iat[i, 1]
                         end1 = short_data.iat[i, 2]
                         start2 = short_data.iat[j, 1]
@@ -453,7 +455,7 @@ for genome_path in genome_paths:
                 short_data.iat[i, 3] = context
                 context = ''
 
-            seq_record_data = pd.merge(seq_record_data, short_data[['ID', 'context']], on='lcs')
+            seq_record_data = pd.merge(seq_record_data, short_data[['lcs', 'context']], on='lcs')
 
         annotation_out.write(seq_record_data.to_csv(index=False))
 
