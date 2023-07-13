@@ -411,6 +411,11 @@ for genome_path in genome_paths:
                 within_window = True
                 j = i + 1
                 while within_window:
+                    # jump to start if reached the end
+                    if j >= length:
+                        j = 0
+
+                    print(j)
 
                     # starts and ends of the i-th and j-th features
                     start_i = short_data.iat[i, 1]
@@ -426,12 +431,7 @@ for genome_path in genome_paths:
                             context += short_data.iat[j, 0] + ';'
                         else:
                             within_window = False
-
-                    # increment the number of the j-th element. jump to start if reached the end
-                    if j < length:
-                        j += 1
-                    else:
-                        j = 0
+                    j += 1
 
                 # iterate j elements to the left from the i-th element IF IT THE REPLICON ISN'T TOO SHORT
                 if not short:
