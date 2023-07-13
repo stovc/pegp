@@ -51,6 +51,7 @@ the taxonomic ranks are [full, genus, family, order, class, phylum]
 
 import os, sys
 from pathlib import Path
+from argparse import ArgumentParser, Namespace
 import string
 import itertools
 from Bio import Seq, SeqIO
@@ -197,18 +198,30 @@ def get_rank(taxid: int) -> str:
 # constants
 GENOMES_LOCATION = Path("genomes/")      # folder containing genome collections to construct a database from
 DATABASES_LOCATION = Path("../databases/")  # folder containing databases
-GENOME_SIGNATURE = '.gbff'               # used to filter out genome files
+GENOME_EXTENSION = '.gbff'               # used to filter out genome files
 SYMBOLS = string.digits + string.ascii_uppercase  # symbols used for generating headers
 UTR_WINDOW = 200                         # window for recording 3' and 5' UTRs
 CONTEXT_WINDOW = 10000                   # window for recording genomic context
 
 # parse arguments
-# expected arguments: 1) database name; 2-N) genome folders to extract the genomes from
-arguments = sys.argv
-database_name = arguments[1]
-metadata_path = arguments[2]
-genome_folders = arguments[3:]
-database_path = Path(DATABASES_LOCATION) / database_name
+# expected arguments: 1) path to genomes; 2) path to metadata; 3) path to the database
+
+parser = ArgumentParser()
+
+parser.add_argument('-h', '--help', help='Show this help message', action='help')
+parser.add_argument('genomes', help='Path to the directory containing genomes')
+parser.add_argument('metadata', help='Path to the file containing metadata')
+
+parser.add_argument('database',
+                    help='Path to the directory with the output database. If doesn\'t exist, will be created')
+
+parser.add_argument('--nocontext', help='Do not compute genome context of the features',
+                    action='store_true', default=False)
+
+args: Namespace = parser.parse_args()
+
+database_path = Path(args.database)
+
 
 # make temporary folders and an assembly progress file
 if not os.path.exists(database_path):
