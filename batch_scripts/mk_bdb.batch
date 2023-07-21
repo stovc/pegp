@@ -1,18 +1,20 @@
 #!/bin/bash
 #
-#SBATCH --job-name=mk_bdb
-#SBATCH --output=mk_bdb.txt
+#SBATCH --job-name=make_db
+#SBATCH --output=mk_db_out.txt
 #
-#SBATCH --time=24:00:00
-#SBATCH --mem=16G
+#SBATCH --time=72:00:00   # HOW LONG DO I NEED?
+#
+#SBATCH --mem=64G
 #
 #SBATCH --no-requeue
 #SBATCH --export=NONE
 unset SLURM_EXPORT_ENV
+#
 export OMP_NUM_THREADS=1
 #
-#load the respective software module you intend to use
-module load ncbi-blast/2.11.0+
-#
-cd /nfs/scistore08/kondrgrp/sovchinn/PEGP/databases/base1
-srun makeblastdb -in protein.faa -blastdb_version 5 -taxid_map taxid_map.txt -dbtype prot -parse_seqids -title "base1"
+
+source /mnt/nfs/clustersw/Debian/bullseye/anaconda3/2022.05/activate_anaconda3_2022.05.txt
+conda activate /nfs/scistore16/calingrp/sovchinn/anaconda3/envs/pgp
+
+srun --cpu_bind=verbose python3 mk_db.py /nfs/scistore16/calingrp/sovchinn/genomes/rf/g /nfs/scistore16/calingrp/sovchinn/genomes/rf/metadata.csv /nfs/scistore16/calingrp/sovchinn/pegp/databases/refseq_gc
