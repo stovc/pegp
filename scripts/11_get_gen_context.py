@@ -90,9 +90,9 @@ if __name__ == '__main__':
                     strand = int(rec['strand']) * sm
 
                     if sm == 1:
-                        to_write = f'{row.ID};{gene};{target};{start};{end};{strand}\n'
+                        to_write = f'{row.hsp};{gene};{target};{start};{end};{strand}\n'
                     elif sm == -1:
-                        to_write = f'{row.ID};{gene};{target};{end};{start};{strand}\n'
+                        to_write = f'{row.hsp};{gene};{target};{end};{start};{strand}\n'
 
                     f.write(to_write)
                     print(to_write)
