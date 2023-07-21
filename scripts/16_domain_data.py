@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
         out_path = Path('projects') / project / 'domains.csv'
 
-        names = ['domain', 'id', 'evalue', 'start', 'stop']
+        names = ['domain', 'hsp', 'evalue', 'start', 'stop']
 
         # hmmscan data
         in_hmmscan_path = Path('projects') / project / 'hmmscan.tbl'
@@ -41,7 +41,7 @@ if __name__ == '__main__':
                                  names=names,
                                  engine='python')
 
-        grouped = hmmscan_df.groupby('id')  # each group consists of all domains found in particular protein
+        grouped = hmmscan_df.groupby('hsp')  # each group consists of all domains found in particular protein
 
         # protein data
         in_data_path = Path('projects') / project / 'hits_df.csv'
