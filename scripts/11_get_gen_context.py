@@ -77,12 +77,15 @@ if __name__ == '__main__':
 
                     # assign gene
                     gene = str(rec['gene'])
-                    if gene == 'nan':
-                        gene = str(rec['product'])
-                    if gene == 'nan':
-                        gene = str(rec['feature'])
-                    if gene == 'nan':
-                        gene = 'FTR'
+                    product = str(rec['product'])
+                    feature = str(rec['feature_type'])
+
+                    if gene == '':
+                        gene = product
+                    if product == '':
+                        gene = feature
+                    if feature == '':
+                        gene = '!feature'
 
                     target = 'F'
                     start = int(rec['start']) * sm
