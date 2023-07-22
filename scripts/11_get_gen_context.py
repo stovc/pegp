@@ -77,10 +77,10 @@ if __name__ == '__main__':
 
                     # assign gene
                     gene = str(rec['gene'])
-                    product = str(rec['product'])
-                    feature = str(rec['feature_type'])
+                    product = 'p: ' + str(rec['product'])
+                    feature = 'f: ' + str(rec['feature_type'])
 
-                    if gene == '':
+                    if gene == 'nan':
                         gene = product
                     if product == '':
                         gene = feature
