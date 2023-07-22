@@ -82,9 +82,9 @@ if __name__ == '__main__':
 
                     if gene == 'nan':
                         gene = product
-                    if product == '':
+                    if product == 'nan':
                         gene = feature
-                    if feature == '':
+                    if feature == 'nan':
                         gene = '!feature'
 
                     target = 'F'
