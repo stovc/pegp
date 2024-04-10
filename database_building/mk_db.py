@@ -51,6 +51,7 @@ the taxonomic ranks are [full, genus, family, order, class, phylum]
 
 import os, sys
 from pathlib import Path
+from argparse import ArgumentParser, Namespace
 import string
 import itertools
 from Bio import Seq, SeqIO
@@ -197,37 +198,50 @@ def get_rank(taxid: int) -> str:
 # constants
 GENOMES_LOCATION = Path("genomes/")      # folder containing genome collections to construct a database from
 DATABASES_LOCATION = Path("../databases/")  # folder containing databases
-GENOME_SIGNATURE = '.gbff'               # used to filter out genome files
+GENOME_EXTENSION = '.gbff'               # used to filter out genome files
 SYMBOLS = string.digits + string.ascii_uppercase  # symbols used for generating headers
 UTR_WINDOW = 200                         # window for recording 3' and 5' UTRs
 CONTEXT_WINDOW = 10000                   # window for recording genomic context
 
 # parse arguments
-# expected arguments: 1) database name; 2-N) genome folders to extract the genomes from
-arguments = sys.argv
-database_name = arguments[1]
-metadata_path = arguments[2]
-genome_folders = arguments[3:]
-database_path = Path(DATABASES_LOCATION) / database_name
+# expected arguments: 1) path to genomes; 2) path to metadata; 3) path to the database
+
+parser = ArgumentParser()
+
+# parser.add_argument('-h', '--help', help='Show this help message', action='help')
+parser.add_argument('genomes', help='Path to the directory containing genomes')
+parser.add_argument('metadata', help='Path to the file containing metadata')
+
+parser.add_argument('database',
+                    help='Path to the directory with the output database. If doesn\'t exist, will be created')
+
+parser.add_argument('--nocontext', help='Do not compute genome context of the features',
+                    action='store_true', default=False)
+
+args: Namespace = parser.parse_args()
+
+genomes_path = Path(args.genomes)
+database_path = Path(args.database)
+
 
 # make temporary folders and an assembly progress file
 if not os.path.exists(database_path):
     os.makedirs(database_path)
+
     for i in ['protein', 'upstream', 'sequence', 'downstream', 'translation', 'annotation']:
         os.makedirs(database_path / i)
+
     open(database_path / 'completed_paths.txt', 'a').close()
 
 log = open(database_path / 'database_assembly_log.txt', 'a')  # log
-print(f'Database assembly. db: {database_name}, folders: {genome_folders}')
-log.write(f'Database assembly. db: {database_name}, folders: {genome_folders}\n')
+print(f'Database assembly. database: {args.database}, genomes: {args.genomes}')
+log.write(f'Database assembly. db: {args.database}, folders: {args.genomes}\n')
 
-# generate a list of all paths of genomes to be processed
-genome_paths = []
-for genome_folder in genome_folders:  # iterate genome folders
-    genome_paths_in_folder = os.listdir(GENOMES_LOCATION / genome_folder)
-    genome_paths_in_folder = [i for i in genome_paths_in_folder if GENOME_SIGNATURE in i]
-    genome_paths_in_folder = [GENOMES_LOCATION / genome_folder / i for i in genome_paths_in_folder]
-    genome_paths += genome_paths_in_folder
+# generate a list of all genome paths to be processed
+
+file_names = os.listdir(args.genomes)
+genome_file_names = [i for i in file_names if GENOME_EXTENSION in i]
+genome_paths = [genomes_path / i for i in genome_file_names]
 
 # generate a list paths of genomes completed in previous runs
 with open(database_path / 'completed_paths.txt', 'r') as f:
@@ -235,9 +249,12 @@ with open(database_path / 'completed_paths.txt', 'r') as f:
 completed_paths = [i.strip() for i in completed_paths]
 completed_paths = [Path(i) for i in completed_paths]
 
-# infer genomes to be completed
+# log msg
 print(f'total genomes {len(genome_paths)}, completed genomes {len(completed_paths)}')
 log.write(f'total genomes {len(genome_paths)}, completed genomes {len(completed_paths)}\n')
+
+
+# infer genomes to be completed
 genome_paths = [i for i in genome_paths if i not in completed_paths]
 genome_paths.sort()
 completed_paths = open(database_path / 'completed_paths.txt', 'a')
@@ -247,11 +264,7 @@ id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
 # open metadata
-metadata = pd.read_csv(Path(metadata_path) / 'metadata.csv', index_col='accession')
-
-# make the list of columns
-columns = ['lcs', 'assembly'] + metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
-          ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
+metadata = pd.read_csv(args.metadata, index_col='accession')
 
 iteration = 1
 # iterate genomes
@@ -376,62 +389,78 @@ for genome_path in genome_paths:
                 annotation = [lcs] + genome_metadata + replicon_metadata + feature_metadata
                 seq_record_data.append(annotation)
 
+        # make a dataframe with metadata
+        columns = ['lcs', 'assembly'] + metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
+                  ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
         seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
 
-        """
         # INFER GENOME CONTEXT
-        context = ''
-
-        short_data = seq_record_data[['lcs', 'start', 'end']]
-        short_data = short_data.assign(context='')
-
-        length = len(short_data.index)
-        for i in range(length):
-            short = False
-            done = False
-            j = i
-            while not done:
-                if j + 1 < length:
-                    j += 1
-                else:
-                    j = 0
-                
-                start1 = short_data.iat[i, 1]
-                end1 = short_data.iat[i, 2]
-                start2 = short_data.iat[j, 1]
-                end2 = short_data.iat[j, 2]
-
-                if distance(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
-                    context += short_data.iat[j, 0] + ';'
-                else:
-                    done = True
-
-                if j == i:
-                    done = True
-                    short = True
-
-            if not short:
-                done = False
-                j = i - 1
-                while not done:
-                    start1 = short_data.iat[i, 1]
-                    end1 = short_data.iat[i, 2]
-                    start2 = short_data.iat[j, 1]
-                    end2 = short_data.iat[j, 2]
-
-                    if distance(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
-                        context += seq_record_data.iat[j, 0] + ';'
-                    else:
-                        done = True
-                    j -= 1
-
-            context = context[:-1]  # remove last comma
-            short_data.iat[i, 3] = context
+        if not args.nocontext:
             context = ''
-        
-        seq_record_data = pd.merge(seq_record_data, short_data[['ID', 'context']], on='lcs')
-        """
+
+            short_data = seq_record_data[['lcs', 'start', 'end']]
+            short_data = short_data.assign(context='')
+
+            length = len(short_data.index)
+
+            # i is the number of the iterated element the context is being inferred for
+            for i in range(length):
+                # iterate j elements to the right from the i-th element
+                short = False
+                within_window = True
+                j = i + 1
+                while within_window:
+                    # jump to start if reached the end
+                    if j >= length:
+                        if circular_length is not None:
+                            j = 0
+                        else:
+                            break
+
+                    # starts and ends of the i-th and j-th features
+                    start_i = short_data.iat[i, 1]
+                    end_i = short_data.iat[i, 2]
+                    start_j = short_data.iat[j, 1]
+                    end_j = short_data.iat[j, 2]
+
+                    if j == i:
+                        within_window = False
+                        short = True
+                    else:
+                        if distance(start_i, end_i, start_j, end_j, circular_length) <= CONTEXT_WINDOW:
+                            context += short_data.iat[j, 0] + ';'
+                        else:
+                            within_window = False
+                    j += 1
+
+                # iterate j elements to the left from the i-th element IF IT THE REPLICON ISN'T TOO SHORT
+                if not short:
+                    outside_window = False
+                    j = i - 1
+                    while not outside_window:
+
+                        start1 = short_data.iat[i, 1]
+                        end1 = short_data.iat[i, 2]
+                        start2 = short_data.iat[j, 1]
+                        end2 = short_data.iat[j, 2]
+
+                        if distance(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
+                            context += seq_record_data.iat[j, 0] + ';'
+                        else:
+                            outside_window = True
+                        j -= 1
+
+                        if (j < 0) and (circular_length is None):
+                            outside_window = True
+
+                context = context[:-1]  # remove last comma
+                short_data.iat[i, 3] = context
+                context = ''
+
+            seq_record_data = pd.merge(seq_record_data, short_data[['lcs', 'context']], on='lcs')
+
         annotation_out.write(seq_record_data.to_csv(index=False))
+
         annotation_out.close()
         upstream_out.close()
         sequence_out.close()

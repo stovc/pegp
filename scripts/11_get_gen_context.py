@@ -28,23 +28,25 @@ if __name__ == '__main__':
 
         # construct input and output paths
         in_path = Path('projects') / project / 'hits_df.csv'
-        data_path = Path('databases') / database / 'annotation.csv'
+        hit_db = pd.read_csv(in_path)
+
         out_path = Path('projects') / project / 'genome_context.csv'
 
+        data_path = Path('databases') / database / 'annotation.csv'
         annotation_db = pd.read_csv(data_path, index_col=0)
-        clustered_db = pd.read_csv(in_path)
-        clustered_db = clustered_db[clustered_db.filtered_clustered == True]
 
-        ids = list(clustered_db.index)
+        hit_db = hit_db[hit_db.filtered_clustered == True]
+
+        ids = list(hit_db.index)
 
         with open(out_path, 'w') as f:
             f.write('molecule;gene;target;start;end;strand\n')
             n = 0
-            for row in clustered_db.itertuples():
+            for row in hit_db.itertuples():
                 n += 1
                 print(n)
 
-                feature_id = row.ID
+                feature_id = row.hsp
 
                 gene = str(row.gene)
                 if gene == 'nan':
@@ -75,12 +77,15 @@ if __name__ == '__main__':
 
                     # assign gene
                     gene = str(rec['gene'])
+                    product = 'p: ' + str(rec['product'])
+                    feature = 'f: ' + str(rec['feature_type'])
+
                     if gene == 'nan':
-                        gene = str(rec['product'])
-                    if gene == 'nan':
-                        gene = str(rec['feature'])
-                    if gene == 'nan':
-                        gene = 'FTR'
+                        gene = product
+                    if product == 'p: nan':
+                        gene = feature
+                    if feature == 'f: nan':
+                        gene = '!feature'
 
                     target = 'F'
                     start = int(rec['start']) * sm
@@ -88,9 +93,9 @@ if __name__ == '__main__':
                     strand = int(rec['strand']) * sm
 
                     if sm == 1:
-                        to_write = f'{row.ID};{gene};{target};{start};{end};{strand}\n'
+                        to_write = f'{row.hsp};{gene};{target};{start};{end};{strand}\n'
                     elif sm == -1:
-                        to_write = f'{row.ID};{gene};{target};{end};{start};{strand}\n'
+                        to_write = f'{row.hsp};{gene};{target};{end};{start};{strand}\n'
 
                     f.write(to_write)
                     print(to_write)
