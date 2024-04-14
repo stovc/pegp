@@ -264,7 +264,7 @@ id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
 # open metadata
-metadata = pd.read_csv(args.metadata, index_col='accession')
+metadata = pd.read_csv(args.metadata, index_col='0')
 
 iteration = 1
 # iterate genomes
