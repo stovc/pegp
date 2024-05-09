@@ -175,8 +175,6 @@ def get_rank_of_taxid(taxid: int) -> str:
 
 
 # constants
-GENOMES_LOCATION = Path("genomes/")      # folder containing genome collections to construct a database from
-DATABASES_LOCATION = Path("../databases/")  # folder containing databases
 GENOME_EXTENSION = '.gbff'               # used to filter out genome files
 SYMBOLS = string.digits + string.ascii_uppercase  # symbols used for generating headers
 UTR_WINDOW = 200                         # window for recording 3' and 5' UTRs
