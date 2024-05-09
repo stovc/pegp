@@ -246,7 +246,7 @@ f = open(args.metadata, 'r')
 for line in f:
     print(line)
 f.close()
-metadata = pd.read_csv(args.metadata, index_col='0')
+metadata = pd.read_csv(args.metadata, index_col=0, sep='\t')
 
 iteration = 1
 # iterate genomes
