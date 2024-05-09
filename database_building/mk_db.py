@@ -466,6 +466,7 @@ taxids = df['taxid'].unique()
 
 # NCBI taxonomy database object
 ncbi = NCBITaxa()
+ncbi.update_taxonomy_database()
 
 # get tree topology as PhyloNode object
 tree = ncbi.get_topology(taxids, intermediate_nodes=True)
