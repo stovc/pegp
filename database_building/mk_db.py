@@ -241,6 +241,11 @@ id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
 # open metadata
+print(args.metadata)
+f = open(args.metadata, 'r')
+for line in f:
+    print(line)
+f.close()
 metadata = pd.read_csv(args.metadata, index_col='0')
 
 iteration = 1
