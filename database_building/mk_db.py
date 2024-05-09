@@ -104,7 +104,7 @@ def prune_tree(tree: PhyloNode, keep: list) -> PhyloNode:
 
     # iterate nodes and add their names into to_prune list if their rank is not in to prune
     for node in tree2.traverse():
-        rank = get_rank(node.name)
+        rank = get_rank_of_taxid(node.name)
         if 'leaf' in keep and node.is_leaf():  # node is removed if it is leaf and `keep` doe not contain `leaf`
             to_prune.append(node.name)
         if rank in keep:
@@ -123,7 +123,7 @@ def export_tree(tree: PhyloNode, path) -> None:
     return None
 
 
-def export_annotation(tree: PhyloNode, path) -> None:
+def export_tree_annotation(tree: PhyloNode, path) -> None:
     """Export a csv annotation for a tree to specified path.
     The csv annotation contains [taxid,name,rank] for each node of the tree"""
 
@@ -131,8 +131,8 @@ def export_annotation(tree: PhyloNode, path) -> None:
         out_file.write('taxid;name;rank\n')
         for node in tree.traverse():
             taxid = node.name
-            name = get_taxid_name(taxid)
-            rank = get_rank(taxid)
+            name = get_name_of_taxid(taxid)
+            rank = get_rank_of_taxid(taxid)
 
             if node.is_leaf():    # all leaves get the "species" rank. it is done for simplicity
                 rank = 'species'  # it is now compatible with the  R scripts. TODO: ranking at the strain level
@@ -143,7 +143,7 @@ def export_annotation(tree: PhyloNode, path) -> None:
     return None
 
 
-def get_taxid_name(taxid: int) -> str:
+def get_name_of_taxid(taxid: int) -> str:
     """Return name of taxid.
     Return 'missing' if taxid is missing in the database"""
     name = ncbi.get_taxid_translator([taxid])
@@ -155,9 +155,9 @@ def get_taxid_name(taxid: int) -> str:
     return name
 
 
-def get_rank(taxid: int) -> str:
+def get_rank_of_taxid(taxid: int) -> str:
     """Return rank of taxid."""
-    rank = ncbi.get_rank([taxid])
+    rank = ncbi.get_rank_of_taxid([taxid])
     rank = list(rank.values())
     if len(rank) == 1:
         rank = rank[0]
@@ -184,7 +184,7 @@ parser.add_argument('genomes', help='Path to the directory containing genomes')
 parser.add_argument('metadata', help='Path to the file containing metadata')
 
 parser.add_argument('database',
-                    help='Path to the directory with the output database. If doesn\'t exist, will be created')
+                    help='Path to the directory with the output database. If it does not exist, it will be created')
 
 parser.add_argument('--nocontext', help='Do not compute genome context of the features',
                     action='store_true', default=False)
@@ -432,12 +432,13 @@ for genome_path in genome_paths:
 
         annotation_out.write(seq_record_data.to_csv(index=False))
 
+        protein_output.close()
         annotation_out.close()
         upstream_out.close()
         sequence_out.close()
         downstream_out.close()
         translation_out.close()
-        protein_output.close()
+
     completed_paths.write(str(genome_path) + '\n')
 
 log.close()
@@ -491,4 +492,4 @@ export_tree(tree_class, out_folder / 'org_tree_class.nwk')
 export_tree(tree_phylum, out_folder / 'org_tree_phylum.nwk')
 
 # export .csv annotations for the trees pruned to different taxonomic levels
-export_annotation(tree_full, out_folder / 'org_tree_full_data.csv')
+export_tree_annotation(tree_full, out_folder / 'org_tree_full_data.csv')
