@@ -5,17 +5,19 @@ The trees differ by the taxonomic rank to which they are collapsed
 
 Input
 -----
-Path to a folder with genomes
+1) Path to a folder with genomes
+2) Path to  metadata file
+3) Path to the output database file
 
 Output
 ------
-1) Homology search
-Protein fasta file with all CDSs extracted from the genomes
-CSV file with all metadata for the CDSs and other features
-CSV file with upstream nucleotide sequences
-CSV file with nucleotide sequences
-CSV file with downstream nucleotide sequences
-CSV file with translations
+1) Homology search database with metadata:
+- Protein fasta file with all CDSs extracted from the genomes
+- CSV file with all metadata for the CDSs and other features
+- CSV file with upstream nucleotide sequences
+- CSV file with nucleotide sequences
+- CSV file with downstream nucleotide sequences
+- CSV file with translations
 
 2) Phylogenetic trees of the genomes collapsed to various taxonomic ranks.
 [full, genus, family, order, class, phylum]."""
@@ -32,13 +34,19 @@ from ete3 import NCBITaxa, PhyloNode
 
 
 def distance(start1, end1, start2, end2, circular_length=None):
-    """Return distance between two SeqFeatures. Supports circular nucleic acid
+    """
+    Return distance between two SeqFeatures. Supports circular nucleic acids.
     Nucleic acid is supposed to be linear unless circular_length argument is passed.
 
-    Arguments:
+    Parameters
+    ----------
     start1, end1 -- start and end nucleotides of the 1st SeqFeature
     start2, end2 -- start and end nucleotides of the 2nd SeqFeature
     circular_length -- length of a circular nucleic acid; nucleic acid supposed linear if None
+
+    Returns
+    -------
+    distance -- distance between two SeqFeatures.
     """
     if circular_length is None:
         x = min(abs(start1 - end2),
