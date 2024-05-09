@@ -1,53 +1,24 @@
-"""Make homology search database input and annotation files.
-
-Iterate all Genebank genomes (.gbk) in the input directory in order to
-prepare
-- an _input file for construction of the homology search database_
-- _associated annotation files_
-
-Input - [database_name] [path to the folder with genomes]
-
-For each genome, iterate all *sequence features* and make the following files in `databases/[database_name]`:
-- 'protein.faa' with translations of protein coding genes (*this file will be used to generate BLAST database in a further step*)
-
-and other files containing interesting information about our proteins:
-- 'annotation.csv' with the most useful _annotations_, described below
-
-other less frequently used and more heavy-weighted annotations are written into separate .csv files
-- 'upstream.csv' with 200 bp upstream nucleotide sequences
-- 'downstream.csv' with 200 bp downstream nucleotide sequences
-- 'sequence.csv' with the nucleotide sequence of the genes
-- 'translation.csv' with translations protein coding genes
-
-In all generated files, each record is preceded by an ID that is consistent across the files
-
-_Annotations_ are in the annotation.csv file and include:
-- Identity
-    - ID (generated for the created database)
-    - locus tag
-    - assembly
-    - accession
-    - protein_id
-- Position in the genome
-    - replicon (identity of the chromosome or the plasmid)
-    - start
-    - stop
-    - strand
-- Taxonomy information
-    - taxid (NCBI taxonomy ID)
-- Gene annotation
-    - feature type
-    - gene
-    - product
+"""Make a homology search database with metadata.
 
 Generate species trees as .nwk and corresponding annotation data as .csv from `taxid.txt` related to the database.
 The trees differ by the taxonomic rank to which they are collapsed
 
-input - taxid.txt
-output - org_tree_[TAXONOMIC RANK].nwk + 'org_tree_[TAXONOMIC RANK]_data.csv' where
-the taxonomic ranks are [full, genus, family, order, class, phylum]
+Input
+-----
+Path to a folder with genomes
 
-"""
+Output
+------
+1) Homology search
+Protein fasta file with all CDSs extracted from the genomes
+CSV file with all metadata for the CDSs and other features
+CSV file with upstream nucleotide sequences
+CSV file with nucleotide sequences
+CSV file with downstream nucleotide sequences
+CSV file with translations
+
+2) Phylogenetic trees of the genomes collapsed to various taxonomic ranks.
+[full, genus, family, order, class, phylum]."""
 
 import os, sys
 from pathlib import Path
