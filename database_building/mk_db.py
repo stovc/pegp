@@ -157,7 +157,7 @@ def get_name_of_taxid(taxid: int) -> str:
 
 def get_rank_of_taxid(taxid: int) -> str:
     """Return rank of taxid."""
-    rank = ncbi.get_rank_of_taxid([taxid])
+    rank = ncbi.get_rank([taxid])
     rank = list(rank.values())
     if len(rank) == 1:
         rank = rank[0]
