@@ -16,7 +16,7 @@ def update_status():
     Iterate project directories, look at `status.txt` files.
     Return dataframe with status of steps in projects."""
 
-    data = pd.DataFrame(STEPS, index=list(range(1, 18)))
+    status_data = pd.DataFrame(STEPS, index=list(range(1, 18)))
 
     for project in projects:
 
@@ -52,17 +52,17 @@ def update_status():
         except:
             print('exit log open exception')
 
-        data = pd.concat([data, status], axis=1)
-    return data
+        status_data = pd.concat([status_data, status], axis=1)
+    return status_data
 
 
-def draw_table(data):
+def draw_status_table(status_data):
     """Print a string containing the status table to print.
     Get status dataframe."""
 
     table = PrettyTable(['Step'] + projects)
     table.align["Step"] = "l"
-    for row in data.iterrows():
+    for row in status_data.iterrows():
         lst_row = list(row[1])
         updated_row = []
         for j in lst_row:
@@ -80,21 +80,10 @@ def update_screen():
     """Update status and print the interface."""
     print('Database:', database)
     data = update_status()
-    draw_table(data)
+    draw_status_table(data)
     print(PROMPT)
     # for i in log.history:
     #    print(i)
-
-
-class Log:
-    history = []
-
-    def inp(self, s):
-        self.history.append(f'>>> {s}')
-
-    def out(self, s):
-        print(s)
-        self.history.append(s)
 
 
 # COMMANDS
@@ -137,7 +126,7 @@ def call(action):
         n_args = action.__code__.co_argcount
         args = tuple(input.split(' ')[1:])
         if len(args) < n_args:  # TODO: it should check if function fits a preset argument range
-            log.out(f'{n_args} arguments expected, {len(args)} passed')
+            log.save_and_print(f'{n_args} arguments expected, {len(args)} passed')
         else:
             action(*args)
 
@@ -154,18 +143,18 @@ def start_all_steps():
             list_of_ready.append((number + 1, col))
 
     for step, project in list_of_ready:
-        log.out(f'Starting Step {step} on {project}')
+        log.save_and_print(f'Starting Step {step} on {project}')
         start_process(step, project, database)
-        log.out('Started')
+        log.save_and_print('Started')
 
 
 @call
 def start_step(project, step, *args):
     """Start `step` of a `project` with specified additional arguments."""
 
-    log.out(f'Starting Step {step} on {project}')
+    log.save_and_print(f'Starting Step {step} on {project}')
     start_process(int(step), project, database, *args)
-    log.out('Started')
+    log.save_and_print('Started')
 
 
 @call
@@ -185,9 +174,9 @@ def create_project(project, inp_path):
 
         update_screen()
 
-        log.out(f'Created a new project {project}')
+        log.save_and_print(f'Created a new project {project}')
     else:
-        log.out(f'Project with name {project} already exists')
+        log.save_and_print(f'Project with name {project} already exists')
 
 
 @call
@@ -202,9 +191,9 @@ def delete_project(project):
 
         update_screen()
 
-        log.out(f'Deleted the project {project}')
+        log.save_and_print(f'Deleted the project {project}')
     else:
-        log.out(f'Project with name {project} does not exist')
+        log.save_and_print(f'Project with name {project} does not exist')
 
 
 @call
@@ -217,12 +206,20 @@ def quitx():
     quit()
 
 
-# Whether the mode is default or "cluster"
-# In default mode the scripts are run directly
-# In cluster mode batch scripts are run
-mode = 'default'
+class Log:
+    """Log containing the history of the input and output of the session which is printed with screen update."""
+    history = []
 
-# constants
+    def save(self, message):
+        self.history.append(f'>>> {message}')
+
+    def save_and_print(self, message):
+        print(message)
+        self.history.append(message)
+
+
+# CONSTANTS
+
 # paths
 PROJECTS_PATH = Path("projects/")
 BATCH_SCRIPTS_PATH = Path("batch_scripts/")
@@ -342,8 +339,20 @@ UNLOCKS = {
     17: []
 }
 
-# init
-database = 'rf'  # this is hardcoded now! should be specified by user
+
+# Configs
+
+# Whether the mode is default or "cluster"
+# In default mode the scripts are run directly
+# In cluster mode batch scripts are run
+mode = 'default'
+
+# database for homology search with metadata
+database = 'test'  # this is hardcoded now! should be specified by user
+
+
+# Init
+
 folders = [name for name in os.listdir(PROJECTS_PATH) if os.path.isdir(os.path.join(PROJECTS_PATH, name))]
 projects = [i for i in folders if i[0] != '.']
 
@@ -351,13 +360,6 @@ command = ''
 log = Log()
 
 update_screen()
-
-
-class Command:
-    def __init__(self, text, action):
-        self.text = text
-        self.action = action
-
 
 char = 1
 
@@ -400,10 +402,10 @@ commands = {'a': start_all_steps,
 # input reading
 while True:
     command = input('>>> ')
-    log.inp(command)
+    log.save(command)
     command_args = command.split(' ')
     if command_args[0] in commands.keys():
         action = commands[command_args[0]]
         action(command)
     else:
-        log.out(f'unknown command "{command}"')
+        log.save_and_print(f'unknown command "{command}"')
