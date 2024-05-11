@@ -6,12 +6,9 @@ from prettytable import PrettyTable
 from pathlib import Path
 from colorama import Fore, Back, Style
 
+from utils.base import highlight_text
 
 # INPUT OUTPUT
-def highlight(s):
-    """Get string. Return highlighted string."""
-    s = Fore.BLACK + Back.WHITE + s + Style.RESET_ALL
-    return s
 
 
 def update_status():
