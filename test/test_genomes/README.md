@@ -1,0 +1,1 @@
+Test genomes and metadata file for database assembly.
