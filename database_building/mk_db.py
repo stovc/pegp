@@ -32,147 +32,8 @@ from Bio import SeqFeature
 import pandas as pd
 from ete3 import NCBITaxa, PhyloNode
 
-
-def distance(start1, end1, start2, end2, circular_length=None):
-    """
-    Return distance between two SeqFeatures. Supports circular nucleic acids.
-    Nucleic acid is supposed to be linear unless circular_length argument is passed.
-
-    Parameters
-    ----------
-    start1, end1 -- start and end nucleotides of the 1st SeqFeature
-    start2, end2 -- start and end nucleotides of the 2nd SeqFeature
-    circular_length -- length of a circular nucleic acid; nucleic acid supposed linear if None
-
-    Returns
-    -------
-    distance -- distance between two SeqFeatures.
-    """
-    if circular_length is None:
-        x = min(abs(start1 - end2),
-                abs(end1 - start2))
-    else:
-        x = min(abs(start1 - end2),
-                abs(end1 - start2),
-                abs(circular_length - end1 + start2),
-                abs(circular_length - end2 + start1))
-    return x
-
-
-def circular_slice(s, left, right):
-    """Slice a string as circular."""
-    if left < 0:
-        return s[left:] + s[:right]
-    elif right > len(s):
-        return s[left:] + s[:right - len(s)]
-    else:
-        return s[left:right]
-
-
-def get_first(dict_arg, key):
-    """Return first element of a dict item if possible. If not subscriptable, return the item."""
-    get = dict_arg.get(key)
-    try:
-        return get[0]
-    except:
-        return get
-
-
-def concatenate(folder, extension):
-    """Concatenates all files of 'folder' into a single file of 'extension' extension."""
-    print('folder', folder)
-    record_list = os.listdir(database_path / folder)
-    record_list.sort()
-
-    with open(database_path / f'{folder}.{extension}', 'w') as outfile:
-        for f in record_list:
-            with open(database_path / folder / f, 'r') as infile:
-                outfile.write(infile.read())
-
-
-def concatenate_csv(folder):
-    """Concatenates all files of 'folder' into a single csv file."""
-    print('folder', folder)
-    record_list = os.listdir(database_path / folder)
-    record_list.sort()
-
-    df_concat = pd.concat([pd.read_csv(database_path / folder / f) for f in record_list], ignore_index=True)
-    df_concat.to_csv(database_path / f'{folder}.csv', index=False)
-
-
-# ORG TREE
-def prune_tree(tree: PhyloNode, keep: list) -> PhyloNode:
-    """Remove nodes not listed in `keep`
-    If `keep` contains 'leaf', tips of the tree are not removed.
-    Return prunned tree."""
-    tree2 = tree.copy()
-
-    # list of nodes to be discarded
-    to_prune = []
-
-    # iterate nodes and add their names into to_prune list if their rank is not in to prune
-    for node in tree2.traverse():
-        rank = get_rank_of_taxid(node.name)
-        if 'leaf' in keep and node.is_leaf():  # node is removed if it is leaf and `keep` doe not contain `leaf`
-            to_prune.append(node.name)
-        if rank in keep:
-            to_prune.append(node.name)
-
-    tree2.prune(to_prune)
-
-    return tree2
-
-
-def export_tree(tree: PhyloNode, path) -> None:
-    """Export tree as .nwk to specified path."""
-    nwk_string = tree.write(format=1)
-    with open(path, 'w') as out_file:
-        out_file.write(nwk_string)
-    return None
-
-
-def export_tree_annotation(tree: PhyloNode, path) -> None:
-    """Export a csv annotation for a tree to specified path.
-    The csv annotation contains [taxid,name,rank] for each node of the tree"""
-
-    with open(path, 'w') as out_file:
-        out_file.write('taxid;name;rank\n')
-        for node in tree.traverse():
-            taxid = node.name
-            name = get_name_of_taxid(taxid)
-            rank = get_rank_of_taxid(taxid)
-
-            if node.is_leaf():    # all leaves get the "species" rank. it is done for simplicity
-                rank = 'species'  # it is now compatible with the  R scripts. TODO: ranking at the strain level
-
-            if name == 'root':
-                rank = 'root'
-            out_file.write(f'{taxid};{name};{rank}\n')
-    return None
-
-
-def get_name_of_taxid(taxid: int) -> str:
-    """Return name of taxid.
-    Return 'missing' if taxid is missing in the database"""
-    name = ncbi.get_taxid_translator([taxid])
-    name = list(name.values())
-    if len(name) == 1:
-        name = name[0]
-    else:
-        name = 'missing'
-    return name
-
-
-def get_rank_of_taxid(taxid: int) -> str:
-    """Return rank of taxid."""
-    rank = ncbi.get_rank([taxid])
-    rank = list(rank.values())
-    if len(rank) == 1:
-        rank = rank[0]
-    else:
-        rank = 'missing'
-    return rank
-
+from utils_mk_db import *
+from utils_phylogeny import *
 
 # constants
 GENOME_EXTENSION = '.gbff'               # used to filter out genome files
@@ -409,7 +270,7 @@ for genome_path in genome_paths:
                         within_window = False
                         short = True
                     else:
-                        if distance(start_i, end_i, start_j, end_j, circular_length) <= CONTEXT_WINDOW:
+                        if distance_between_sequences(start_i, end_i, start_j, end_j, circular_length) <= CONTEXT_WINDOW:
                             context += short_data.iat[j, 0] + ';'
                         else:
                             within_window = False
@@ -426,7 +287,7 @@ for genome_path in genome_paths:
                         start2 = short_data.iat[j, 1]
                         end2 = short_data.iat[j, 2]
 
-                        if distance(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
+                        if distance_between_sequences(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
                             context += seq_record_data.iat[j, 0] + ';'
                         else:
                             outside_window = True
