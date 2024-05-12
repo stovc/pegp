@@ -40,6 +40,8 @@ GENOME_EXTENSION = '.gbff'               # used to filter out genome files
 SYMBOLS = string.digits + string.ascii_uppercase  # symbols used for generating headers
 UTR_WINDOW = 200                         # window for recording 3' and 5' UTRs
 CONTEXT_WINDOW = 10000                   # window for recording genomic context
+GENOME_METADATA_COLUMNS_OF_INTEREST = ['assembly_accession', 'refseq_category', 'taxid', 'organism_name',
+                                       'genome_size', 'gc_percent', 'replicon_count', 'total_gene_count']
 
 # parse arguments
 # expected arguments: 1) path to genomes; 2) path to metadata; 3) path to the database
@@ -102,12 +104,9 @@ id_prefix = 'AB'
 id_iterator = itertools.product(SYMBOLS, repeat=8)
 
 # open metadata
-print(args.metadata)
-f = open(args.metadata, 'r')
-for line in f:
-    print(line)
-f.close()
-metadata = pd.read_csv(args.metadata, index_col=0, sep='\t')
+genome_metadata = pd.read_csv(args.metadata, index_col=0, sep='\t')
+#subset metadata
+genome_metadata = genome_metadata[GENOME_METADATA_COLUMNS_OF_INTEREST]
 
 iteration = 1
 # iterate genomes
@@ -151,7 +150,7 @@ for genome_path in genome_paths:
             # this feature is not written to the database; its properties are assigned to every database entry
 
             # EXTRACT GENOME METADATA
-            genome_metadata = [accession] + metadata.loc[[accession]].values.flatten().tolist()
+            genome_metadata = [accession] + genome_metadata.loc[[accession]].values.flatten().tolist()
 
             # EXTRACT REPLICON METADATA
 
@@ -233,7 +232,7 @@ for genome_path in genome_paths:
                 seq_record_data.append(annotation)
 
         # make a dataframe with metadata
-        columns = ['lcs', 'assembly'] + metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
+        columns = ['lcs', 'assembly'] + genome_metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
                   ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
         seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
 
