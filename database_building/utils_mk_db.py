@@ -1,3 +1,7 @@
+import os
+import pandas as pd
+
+
 def distance_between_sequences(start1, end1, start2, end2, circular_length=None):
     """
     Return distance between two SeqFeatures. Supports circular nucleic acids.
@@ -24,14 +28,14 @@ def distance_between_sequences(start1, end1, start2, end2, circular_length=None)
     return x
 
 
-def circular_slice(s, left, right):
+def circular_slice(string, left, right):
     """Slice a string as circular."""
     if left < 0:
-        return s[left:] + s[:right]
-    elif right > len(s):
-        return s[left:] + s[:right - len(s)]
+        return string[left:] + string[:right]
+    elif right > len(string):
+        return string[left:] + string[:right - len(string)]
     else:
-        return s[left:right]
+        return string[left:right]
 
 
 def get_first(dict_arg, key):
@@ -43,23 +47,23 @@ def get_first(dict_arg, key):
         return get
 
 
-def concatenate(folder, extension):
+def concatenate_files_in_folder(folder, extension):
     """Concatenates all files of 'folder' into a single file of 'extension' extension."""
     print('folder', folder)
-    record_list = os.listdir(database_path / folder)
+    record_list = os.listdir(folder)
     record_list.sort()
 
-    with open(database_path / f'{folder}.{extension}', 'w') as outfile:
+    with open(f'{folder}.{extension}', 'w') as outfile:
         for f in record_list:
-            with open(database_path / folder / f, 'r') as infile:
+            with open(folder / f, 'r') as infile:
                 outfile.write(infile.read())
 
 
-def concatenate_csv(folder):
+def concatenate_csv_in_folder(folder):
     """Concatenates all files of 'folder' into a single csv file."""
     print('folder', folder)
-    record_list = os.listdir(database_path / folder)
+    record_list = os.listdir(folder)
     record_list.sort()
 
-    df_concat = pd.concat([pd.read_csv(database_path / folder / f) for f in record_list], ignore_index=True)
-    df_concat.to_csv(database_path / f'{folder}.csv', index=False)
+    df_concat = pd.concat([pd.read_csv(folder / f) for f in record_list], ignore_index=True)
+    df_concat.to_csv(f'{folder}.csv', index=False)

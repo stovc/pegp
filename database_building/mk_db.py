@@ -22,7 +22,7 @@ Output
 2) Phylogenetic trees of the genomes collapsed to various taxonomic ranks.
 [full, genus, family, order, class, phylum]."""
 
-import os, sys
+import os
 from pathlib import Path
 from argparse import ArgumentParser, Namespace
 import string
@@ -314,26 +314,21 @@ for genome_path in genome_paths:
 
 log.close()
 
-concatenate('protein', 'faa')
+concatenate_files_in_folder(folder=(database_path / 'protein'), extension='faa')
 
-concatenate('upstream', 'csv')
-concatenate('sequence', 'csv')
-concatenate('downstream', 'csv')
-concatenate('translation', 'csv')
-
-FOLDERS_TO_CONCATENATE_CSV = ['annotation']
+FOLDERS_TO_CONCATENATE_CSV = ['annotation', 'upstream', 'sequence', 'downstream', 'translation']
 for folder in FOLDERS_TO_CONCATENATE_CSV:
-    concatenate_csv(folder)
+    concatenate_csv_in_folder(database_path / folder)
 
-# GETTING TAXIDS
+# MAKE ORG TREE
+
+# GET TAXIDS
 data_path = database_path / 'annotation.csv'
 df = pd.read_csv(data_path)
 
 # df = df[df.gtdb_taxonomy.notnull()]
 
 taxids = df['taxid'].unique()
-
-# MAKE ORG TREE
 
 # NCBI taxonomy database object
 ncbi = NCBITaxa()
