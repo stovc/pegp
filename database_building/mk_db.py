@@ -22,26 +22,18 @@ Output
 2) Phylogenetic trees of the genomes collapsed to various taxonomic ranks.
 [full, genus, family, order, class, phylum]."""
 
-import os
-from pathlib import Path
-from argparse import ArgumentParser, Namespace
-import string
-import itertools
-from Bio import Seq, SeqIO
-from Bio import SeqFeature
-import pandas as pd
+from Bio import SeqIO
 from ete3 import NCBITaxa, PhyloNode
 
-from utils_mk_db import *
-from utils_phylogeny import *
+from argparse import ArgumentParser, Namespace
+import itertools
+import os
+import pandas as pd
+from pathlib import Path
 
-# constants
-GENOME_EXTENSION = '.gbff'               # used to filter out genome files
-SYMBOLS = string.digits + string.ascii_uppercase  # symbols used for generating headers
-UTR_WINDOW = 200                         # window for recording 3' and 5' UTRs
-CONTEXT_WINDOW = 10000                   # window for recording genomic context
-GENOME_METADATA_COLUMNS_OF_INTEREST = ['refseq_category', 'taxid', 'organism_name',
-                                       'genome_size', 'gc_percent', 'replicon_count', 'total_gene_count']
+from utils import circular_slice, get_first, concat_files_from_folder, delete_folder, distance_between_sequences
+from phylogeny import export_tree, export_tree_annotation, prune_tree
+import config as c
 
 # parse arguments
 # expected arguments: 1) path to genomes; 2) path to metadata; 3) path to the database
@@ -80,7 +72,7 @@ log.write(f'Database assembly. db: {args.database}, folders: {args.genomes}\n')
 # generate a list of all genome paths to be processed
 
 file_names = os.listdir(args.genomes)
-genome_file_names = [i for i in file_names if GENOME_EXTENSION in i]
+genome_file_names = [i for i in file_names if c.GENOME_EXTENSION in i]
 genome_paths = [genomes_path / i for i in genome_file_names]
 
 # generate a list paths of genomes completed in previous runs
@@ -101,7 +93,7 @@ completed_paths = open(database_path / 'completed_paths.txt', 'a')
 
 # generated IDs will consist of a prefix and an iterated part
 id_prefix = 'AB'
-id_iterator = itertools.product(SYMBOLS, repeat=8)
+id_iterator = itertools.product(c.HEADER_SYMBOLS, repeat=8)
 
 # open metadata
 genome_metadata = pd.read_csv(args.metadata, index_col=0, sep='\t')
@@ -203,9 +195,9 @@ for genome_path in genome_paths:
 
                 # sequence
                 seq_record_seq = str(seq_record.seq)
-                upstream = circular_slice(seq_record_seq, start - UTR_WINDOW, start)
+                upstream = circular_slice(seq_record_seq, start - c.UTR_WINDOW_SIZE, start)
                 sequence = seq_record_seq[start:end]
-                downstream = circular_slice(seq_record_seq, end, end + UTR_WINDOW)
+                downstream = circular_slice(seq_record_seq, end, end + c.UTR_WINDOW_SIZE)
                 translation = get_first(feature.qualifiers, 'translation')
 
                 # annotations
@@ -269,7 +261,7 @@ for genome_path in genome_paths:
                         within_window = False
                         short = True
                     else:
-                        if distance_between_sequences(start_i, end_i, start_j, end_j, circular_length) <= CONTEXT_WINDOW:
+                        if distance_between_sequences(start_i, end_i, start_j, end_j, circular_length) <= c.CONTEXT_WINDOW_SIZE:
                             context += short_data.iat[j, 0] + ';'
                         else:
                             within_window = False
@@ -286,7 +278,7 @@ for genome_path in genome_paths:
                         start2 = short_data.iat[j, 1]
                         end2 = short_data.iat[j, 2]
 
-                        if distance_between_sequences(start1, end1, start2, end2, circular_length) <= CONTEXT_WINDOW:
+                        if distance_between_sequences(start1, end1, start2, end2, circular_length) <= c.CONTEXT_WINDOW_SIZE:
                             context += seq_record_data.iat[j, 0] + ';'
                         else:
                             outside_window = True
@@ -314,11 +306,16 @@ for genome_path in genome_paths:
 
 log.close()
 
-concatenate_files_in_folder(folder=(database_path / 'protein'), extension='faa')
+concat_files_from_folder(folder=(database_path / 'protein'), extension='faa')
 
 FOLDERS_TO_CONCATENATE_CSV = ['annotation', 'upstream', 'sequence', 'downstream', 'translation']
 for folder in FOLDERS_TO_CONCATENATE_CSV:
-    concatenate_csv_in_folder(database_path / folder)
+    concat_files_from_folder(folder=(database_path / folder), extension='csv')
+
+# REMOVE FOLDERS
+
+for folder in FOLDERS_TO_CONCATENATE_CSV + ['protein']:
+    delete_folder(database_path / folder)
 
 # MAKE ORG TREE
 
@@ -337,12 +334,12 @@ ncbi.update_taxonomy_database()
 # get tree topology as PhyloNode object
 tree = ncbi.get_topology(taxids, intermediate_nodes=True)
 
-tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_genus = prune_tree(tree, ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_family = prune_tree(tree, ['family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_order = prune_tree(tree, ['order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_class = prune_tree(tree, ['class', 'phylum', 'superkingdom', 'kingdom', 'root'])
-tree_phylum = prune_tree(tree, ['phylum', 'superkingdom', 'kingdom', 'root'])
+tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
+tree_genus = prune_tree(tree, ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
+tree_family = prune_tree(tree, ['family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
+tree_order = prune_tree(tree, ['order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
+tree_class = prune_tree(tree, ['class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
+tree_phylum = prune_tree(tree, ['phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
 
 # EXPORT TREES AND ANNOTATIONS
 # construct path for the output folder and make it
@@ -359,4 +356,4 @@ export_tree(tree_class, out_folder / 'org_tree_class.nwk')
 export_tree(tree_phylum, out_folder / 'org_tree_phylum.nwk')
 
 # export .csv annotations for the trees pruned to different taxonomic levels
-export_tree_annotation(tree_full, out_folder / 'org_tree_full_data.csv')
+export_tree_annotation(tree_full, out_folder / 'org_tree_full_data.csv', database=ncbi)

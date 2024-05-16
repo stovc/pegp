@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+import platform
+import subprocess
 
 
 def distance_between_sequences(start1, end1, start2, end2, circular_length=None):
@@ -47,23 +49,34 @@ def get_first(dict_arg, key):
         return get
 
 
-def concatenate_files_in_folder(folder, extension):
+def concat_files_from_folder(folder, extension):
     """Concatenates all files of 'folder' into a single file of 'extension' extension."""
     print('folder', folder)
     record_list = os.listdir(folder)
     record_list.sort()
 
-    with open(f'{folder}.{extension}', 'w') as outfile:
-        for f in record_list:
-            with open(folder / f, 'r') as infile:
-                outfile.write(infile.read())
+    if extension not in record_list == 'csv':
+
+        with open(f'{folder}.{extension}', 'w') as outfile:
+            for f in record_list:
+                with open(folder / f, 'r') as infile:
+                    outfile.write(infile.read())
+
+    else:
+        df_concat = pd.concat([pd.read_csv(folder / f) for f in record_list], ignore_index=True)
+        df_concat.to_csv(f'{folder}.csv', index=False)
+
+    return None
 
 
-def concatenate_csv_in_folder(folder):
-    """Concatenates all files of 'folder' into a single csv file."""
-    print('folder', folder)
-    record_list = os.listdir(folder)
-    record_list.sort()
+def delete_folder(folder_path):
+    try:
+        if platform.system() == "Windows":
+            subprocess.run(["rmdir", "/s", "/q", folder_path], shell=True, check=True)
+        else:
+            subprocess.run(["rm", "-rf", folder_path], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
-    df_concat = pd.concat([pd.read_csv(folder / f) for f in record_list], ignore_index=True)
-    df_concat.to_csv(f'{folder}.csv', index=False)
