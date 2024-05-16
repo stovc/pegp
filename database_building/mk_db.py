@@ -96,9 +96,10 @@ id_prefix = 'AB'
 id_iterator = itertools.product(c.HEADER_SYMBOLS, repeat=8)
 
 # open metadata
-genome_metadata = pd.read_csv(args.metadata, index_col=0, sep='\t')
+genome_metadata_df = pd.read_csv(args.metadata, index_col=0, sep='\t')
 #subset metadata
-genome_metadata = genome_metadata[GENOME_METADATA_COLUMNS_OF_INTEREST]
+
+genome_metadata_df = genome_metadata_df[c.GENOME_METADATA_COLUMNS_OF_INTEREST]
 
 iteration = 1
 # iterate genomes
@@ -137,12 +138,12 @@ for genome_path in genome_paths:
         taxid = 'NONE'
         replicon = 'NONE'
         replicon_metadata = ['NONE', 'NONE']
+
+        genome_metadata = [accession] + genome_metadata_df.loc[[accession]].values.flatten().tolist()
+
         for feature in seq_record.features:  # extract taxid and replicon from the source feature
             # "source" feature is single per seq_record/replicon and contains replicon related information
             # this feature is not written to the database; its properties are assigned to every database entry
-
-            # EXTRACT GENOME METADATA
-            genome_metadata = [accession] + genome_metadata.loc[[accession]].values.flatten().tolist()
 
             # EXTRACT REPLICON METADATA
 
@@ -224,7 +225,7 @@ for genome_path in genome_paths:
                 seq_record_data.append(annotation)
 
         # make a dataframe with metadata
-        columns = ['lcs', 'assembly'] + genome_metadata.columns.to_list() + ['replicon_type', 'replicon'] + \
+        columns = ['lcs', 'assembly'] + genome_metadata_df.columns.to_list() + ['replicon_type', 'replicon'] + \
                   ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
         seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
 
