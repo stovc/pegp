@@ -36,7 +36,12 @@ from phylogeny import export_tree, export_tree_annotation, prune_tree
 import config as c
 
 
-def add_genome_context(seq_record_data):
+def add_genome_context(seq_record, seq_record_data):
+    if seq_record.annotations['topology'] == 'circular':
+        circular_length = len(seq_record.seq)
+    else:
+        circular_length = None
+
     context = ''
 
     short_data = seq_record_data[['lcs', 'start', 'end']]
@@ -185,6 +190,111 @@ def parse_arguments():
     return args
 
 
+def parse_genome(genome_path):
+    for seq_record in SeqIO.parse(genome_path, 'genbank'):
+
+        seq_record_data = []
+        accession = genome_path.name
+        accession = accession.split('_')[0] + accession.split('_')[1]  # genome name, e.g. GCF_000701165.1
+        log.write('Assembly: ' + accession + ' ')
+
+        accession = accession[:3] + '_' + accession[3:]
+
+        # open output files
+        # fasta file with all protein sequences
+        protein_output = open(database_path / 'protein' / f'{accession}', 'w')
+        # other annotations discribed
+        upstream_out = open(database_path / 'upstream' / f'{accession}', 'w')
+        sequence_out = open(database_path / 'sequence' / f'{accession}', 'w')
+        downstream_out = open(database_path / 'downstream' / f'{accession}', 'w')
+        translation_out = open(database_path / 'translation' / f'{accession}', 'w')
+        annotation_out = open(database_path / 'annotation' / f'{accession}', 'w')
+
+        definition = seq_record.description  # Bifidobacterium breve strain NRBB18 chromosome, complete genome
+        log.write('Definition: ' + definition + '\n')
+
+        taxid = 'NONE'
+        replicon = 'NONE'
+        replicon_metadata = ['NONE', 'NONE']
+
+        genome_metadata = [accession] + genome_metadata_df.loc[[accession]].values.flatten().tolist()
+
+        for feature in seq_record.features:  # extract taxid and replicon from the source feature
+            # "source" feature is single per seq_record/replicon and contains replicon related information
+            # this feature is not written to the database; its properties are assigned to every database entry
+
+            # EXTRACT REPLICON METADATA
+
+            if feature.type == 'source':
+                replicon_metadata = get_replicon_data_from_source(feature)
+
+            # EXTRACT FEATURE METADATA
+
+            elif feature.type not in ['source', 'gene']:
+                # generate lcs id
+                lcs = next(id_iterator)
+                lcs = ''.join(lcs)
+                lcs = id_prefix + lcs
+
+                feature_type = get_feature_type(feature)
+
+                # coordinates
+                start = int(feature.location.start)
+                end = int(feature.location.end)
+                strand = feature.location.strand
+                coordinates = [start, end, strand]
+
+                # sequence
+                seq_record_seq = str(seq_record.seq)
+                upstream = circular_slice(seq_record_seq, start - c.UTR_WINDOW_SIZE, start)
+                sequence = seq_record_seq[start:end]
+                downstream = circular_slice(seq_record_seq, end, end + c.UTR_WINDOW_SIZE)
+                translation = get_first(feature.qualifiers, 'translation')
+
+                # annotations
+                gene = get_first(feature.qualifiers, 'gene')
+                product = get_first(feature.qualifiers, 'product')
+
+                # annotations i dont use
+                # protein_id = get_first(feature.qualifiers, 'protein_id')
+
+                # WRITE METADATA
+                if translation is not None:
+                    protein_output.write(f'>{lcs}\n{translation}\n')  # write a fasta record with translation
+                    translation_out.write(f'{lcs},{translation}\n')
+                    protein_length = len(translation)
+                else:
+                    protein_length = None
+
+                upstream_out.write(f'{lcs},{upstream}\n')
+                sequence_out.write(f'{lcs},{sequence}\n')
+                downstream_out.write(f'{lcs},{downstream}\n')
+
+                feature_metadata = [feature_type, gene, product, start, end, strand, protein_length]
+                annotation = [lcs] + genome_metadata + replicon_metadata + feature_metadata
+                seq_record_data.append(annotation)
+
+        # make a dataframe with metadata
+        columns = ['lcs', 'assembly'] + genome_metadata_df.columns.to_list() + ['replicon_type', 'replicon'] + \
+                  ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
+        seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
+
+        # INFER GENOME CONTEXT
+        if not args.nocontext:
+            seq_record_data = add_genome_context(seq_record, seq_record_data)
+
+        annotation_out.write(seq_record_data.to_csv(index=False))
+
+        protein_output.close()
+        annotation_out.close()
+        upstream_out.close()
+        sequence_out.close()
+        downstream_out.close()
+        translation_out.close()
+
+    completed_paths.write(str(genome_path) + '\n')
+
+
 if __name__ == '__main__':
     args = parse_arguments()
 
@@ -228,114 +338,8 @@ if __name__ == '__main__':
         print(f'{iteration} {genome_path}')
         iteration += 1
         # iterate seq. records (replicons) in a genbank file
-        for seq_record in SeqIO.parse(genome_path, 'genbank'):
 
-            seq_record_data = []
-            accession = genome_path.name
-            accession = accession.split('_')[0] + accession.split('_')[1]  # genome name, e.g. GCF_000701165.1
-            log.write('Assembly: ' + accession + ' ')
-
-            accession = accession[:3] + '_' + accession[3:]
-
-            # open output files
-            # fasta file with all protein sequences
-            protein_output = open(database_path / 'protein' / f'{accession}', 'w')
-            # other annotations discribed
-            upstream_out = open(database_path / 'upstream' / f'{accession}', 'w')
-            sequence_out = open(database_path / 'sequence' / f'{accession}', 'w')
-            downstream_out = open(database_path / 'downstream' / f'{accession}', 'w')
-            translation_out = open(database_path / 'translation' / f'{accession}', 'w')
-            annotation_out = open(database_path / 'annotation' / f'{accession}', 'w')
-
-            definition = seq_record.description  # Bifidobacterium breve strain NRBB18 chromosome, complete genome
-            log.write('Definition: ' + definition + '\n')
-
-            if seq_record.annotations['topology'] == 'circular':
-                circular_length = len(seq_record.seq)
-            else:
-                circular_length = None
-
-            taxid = 'NONE'
-            replicon = 'NONE'
-            replicon_metadata = ['NONE', 'NONE']
-
-            genome_metadata = [accession] + genome_metadata_df.loc[[accession]].values.flatten().tolist()
-
-            for feature in seq_record.features:  # extract taxid and replicon from the source feature
-                # "source" feature is single per seq_record/replicon and contains replicon related information
-                # this feature is not written to the database; its properties are assigned to every database entry
-
-                # EXTRACT REPLICON METADATA
-
-                if feature.type == 'source':
-                    replicon_metadata = get_replicon_data_from_source(feature)
-
-                # EXTRACT FEATURE METADATA
-
-                elif feature.type not in ['source', 'gene']:
-                    # generate lcs id
-                    lcs = next(id_iterator)
-                    lcs = ''.join(lcs)
-                    lcs = id_prefix + lcs
-
-                    feature_type = get_feature_type(feature)
-
-                    # coordinates
-                    start = int(feature.location.start)
-                    end = int(feature.location.end)
-                    strand = feature.location.strand
-                    coordinates = [start, end, strand]
-
-                    # sequence
-                    seq_record_seq = str(seq_record.seq)
-                    upstream = circular_slice(seq_record_seq, start - c.UTR_WINDOW_SIZE, start)
-                    sequence = seq_record_seq[start:end]
-                    downstream = circular_slice(seq_record_seq, end, end + c.UTR_WINDOW_SIZE)
-                    translation = get_first(feature.qualifiers, 'translation')
-
-                    # annotations
-                    gene = get_first(feature.qualifiers, 'gene')
-                    product = get_first(feature.qualifiers, 'product')
-
-                    # annotations i dont use
-                    # protein_id = get_first(feature.qualifiers, 'protein_id')
-
-                    # WRITE METADATA
-                    if translation is not None:
-                        protein_output.write(f'>{lcs}\n{translation}\n')  # write a fasta record with translation
-                        translation_out.write(f'{lcs},{translation}\n')
-                        protein_length = len(translation)
-                    else:
-                        protein_length = None
-
-                    upstream_out.write(f'{lcs},{upstream}\n')
-                    sequence_out.write(f'{lcs},{sequence}\n')
-                    downstream_out.write(f'{lcs},{downstream}\n')
-
-                    feature_metadata = [feature_type, gene, product, start, end, strand, protein_length]
-                    annotation = [lcs] + genome_metadata + replicon_metadata + feature_metadata
-                    seq_record_data.append(annotation)
-
-            # make a dataframe with metadata
-            columns = ['lcs', 'assembly'] + genome_metadata_df.columns.to_list() + ['replicon_type', 'replicon'] + \
-                      ['feature_type', 'gene', 'product', 'start', 'end', 'strand', 'protein_length']
-            seq_record_data = pd.DataFrame(seq_record_data, columns=columns)
-
-            # INFER GENOME CONTEXT
-            if not args.nocontext:
-                seq_record_data = add_genome_context(seq_record_data)
-
-
-            annotation_out.write(seq_record_data.to_csv(index=False))
-
-            protein_output.close()
-            annotation_out.close()
-            upstream_out.close()
-            sequence_out.close()
-            downstream_out.close()
-            translation_out.close()
-
-        completed_paths.write(str(genome_path) + '\n')
+        parse_genome(genome_path)
 
     log.close()
 
