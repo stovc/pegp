@@ -1,5 +1,9 @@
-import os
+import logging
+
 import pandas as pd
+
+import itertools
+import os
 import platform
 import subprocess
 
@@ -51,20 +55,19 @@ def get_first(dict_arg, key):
 
 def concat_files_from_folder(folder, extension):
     """Concatenates all files of 'folder' into a single file of 'extension' extension."""
-    print('folder', folder)
+    logging.info('concatenating folder', folder)
     record_list = os.listdir(folder)
     record_list.sort()
 
-    if extension not in record_list == 'csv':
+    if extension == 'csv':
+        df_concat = pd.concat([pd.read_csv(folder / f, engine='python') for f in record_list], ignore_index=True)
+        df_concat.to_csv(f'{folder}.csv', index=False)
 
+    else:
         with open(f'{folder}.{extension}', 'w') as outfile:
             for f in record_list:
                 with open(folder / f, 'r') as infile:
                     outfile.write(infile.read())
-
-    else:
-        df_concat = pd.concat([pd.read_csv(folder / f) for f in record_list], ignore_index=True)
-        df_concat.to_csv(f'{folder}.csv', index=False)
 
     return None
 
@@ -76,7 +79,14 @@ def delete_folder(folder_path):
         else:
             subprocess.run(["rm", "-rf", folder_path], check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Error: {e}")
+        logging.error(f"Error: {e}")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        logging.error(f"An unexpected error occurred: {e}")
 
+
+def make_id_iterator(prefix, symbols, suffix_length):
+
+    combinations = itertools.product(symbols, repeat=suffix_length)
+
+    for combination in combinations:
+        yield prefix + ''.join(combination)
