@@ -120,6 +120,7 @@ def parse_arguments():
 
 if __name__ == '__main__':
     # parse arguments
+
     args = parse_arguments()
 
     genomes_path = Path(args.genomes)
@@ -167,8 +168,8 @@ if __name__ == '__main__':
         concat_files_from_folder(folder=(database_path / folder), extension='csv')
 
     # REMOVE FOLDERS
-    # for folder in FOLDERS_TO_CONCATENATE_CSV + ['protein']:
-    #     delete_folder(database_path / folder)
+    for folder in FOLDERS_TO_CONCATENATE_CSV + ['protein']:
+        delete_folder(database_path / folder)
 
     # MAKE ORG TREE
     # GET TAXIDS
