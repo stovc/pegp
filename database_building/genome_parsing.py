@@ -9,7 +9,8 @@ from pathlib import Path
 from utils import circular_slice, get_first, distance_between_sequences
 import constants as c
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('__main__')
+
 
 class GenomeParserConfig:
     def __init__(self, database_path, genome_metadata_df, id_iterator, enable_genome_context):
@@ -107,11 +108,11 @@ def get_feature_type(feature):
 
 def get_replicon_data_from_source(feature):
     plasmid = feature.qualifiers.get('plasmid')
-    logger.info(f'Plasmid: {plasmid}\n')
+    logger.debug(f'Plasmid: {plasmid}')
     segment = feature.qualifiers.get('segment')
-    logger.info(f'Segment: {segment}\n')
+    logger.debug(f'Segment: {segment}')
     chromosome = feature.qualifiers.get('chromosome')
-    logger.info(f'Chromosome: {chromosome}\n')
+    logger.debug(f'Chromosome: {chromosome}')
 
     if plasmid is not None:
         replicon_type = 'plasmid'
@@ -131,12 +132,12 @@ def get_replicon_data_from_source(feature):
 
 def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
     """Parse features in a genbank genome file. Save protein sequences and metadata to files."""
-    logger.info(f'Parsing genome: {genome_path}\n')
+    logger.info(f'Parsing genome: {genome_path}')
 
     filename = genome_path.name                    # e.g., GCF_000012525.1_ASM1252v1_genomic.gbff
     accession = '_'.join(filename.split('_')[:2])  # e.g., GCF_000701165.1
 
-    logger.info(f'Assembly: {accession}\n')
+    logger.debug(f'Assembly: {accession}')
 
     annotation_path = Path(config.database_path / 'annotation' / f'{accession}')
 
@@ -188,7 +189,7 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
                 downstream = circular_slice(seq_record_seq, end, end + c.UTR_WINDOW_SIZE)
                 translation = get_first(feature.qualifiers, 'translation')
 
-                if len(sequence) > 100000:  # WORKAROUND
+                if len(sequence) > 100000:  # WORKAROUND - otherwise a problem with pandas import_csv
                     sequence = sequence[:100000]
 
                 # write protein sequence data
