@@ -285,7 +285,7 @@ def plot_overlaps(data):
     for assembly in data['assembly'].unique():
         starts = data[data['assembly'] == assembly]['start']
         ends = data[data['assembly'] == assembly]['end']
-        length = data[data['assembly'] == assembly]['length']
+        length = data[data['assembly'] == assembly]['protein_length']
         for overlap_length, hits_pairs_number in find_overlaps(starts, ends, length).items():
             hits_pairs_number_per_overlap_length[overlap_length] += hits_pairs_number
     overlap_lengths = range(1, max(hits_pairs_number_per_overlap_length) + 1)
