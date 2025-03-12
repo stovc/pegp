@@ -14,6 +14,7 @@ Output contains the following:
     - Histogram of average number of hits per genome in a phylum (TODO: would be nice to plot a tree with pattern)
 
     TODO: make colormap generation less hardcoded (infinite value-proof)
+    TODO: fix plot_overlaps()
 """
 
 from Bio import SeqIO, SearchIO
@@ -431,7 +432,7 @@ if __name__ == '__main__':
         plots = [
             plot_hist(data, 'assembly', 'Number of genomes'),
             plot_hist(data, 'lcs', 'Number of proteins'),
-            plot_overlaps(data),  # plot hits overlaps lengths distribution
+            # plot_overlaps(data),  # plot hits overlaps lengths distribution
             plot_3d(df=data,
                     x_col='lg_evalue',
                     y_col='query_coverage',
