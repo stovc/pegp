@@ -421,10 +421,13 @@ if __name__ == '__main__':
         taxon_counts = data['taxon'].value_counts(sort=True)
         taxon_counts = put_other_to_end(taxon_counts)
 
-        taxon_colormap = generate_colormap(taxon_counts)
+        print(type(taxon_counts))
+        print(taxon_counts)
+        print(taxon_counts.keys())
+        taxon_colormap = generate_colormap(taxon_counts.keys())
 
         function_counts = data['function'].value_counts(sort=True)
-        function_counts = put_other_to_end(function_counts)
+        function_counts = put_other_to_end(function_counts.keys())
 
         function_colormap = generate_colormap(function_counts)
 
