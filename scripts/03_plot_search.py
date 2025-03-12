@@ -316,6 +316,8 @@ def plot_3d(df, x_col, y_col, z_col, color_axis, color_dict=None):
     data_points = [(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
     if color_dict is not None:
+        print(color_dict)
+        print(list(df[color_axis]))
         colors = [color_dict[value] for value in list(df[color_axis])]
     else:
         colors = [value for value in list(df[color_axis])]
