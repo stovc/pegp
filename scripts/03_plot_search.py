@@ -427,7 +427,7 @@ if __name__ == '__main__':
         taxon_colormap = generate_colormap(taxon_counts.index.tolist())
 
         function_counts = data['function'].value_counts(sort=True)
-        function_counts = put_other_to_end(function_counts.keys())
+        function_counts = put_other_to_end(function_counts)
 
         function_colormap = generate_colormap(function_counts.index.tolist())
 
