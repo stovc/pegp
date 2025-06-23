@@ -22,12 +22,13 @@ PEGP (protein evolutionary genomics pipeline). A software tool for
 ### Python packages
 
 - python 3.10
-- biopython `conda install biopython`
-- ete3 `conda install -c etetoolkit ete3`
-- matplotlib `conda install matplotlib`
-- numpy, pandas, seaborn `conda install seaborn`
-- prettytable `conda install prettytable`
-- colorama `conda install colorama`
+- biopython `mamba install biopython`
+- ete3 `mamba install -c conda-forge ete3`
+- matplotlib `mamba install matplotlib`
+- numpy, pandas, seaborn `mamba install seaborn`
+- prettytable `mamba install prettytable`
+- colorama `mamba install colorama`
+- reportlab `mamba install conda-forge::reportlab`
 
 ## Installation
 - `git clone https://github.com/stovc/pegp`
