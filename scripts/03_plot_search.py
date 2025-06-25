@@ -38,14 +38,14 @@ import constants as c
 from plot_search_utils import *
 
 
-def filter_top_column_values(df, filter_column ='phylum', assign_column='taxon', keep_first=12):
+def filter_top_column_values(df, filter_column='phylum', assign_column='taxon', keep_first=10):
     """
     Keeps the top `keep_first` most abundant taxa from and groups the rest as 'Other'.
     Parameters:
         df : DataFrame containing a column with taxonomic ranks.
         filter_column : Column name of the taxonomic rank (default: 'phylum').
         assign_column : Column name of the assigned filtered column.
-        keep_first : Number of top taxa to retain (default: 12).
+        keep_first : Number of top taxa to retain (default: 10).
     Returns: DataFrame with an added 'Taxon' column, grouping rare taxa as 'Other'.
     """
     value_counts = df[filter_column].value_counts()
@@ -143,14 +143,14 @@ def plot_hist(data, key, y_label):
     key_objects_cnt_per_hits_number = defaultdict(int)
     for hits_number in hits_number_per_object.values():
         key_objects_cnt_per_hits_number[hits_number] += 1
-    N_hits = range(max(key_objects_cnt_per_hits_number))
-    N_key_objects = [key_objects_cnt_per_hits_number[i] for i in N_hits]
+    n_hits = range(max(key_objects_cnt_per_hits_number))
+    n_key_objects = [key_objects_cnt_per_hits_number[i] for i in n_hits]
     fig, ax = plt.subplots()
     ax.set_rasterized(True)
-    ax.bar(N_hits, N_key_objects)
+    ax.bar(n_hits, n_key_objects)
     ax.set_xlabel('Number of hits')
     ax.set_ylabel(y_label)
-    ax.set_xlim(0, len(N_hits) + 1)
+    ax.set_xlim(0, len(n_hits) + 1)
 
     return fig
 
@@ -241,10 +241,10 @@ def plot_annotation_distribution(df_handle):
 
 def find_overlaps(starts, ends, length):
     """Return distribution of hits pairwise 
-    overlaps lengthes in one genome.
+    overlaps lengths in one genome.
     starts - array with coordinates of hits starts
     ends - array with coordinates of hits ends
-    length - array with hits lengthes
+    length - array with hits lengths
 
     TODO: rewrite to O(n) algorithm 
     """
@@ -400,15 +400,15 @@ if __name__ == '__main__':
         with open(exitlog_path, 'a') as outfile:
             outfile.write('3 started\n')
 
-        # read data
-        data = pd.read_csv(Path('projects') / project / 'hits_df.csv',
-                           index_col=0)  # dataframe with hmmer results
+        # CORE FUNCTIONALITY
+        # read data with hmmer results
+        data = pd.read_csv(Path('projects') / project / 'hits_df.csv', index_col=0)
 
         # pre-filtering of hits with e-value > 0.1
         data = data[data.evalue <= 0.1]
 
-        data = filter_top_column_values(df=data, filter_column='phylum', assign_column='taxon', keep_first=12)
-        data = filter_top_column_values(df=data, filter_column='product', assign_column='function', keep_first=12)
+        data = filter_top_column_values(df=data, filter_column='phylum', assign_column='taxon', keep_first=8)
+        data = filter_top_column_values(df=data, filter_column='product', assign_column='function', keep_first=8)
 
         # output of information about database, query, homology search tool, and  
         # numerical characteristics of search results
@@ -425,9 +425,10 @@ if __name__ == '__main__':
         print(taxon_counts)
         print(taxon_counts.keys())
         taxon_colormap = generate_colormap(taxon_counts.index.tolist())
+        print(taxon_colormap)
 
         function_counts = data['function'].value_counts(sort=True)
-        function_counts = put_other_to_end(function_counts)  # check
+        function_counts = put_other_to_end(function_counts)
 
         function_colormap = generate_colormap(function_counts.index.tolist())
 
