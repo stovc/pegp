@@ -61,7 +61,7 @@ if __name__ == '__main__':
                     out_df = pd.concat([out_df, to_append], ignore_index=True)
 
         # add dummy annotations to align domain plot
-        for i in ids:
+        """for i in ids:
             # append target domain positions
             position = target_domain_positions[i]
             to_append = {0: i, 1: '.', 2: 0, 3: position, 4: position + 1}   # apparently I can remove this column 2 --- test!
@@ -69,7 +69,18 @@ if __name__ == '__main__':
             # append whole proteins
             protein_length = protein_lengths[i]
             to_append = {0: i, 1: '_', 2: 0, 3: 0, 4: protein_length}
-            out_df = out_df.append(to_append, ignore_index=True)  # TODO: change append to concat
+            out_df = out_df.append(to_append, ignore_index=True)  # TODO: change append to concat"""
+
+        rows = []
+        for i in ids:
+            # target domain positions
+            position = target_domain_positions[i]
+            rows.append({0: i, 1: '.', 2: 0, 3: position, 4: position + 1})
+            # whole proteins
+            protein_length = protein_lengths[i]
+            rows.append({0: i, 1: '_', 2: 0, 3: 0, 4: protein_length})
+        # now create the DataFrame at once
+        out_df = pd.DataFrame(rows)
 
         out_df = out_df.drop(columns=[2])
         out_df = out_df.rename(columns={0: 'id', 1: 'domain', 3: 'start', 4: 'end'})
