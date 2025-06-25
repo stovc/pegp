@@ -62,7 +62,7 @@ def save_plots_to_files(plots):
 
 
 def save_to_pdf(text_lines, plots, pdf_path):
-    c = canvas.Canvas(pdf_path, pagesize=letter)
+    c = canvas.Canvas(str(pdf_path), pagesize=letter)
 
     # Add text report to first page
     c.setFont("Helvetica", 12)
