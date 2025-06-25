@@ -209,6 +209,8 @@ def plot_annotation_distribution(df_handle):
     annotation_distribution = df_handle['product'].value_counts(sort=True)
     products = annotation_distribution.index.values.tolist()
     product_counts = list(annotation_distribution)
+
+    """
     filter_map = []
     i = 0
     cnt = 0
@@ -220,6 +222,11 @@ def plot_annotation_distribution(df_handle):
 
     df_handle['function'] = df_handle['product'].apply(filter_top_column_values, args=[
         filter_map])  # substitute products to "Other" according f_map
+    
+    """
+
+    df_handle = filter_top_column_values(df=df_handle, filter_column='product', assign_column='function', keep_first=8)
+
     function_distribution = df_handle['function'].value_counts(sort=True)
     functions = function_distribution.index.values.tolist()
     function_distribution = list(function_distribution)
