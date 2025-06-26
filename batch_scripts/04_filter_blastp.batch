@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=filter_bp
+#SBATCH --job-name=filter
 #SBATCH --output=filter_blastp_out.txt
 #
 #SBATCH --time=2:00:00   # HOW LONG DO I NEED?

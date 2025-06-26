@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#SBATCH --job-name=cdhit
-#SBATCH --output=cdhit.out
+#SBATCH --job-name=cluster
+#SBATCH --output=cluster.out
 #
 #SBATCH --time=2:00:00
 #SBATCH --mem=16G
