@@ -11,7 +11,7 @@ DATABASE=$2
 # log step number and started status
 echo 1 started >> projects/"$PROJECT"/exit_log.txt
 
-#blast
+#search
 hmmsearch -o projects/"$PROJECT"/hits.txt projects/"$PROJECT"/input.faa databases/"$DATABASE"/protein.faa
 
 # write step number and exit status to the exit log

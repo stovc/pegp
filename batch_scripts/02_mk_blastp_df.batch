@@ -15,9 +15,8 @@ export OMP_NUM_THREADS=1
 #
 #run the respective binary through SLURM's srun
 
-ml load python/3.9.5
-source /mnt/nfs/clustersw/Debian/bullseye/anaconda3/2022.05/activate_anaconda3_2022.05.txt
-conda activate /nfs/scistore08/kondrgrp/sovchinn/anaconda3/envs/pg
+source /nfs/scistore16/calingrp/sovchinn/.bashrc
+conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
 srun --cpu_bind=verbose python3 scripts/02_mk_blastp_df.py $1 $2
 echo 2 $? >> projects/$1/exit_log.txt

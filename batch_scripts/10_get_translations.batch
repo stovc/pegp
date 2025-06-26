@@ -1,2 +1,20 @@
 #!/bin/bash
-echo hey
+#
+#SBATCH --job-name=plot_filter
+#SBATCH --output=plot_filter.out
+#
+#SBATCH --time=2:00:00
+#
+#SBATCH --mem=64G
+#
+#SBATCH --no-requeue
+#SBATCH --export=NONE
+unset SLURM_EXPORT_ENV
+#
+export OMP_NUM_THREADS=1
+
+source /nfs/scistore16/calingrp/sovchinn/.bashrc
+conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
+
+srun --cpu_bind=verbose python3 scripts/10_get_translations.py $1
+echo 10 $? >> projects/$1/exit_log.txt

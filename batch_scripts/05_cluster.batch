@@ -16,5 +16,8 @@ module purge
 module load cdhit/4.8.1
 module list
 
+source /nfs/scistore16/calingrp/sovchinn/.bashrc
+conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
+
 srun bash scripts/05_cluster.sh $1
 echo 5 $? >> projects/$1/exit_log.txt
