@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=genome_context
+#SBATCH --job-name=df_search
 #SBATCH --output=mk_blastp_df_out.txt
 #
 #SBATCH --time=2:00:00   # HOW LONG DO I NEED?
@@ -18,5 +18,5 @@ export OMP_NUM_THREADS=1
 source /nfs/scistore16/calingrp/sovchinn/.bashrc
 conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
-srun --cpu_bind=verbose python3 scripts/02_mk_blastp_df.py $1 $2
+srun --cpu_bind=verbose python3 scripts/02_mk_search_df.py $1 $2
 echo 2 $? >> projects/$1/exit_log.txt
