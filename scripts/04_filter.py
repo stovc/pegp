@@ -25,6 +25,7 @@ import pandas as pd
 
 if __name__ == '__main__':
     try:
+        print('args', sys.argv)
         project = sys.argv[1]
         coverage_threshold = float(sys.argv[3])
         evalue_threshold = float(sys.argv[4])

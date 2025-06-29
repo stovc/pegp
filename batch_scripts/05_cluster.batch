@@ -19,5 +19,5 @@ module list
 source /nfs/scistore16/calingrp/sovchinn/.bashrc
 conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
-srun bash scripts/05_cluster.sh $1
+srun bash scripts/05_cluster.sh $1 $2 $3
 echo 5 $? >> projects/$1/exit_log.txt
