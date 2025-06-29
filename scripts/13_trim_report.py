@@ -34,7 +34,7 @@ if __name__ == '__main__':
         trimed_path = Path('projects') / project / 'trimed.fa'  # path to fasta file with aligned reads after trimming
 
         # create output to plot to
-        out_path = Path('projects') / project / 'triming_report.pdf'  # path to the output report pdf
+        out_path = Path('projects') / project / 'reports' / 'triming_report.pdf'  # path to the output report pdf
         pdf = matplotlib.backends.backend_pdf.PdfPages(out_path)  # report pdf object
 
         # create a page to output information
