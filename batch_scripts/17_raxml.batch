@@ -16,5 +16,5 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 source /nfs/scistore16/calingrp/sovchinn/.bashrc
 conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
-srun bash scripts/tree.sh $1
+srun bash scripts/17_tree.sh $1
 echo 17 $? >> projects/$1/exit_log.txt
