@@ -15,5 +15,5 @@ export OMP_NUM_THREADS=1
 source /nfs/scistore16/calingrp/sovchinn/.bashrc
 conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
-srun bash scripts/15_domain_search.sh $1
+srun bash scripts/15_prottest.sh $1
 echo 15 $? >> projects/$1/exit_log.txt
