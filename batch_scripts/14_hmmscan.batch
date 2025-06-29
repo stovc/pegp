@@ -12,6 +12,8 @@ unset SLURM_EXPORT_ENV
 export OMP_NUM_THREADS=1
 #
 
-ml load hmmer
+source /nfs/scistore16/calingrp/sovchinn/.bashrc
+conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
-srun hmmscan --domtblout projects/$1/hmmscan.tbl --cut_ga Pfam-A.hmm projects/$1/clustered_full.faa
+srun bash scripts/14_domain_search.sh $1
+echo 14 $? >> projects/$1/exit_log.txt

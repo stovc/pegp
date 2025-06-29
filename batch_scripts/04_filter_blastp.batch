@@ -5,7 +5,7 @@
 #
 #SBATCH --time=2:00:00   # HOW LONG DO I NEED?
 #
-#SBATCH --mem=64G
+#SBATCH --mem=32G
 #
 #SBATCH --no-requeue
 #SBATCH --export=NONE

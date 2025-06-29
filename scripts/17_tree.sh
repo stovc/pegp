@@ -4,7 +4,7 @@
 #    - "trimed.fa"
 # Output:
 #    - "tree/tree.treefile" - ML tree
-#    - "tree/tree.treefile" - consensus tree
+#    - "tree/tree.contree" - consensus tree
 #    - "tree/tree.iqtree" - iqtree output
 
 # args
