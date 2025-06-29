@@ -33,3 +33,23 @@ PEGP (protein evolutionary genomics pipeline). A software tool for
 ## Installation
 - `git clone https://github.com/stovc/pegp`
 - Run `bash utility_scripts/mk_pfam.sh` from the root of the repo
+
+## Running
+
+#### Create a project
+For a test project:
+
+n project test/hmms/clpP_TIGR00493.1.HMM
+
+#### Running the analysis steps
+
+1. s project 1
+2. s project 2
+3. s project 3 
+4. s project 4 70 0.05
+5. s project 5 0.9
+6. s project 6
+7. s project 7
+8. s project 8
+9. s project 9
+10. s project 10
