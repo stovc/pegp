@@ -17,5 +17,5 @@ export OMP_NUM_THREADS=1
 source /nfs/scistore16/calingrp/sovchinn/.bashrc
 conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
-srun --cpu_bind=verbose python3 scripts/10_get_gen_context.py $1 $2
+srun --cpu_bind=verbose python3 scripts/11_get_gen_context.py $1 $2
 echo 11 $? >> projects/$1/exit_log.txt
