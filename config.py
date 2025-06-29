@@ -8,7 +8,7 @@ BATCH_SCRIPTS_PATH = Path("batch_scripts/")
 SCRIPTS_PATH = Path("scripts/")
 
 # configs
-DEFAULT_MODE = 'default'
+DEFAULT_MODE = 'cluster'
 DEFAULT_DATABASE = 'test'
 
 # Scripts to be run in the default mode
