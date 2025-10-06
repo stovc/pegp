@@ -286,9 +286,9 @@ def main():
     parser = argparse.ArgumentParser(description="Download NCBI genomes listed in GTDB bac120/ar53 metadata.")
 
     # All metadata defaults under genome_info/
-    parser.add_argument("--bac120", default="genome_info/bac120_metadata_filtered.tsv",
+    parser.add_argument("--bac120", default="genome_info/bac120_metadata_r226_filtered.tsv",
                         help="Path to GTDB bacteria TSV (bac120)")
-    parser.add_argument("--ar53", default="genome_info/ar53_metadata_filtered.tsv",
+    parser.add_argument("--ar53", default="genome_info/ar53_metadata_r226_filtered.tsv",
                         help="Path to GTDB archaea TSV (ar53)")
 
     parser.add_argument("--bact_refseq", default="genome_info/bacteria_refseq_assembly_summary.txt",
