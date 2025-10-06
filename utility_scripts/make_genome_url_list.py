@@ -16,7 +16,7 @@ Rules:
 - Bacteria accessions come from bac120 TSV; Archaea from ar53 TSV.
 - Output is just the final HTTPS URLs (one per line), e.g. .../GCF_..._genomic.fna.gz
 
-No third-party deps (uses only csv/argparse/pathlib).
+Stdlib only.
 """
 
 import argparse
@@ -31,38 +31,52 @@ FILETYPE_TO_SUFFIX = {
     "cds_from_genomic_fna": "cds_from_genomic.fna.gz",
 }
 
+
 def load_summary_map(path: Path) -> dict:
     """
     Return {assembly_accession -> ftp_path} from an NCBI assembly_summary.txt.
-    Ignores lines starting with '#'.
+    The header line starts with '# assembly_accession\t...'; we detect it explicitly.
     """
-    with path.open("r", encoding="utf-8", newline="") as f:
-        reader = csv.reader(f, delimiter="\t")
-        header = None
-        mapping = {}
-        for row in reader:
-            if not row or row[0].startswith("#"):
-                # track header if present after '#'
-                if row and row[0].startswith("# ") and header is None:
-                    header = row[0][2:].split("\t")
-                continue
+    text = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    header = None
+    header_idx = None
 
-            # if proper header not captured via "# ", assume first non-comment row is header
-            if header is None:
-                header = row
-                continue
+    # Find the header line (starts with '#' followed by 'assembly_accession')
+    for i, line in enumerate(text):
+        if line.startswith("#"):
+            line2 = line[1:].lstrip()  # strip leading '#' and following spaces
+            if line2.lower().startswith("assembly_accession"):
+                header = line2.split("\t")
+                header_idx = i
+                break
 
-            # build index map once
-            if isinstance(header, list):
-                idx = {col: i for i, col in enumerate(header)}
-                header = (header, idx)  # cache indices
-            header_cols, idx = header
+    if header is None:
+        raise ValueError(f"Could not find header in {path} (no '# assembly_accession' line).")
 
-            acc = row[idx["assembly_accession"]]
-            ftp = row[idx["ftp_path"]]
-            if acc and ftp:
-                mapping[acc] = ftp
-        return mapping
+    # Build column index map
+    idx = {col: j for j, col in enumerate(header)}
+    if "assembly_accession" not in idx or "ftp_path" not in idx:
+        raise ValueError(f"Missing required columns in {path}: need 'assembly_accession' and 'ftp_path'.")
+
+    acc_i = idx["assembly_accession"]
+    ftp_i = idx["ftp_path"]
+
+    mapping = {}
+    # Parse rows after the header; skip any additional comment lines
+    for line in text[header_idx + 1:]:
+        if not line or line.startswith("#"):
+            continue
+        row = line.split("\t")
+        # guard against short/blank rows
+        if len(row) <= max(acc_i, ftp_i):
+            continue
+        acc = row[acc_i].strip()
+        ftp = row[ftp_i].strip()
+        if acc and ftp:
+            mapping[acc] = ftp
+
+    return mapping
+
 
 def read_gtdb_accessions(tsv_path: Path) -> list:
     """
@@ -85,8 +99,9 @@ def read_gtdb_accessions(tsv_path: Path) -> list:
             prefix, acc = parts[0], parts[1]
             if prefix in {"RS", "GB"} and acc:
                 out.append((prefix, acc))
-    # drop dups
+    # De-duplicate
     return sorted(set(out))
+
 
 def make_file_url(ftp_path: str, suffix: str) -> str:
     """
@@ -95,6 +110,7 @@ def make_file_url(ftp_path: str, suffix: str) -> str:
     base = ftp_path.replace("ftp://", "https://").rstrip("/")
     basename = base.rsplit("/", 1)[-1]
     return f"{base}/{basename}_{suffix}"
+
 
 def main():
     ap = argparse.ArgumentParser(description="Create URL list for genome downloads.")
@@ -127,19 +143,13 @@ def main():
 
     # Bacteria: RS -> RefSeq, GB -> GenBank
     for prefix, acc in bact_accs:
-        if prefix == "RS":
-            ftp = bact_refseq.get(acc)
-        else:  # GB
-            ftp = bact_genbank.get(acc)
+        ftp = bact_refseq.get(acc) if prefix == "RS" else bact_genbank.get(acc)
         if ftp:
             urls.append(make_file_url(ftp, suffix))
 
     # Archaea
     for prefix, acc in arch_accs:
-        if prefix == "RS":
-            ftp = arch_refseq.get(acc)
-        else:
-            ftp = arch_genbank.get(acc)
+        ftp = arch_refseq.get(acc) if prefix == "RS" else arch_genbank.get(acc)
         if ftp:
             urls.append(make_file_url(ftp, suffix))
 
@@ -150,6 +160,7 @@ def main():
     out_path.write_text("\n".join(urls) + ("\n" if urls else ""), encoding="utf-8")
 
     print(f"Wrote {len(urls)} URLs -> {out_path}")
+
 
 if __name__ == "__main__":
     main()
