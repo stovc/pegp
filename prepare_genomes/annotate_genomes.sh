@@ -14,8 +14,6 @@ FILES=("$INPUT_DIR"/*.fna.gz)
 shopt -u nullglob
 
 TOTAL=${#FILES[@]}
-
-# === CHECK FOR EMPTY INPUT ===
 if [[ $TOTAL -eq 0 ]]; then
     echo "No .fna.gz files found in $INPUT_DIR. Exiting."
     exit 1
@@ -34,15 +32,21 @@ for FILE in "${FILES[@]}"; do
     fi
 
     echo "Annotating $BASENAME ($COUNT/$TOTAL)..."
-    TMPDIR=$(mktemp -d)
 
-    prokka "$FILE" \
-        --outdir "$TMPDIR" \
+    # Temporary working dir and decompressed FASTA
+    TMPDIR=$(mktemp -d)
+    TMPFA="$TMPDIR/${BASENAME}.fna"
+    gunzip -c "$FILE" > "$TMPFA"
+
+    # Run Prokka
+    prokka "$TMPFA" \
+        --outdir "$TMPDIR/prokka_out" \
         --prefix "$BASENAME" \
         --cpus "$THREADS" \
         --force > /dev/null
 
-    mv "$TMPDIR/$BASENAME.gbk" "$OUTFILE"
+    # Move only annotated .gbk file
+    mv "$TMPDIR/prokka_out/$BASENAME.gbk" "$OUTFILE"
     rm -r "$TMPDIR"
 done
 
