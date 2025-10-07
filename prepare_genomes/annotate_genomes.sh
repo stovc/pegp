@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # === CONFIGURATION ===
-INPUT_DIR="genomes"
+INPUT_DIR="downloads"
 OUTPUT_DIR="genomes_annotated"
 THREADS=4
 
