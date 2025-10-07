@@ -172,7 +172,7 @@ def create_project(project, inp_path):
 
         update_screen()
 
-        log.save_and_print(f'Created a new project {project}')
+        log.save_and_print(f'Created a new project: {project}')
     else:
         log.save_and_print(f'Project with name {project} already exists')
 
