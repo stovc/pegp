@@ -8,12 +8,21 @@ THREADS=4
 # === CREATE OUTPUT DIR ===
 mkdir -p "$OUTPUT_DIR"
 
-# === COLLECT INPUT FILES ===
+# === GET LIST OF FILES SAFELY ===
+shopt -s nullglob
 FILES=("$INPUT_DIR"/*.fna.gz)
+shopt -u nullglob
+
 TOTAL=${#FILES[@]}
-COUNT=0
+
+# === CHECK FOR EMPTY INPUT ===
+if [[ $TOTAL -eq 0 ]]; then
+    echo "No .fna.gz files found in $INPUT_DIR. Exiting."
+    exit 1
+fi
 
 # === MAIN LOOP ===
+COUNT=0
 for FILE in "${FILES[@]}"; do
     ((COUNT++))
     BASENAME=$(basename "$FILE" .fna.gz)
