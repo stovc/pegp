@@ -3,9 +3,9 @@ set -euo pipefail
 
 # -------- settings --------
 GENOME_INFO_DIR="genome_info"
-OUT_DIR="downloads"
+OUT_DIR="downloads/r226_hq_rep_sup10"
 URL_LIST="genome_urls.txt"
-FILETYPE="genomic_fna"   # genomic_fna | genomic_gbff | protein_faa | gff | cds_from_genomic_fna
+FILETYPE="genomic_gbff"   # genomic_fna | genomic_gbff | protein_faa | gff | cds_from_genomic_fna
 PARALLEL_JOBS=8          # wget in parallel with xargs
 # -------------------------
 
@@ -38,7 +38,7 @@ if [[ ! -s "$BAC_TSV" ]] || [[ ! -s "$ARC_TSV" ]]; then
 fi
 
 # Build URL list (uses stdlib-only Python script)
-python3 utility_scripts/make_genome_url_list.py \
+python3 prepare_genomes/make_genome_url_list.py \
   --bac120 "$BAC_TSV" \
   --ar53 "$ARC_TSV" \
   --bact_refseq "$GENOME_INFO_DIR/bacteria_refseq_assembly_summary.txt" \
