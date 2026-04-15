@@ -36,12 +36,27 @@ PEGP (protein evolutionary genomics pipeline). A software tool for
 
 ## Running
 
-#### Create a project
+#### Download genomes
+
+`bash prepare_genomes/download_genome_metadata.sh`
+`python3 prepare_genomes/filter_gtdb_metadata.py`
+`bash prepare_genomes/download_genomes.sh`
+
+#### Build a database
+`python3 database_building/make_db GENOMES_FOLDER_PATH METADATA_PATH OUTPUT_DATABASE_PATH`
+sample:
+`python3 database_building/make_db.py test/genomes test/genomes/metadata.tsv databases/test`
+
+#### Run an analysis
+
+run `python3 pegp.py`
+
+###### Create a project
 For a test project:
 
 n project test/hmms/clpP_TIGR00493.1.HMM
 
-#### Running the analysis steps
+###### Running the analysis steps
 
 1. s project 1
 2. s project 2
