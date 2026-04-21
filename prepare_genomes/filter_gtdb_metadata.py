@@ -34,8 +34,8 @@ from pathlib import Path
 
 # === CONFIGURATION ===
 INPUT_FILES = [
-    'data/raw/bac120_metadata_r226.tsv',
-    'data/raw/ar53_metadata_r226.tsv',
+    'data/genome_info/r232/bac120_metadata.tsv',
+    'data/genome_info/r232/ar53_metadata.tsv',
 ]
 
 TARGET_HQ_REP_MIN = 10       # target number of genomes per phylum

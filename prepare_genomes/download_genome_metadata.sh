@@ -2,7 +2,7 @@
 # Combined download script: NCBI (assembly_summaries) + GTDB metadata
 set -euo pipefail
 
-OUTDIR="genomes_info"
+OUTDIR="data/genome_info/r232"
 LOGFILE="${OUTDIR}/download.log"
 mkdir -p "$OUTDIR"
 exec > >(tee -a "$LOGFILE") 2>&1
@@ -18,9 +18,11 @@ declare -A FILES=(
   ["bacteria_genbank_assembly_summary.txt"]="https://ftp.ncbi.nlm.nih.gov/genomes/genbank/bacteria/assembly_summary.txt"
   ["archaea_refseq_assembly_summary.txt"]="https://ftp.ncbi.nlm.nih.gov/genomes/refseq/archaea/assembly_summary.txt"
   ["archaea_genbank_assembly_summary.txt"]="https://ftp.ncbi.nlm.nih.gov/genomes/genbank/archaea/assembly_summary.txt"
-  # GTDB metadata (gzipped)
+  # GTDB metadata
   ["bac120_metadata.tsv.gz"]="https://data.gtdb.ecogenomic.org/releases/latest/bac120_metadata.tsv.gz"
   ["ar53_metadata.tsv.gz"]="https://data.gtdb.ecogenomic.org/releases/latest/ar53_metadata.tsv.gz"
+  # GTDB version
+  ["VERSION.txt"]="https://data.gtdb.ecogenomic.org/releases/latest/VERSION.txt"
 )
 
 for FNAME in "${!FILES[@]}"; do
@@ -42,12 +44,11 @@ echo "=== Downloads done ==="
 echo "You have the following files in $OUTDIR:"
 ls -l "$OUTDIR"
 
-# Optional: decompress the metadata files (if you want uncompressed .tsv)
-# echo "Decompressing GTDB metadata..."
-# for f in bac120_metadata.tsv.gz ar53_metadata.tsv.gz; do
-#   if [ -f "$OUTDIR/$f" ]; then
-#     gunzip -kf "$OUTDIR/$f"
-#   fi
-# done
+echo "Decompressing GTDB metadata..."
+for f in bac120_metadata.tsv.gz ar53_metadata.tsv.gz; do
+  if [ -f "$OUTDIR/$f" ]; then
+    gunzip -kf "$OUTDIR/$f"
+  fi
+done
 
 echo "=== Finished ==="
