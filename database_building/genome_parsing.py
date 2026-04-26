@@ -106,12 +106,27 @@ def get_feature_type(feature):
     return feature_type
 
 
-def get_replicon_data_from_source(feature):
-    plasmid = feature.qualifiers.get('plasmid')
+def get_replicon_metadata(seq_record, n_seq_records):
+    source_features = [
+        feature for feature in seq_record.features
+        if feature.type == 'source'
+    ]
+
+    if not source_features:
+        if n_seq_records == 1:
+            return ['single_replicon', 'main']
+        else:
+            return ['seq_record', seq_record.id]
+
+    source_feature = source_features[0]
+
+    plasmid = source_feature.qualifiers.get('plasmid')
     logger.debug(f'Plasmid: {plasmid}')
-    segment = feature.qualifiers.get('segment')
+
+    segment = source_feature.qualifiers.get('segment')
     logger.debug(f'Segment: {segment}')
-    chromosome = feature.qualifiers.get('chromosome')
+
+    chromosome = source_feature.qualifiers.get('chromosome')
     logger.debug(f'Chromosome: {chromosome}')
 
     if plasmid is not None:
@@ -124,8 +139,12 @@ def get_replicon_data_from_source(feature):
         replicon_type = 'chromosome'
         replicon = chromosome[0]
     else:
-        replicon_type = 'chromosome'
-        replicon = 'main'
+        if n_seq_records == 1:
+            replicon_type = 'single_replicon'
+            replicon = 'main'
+        else:
+            replicon_type = "seq_record"
+            replicon = seq_record.id
 
     return [replicon_type, replicon]
 
@@ -144,7 +163,9 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
     columns_genome = config.genome_metadata_df.columns.to_list()
     annotation_columns = c.COLUMNS_ID + columns_genome + c.COLUMNS_REPLICON + c.COLUMNS_FEATURE
 
-    for seq_record in SeqIO.parse(genome_path, 'genbank'):
+    seq_records = list(SeqIO.parse(genome_path, "genbank"))
+    n_seq_records = len(seq_records)
+    for seq_record in seq_records:
         metadata_main = []
         metadata_sequence = [['lcs', 'upstream', 'sequence', 'downstream']]
         metadata_translation = [['lcs', 'translation']]
@@ -152,22 +173,12 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
         # open output files
         protein_fasta_file = open(config.database_path / 'protein' / f'{accession}', 'w')
 
-        replicon_metadata = ['NONE', 'NONE']
+        replicon_metadata = get_replicon_metadata(seq_record, n_seq_records)
 
         genome_metadata = [accession] + config.genome_metadata_df.loc[[accession]].values.flatten().tolist()
 
-        for feature in seq_record.features:  # extract taxid and replicon from the source feature
-            # "source" feature is single per seq_record/replicon and contains replicon related information
-            # this feature is not written to the database; its properties are assigned to every database entry
-
-            # EXTRACT REPLICON METADATA
-
-            if feature.type == 'source':
-                replicon_metadata = get_replicon_data_from_source(feature)
-
-            # EXTRACT FEATURE METADATA
-
-            elif feature.type not in ['source', 'gene']:
+        for feature in seq_record.features:
+            if feature.type not in ['source', 'gene']:
                 # generate lcs id
                 lcs = next(config.id_iterator)
 
