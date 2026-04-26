@@ -146,7 +146,7 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
     annotation_columns = c.COLUMNS_ID + columns_genome + c.COLUMNS_REPLICON + c.COLUMNS_FEATURE
 
     with gzip.open(genome_path, "rt") as handle:  # ctcp
-        seq_records = list(SeqIO.parse(genome_path, "genbank"))
+        seq_records = list(SeqIO.parse(handle, "genbank"))
 
     n_seq_records = len(seq_records)
     for seq_record in seq_records:
