@@ -6,7 +6,7 @@ The trees differ by the taxonomic rank to which they are collapsed
 Input
 -----
 1) Path to a folder with genomes
-2) Path to  metadata file
+2) Path to a metadata file
 3) Path to the output database file
 
 Output
@@ -62,10 +62,10 @@ def create_logger(log_path) -> logging.Logger:
     return logger
 
 
-def make_all_paths_list(genomes_path):
-    file_names = os.listdir(genomes_path)
+def make_all_paths_list(genomes_dir_path):
+    file_names = os.listdir(genomes_dir_path)
     genome_file_names = [i for i in file_names if c.GENOME_EXTENSION in i]
-    all_genome_paths = [genomes_path / i for i in genome_file_names]
+    all_genome_paths = [genomes_dir_path / i for i in genome_file_names]
 
     return all_genome_paths
 
@@ -92,7 +92,7 @@ def parse_arguments():
 
     parser = ArgumentParser(prog='PegpDatabaseBuilding',
                             description='Make a homology search database with metadata',
-                            epilog='LET\'S SEE HOW IT WORKS'
+                            epilog='...'
                             )
 
     # parser.add_argument('-h', '--help', help='Show this help message', action='help')
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     logger.info(f'Database assembly. database: {args.database}, genomes: {args.genomes}')
 
     # generate a list of all genome paths to be processed
-    all_genome_paths = make_all_paths_list(genomes_path=genomes_path)
+    all_genome_paths = make_all_paths_list(genomes_dir_path=genomes_path)
     completed_genome_paths = make_completed_paths_list(database_path=database_path)
     genome_paths = make_uncompleted_genome_path_list(all_genome_paths, completed_genome_paths)
 
@@ -151,6 +151,7 @@ if __name__ == '__main__':
     # configure genome parser
     id_iterator = make_id_iterator(prefix=c.ID_PREFIX, symbols=c.ID_SUFFIX_SYMBOLS, suffix_length=c.ID_SUFFIX_LENGTH)
     genome_metadata_df = pd.read_csv(args.metadata, index_col=0, sep='\t', usecols=c.GENOME_METADATA_COLUMNS_OF_INTEREST)
+    genome_metadata_df.index = genome_metadata_df.index.str[3:]  # GB_GCA_020348885.1 -> GCA_020348885.1 GTDB to regular
     genome_parser_config = GenomeParserConfig(database_path, genome_metadata_df, id_iterator, enable_genome_context)
 
     # iterate genomes
@@ -170,45 +171,3 @@ if __name__ == '__main__':
     # REMOVE FOLDERS
     for folder in FOLDERS_TO_CONCATENATE_CSV + ['protein']:
         delete_folder(database_path / folder)
-
-    # MAKE ORG TREE
-    # GET TAXIDS
-    data_path = database_path / 'annotation.csv'
-    df = pd.read_csv(data_path)
-
-    # df = df[df.gtdb_taxonomy.notnull()]
-
-    taxids = df['taxid'].unique()
-
-    # NCBI taxonomy database object
-    ncbi = NCBITaxa()
-
-    if not args.no_ncbi_update:
-        ncbi.update_taxonomy_database()
-
-    # get tree topology as PhyloNode object
-    tree = ncbi.get_topology(taxids, intermediate_nodes=True)
-
-    tree_full = prune_tree(tree, ['leaf', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
-    tree_genus = prune_tree(tree, ['genus', 'family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
-    tree_family = prune_tree(tree, ['family', 'order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
-    tree_order = prune_tree(tree, ['order', 'class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
-    tree_class = prune_tree(tree, ['class', 'phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
-    tree_phylum = prune_tree(tree, ['phylum', 'superkingdom', 'kingdom', 'root'], database=ncbi)
-
-    # EXPORT TREES AND ANNOTATIONS
-    # construct path for the output folder and make it
-    out_folder = database_path / 'org_trees'
-    if not os.path.exists(out_folder):
-        os.makedirs(out_folder)
-
-    # export trees pruned to different taxonomic levels
-    export_tree(tree_full, out_folder / 'org_tree_full.nwk')
-    export_tree(tree_genus, out_folder / 'org_tree_genus.nwk')
-    export_tree(tree_family, out_folder / 'org_tree_family.nwk')
-    export_tree(tree_order, out_folder / 'org_tree_order.nwk')
-    export_tree(tree_class, out_folder / 'org_tree_class.nwk')
-    export_tree(tree_phylum, out_folder / 'org_tree_phylum.nwk')
-
-    # export .csv annotations for the trees pruned to different taxonomic levels
-    export_tree_annotation(tree_full, out_folder / 'org_tree_full_data.csv', database=ncbi)
