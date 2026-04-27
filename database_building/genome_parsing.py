@@ -148,14 +148,17 @@ def get_replicon_metadata(seq_record, n_seq_records):
     return [replicon_type, replicon]
 
 
+def export_list_to_csv(list_to_export, path):
+    with open(path, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(list_to_export)
+
+
 def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
     """Parse features in a genbank genome file. Save protein sequences and metadata to files."""
-    logger.info(f'Parsing genome: {genome_path}')
 
     filename = genome_path.name                    # e.g., GCF_000012525.1_ASM1252v1_genomic.gbff
     accession = '_'.join(filename.split('_')[:2])  # e.g., GCF_000701165.1
-
-    logger.debug(f'Assembly: {accession}')
 
     annotation_path = Path(config.database_path / 'annotation' / f'{accession}')
 
@@ -166,8 +169,12 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
     #    seq_records = list(SeqIO.parse(handle, "genbank"))
 
     seq_records = list(SeqIO.parse(genome_path, "genbank"))
-
     n_seq_records = len(seq_records)
+
+    logger.info(f'Parsing genome: {genome_path}')
+    logger.debug(f'Assembly: {accession}, n_seq_records: {n_seq_records}')
+
+    i_seq_record = 0
     for seq_record in seq_records:
         metadata_main = []
         metadata_sequence = [['lcs', 'upstream', 'sequence', 'downstream']]
@@ -180,6 +187,8 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
 
         genome_metadata = [accession] + config.genome_metadata_df.loc[[accession]].values.flatten().tolist()
 
+        n_features = len(seq_record.features)
+        n_features_processed = 0
         for feature in seq_record.features:
             # EXTRACT FEATURE METADATA
 
@@ -226,6 +235,8 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
                 # write sequence metadata
                 metadata_sequence.append([lcs, upstream, sequence, downstream])
 
+            n_features_processed += 1
+
         # make a dataframe with metadata
         metadata_main_df = pd.DataFrame(metadata_main, columns=annotation_columns)
 
@@ -236,11 +247,6 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
         # SAVE METADATA TO FILES
         metadata_main_df.to_csv(annotation_path, index=False)
 
-        def export_list_to_csv(list_to_export, path):
-            with open(path, 'w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerows(list_to_export)
-
         sequence_csv_path = config.database_path / 'sequence' / f'{accession}'
         export_list_to_csv(metadata_sequence, sequence_csv_path)
 
@@ -248,5 +254,8 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
         export_list_to_csv(metadata_translation, translation_csv_path)
 
         protein_fasta_file.close()
+
+        i_seq_record += 1
+        logger.debug(f'i_seq_record: {i_seq_record}, n_fetures: {n_features}, n_features_processed: {n_features_processed}')
 
     return None
