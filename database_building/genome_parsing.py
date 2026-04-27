@@ -173,11 +173,13 @@ def parse_genome(genome_path: Path, config: GenomeParserConfig) -> None:
     logger.info(f'Parsing genome: {genome_path}')
     logger.debug(f'Assembly: {accession}, n_seq_records: {n_seq_records}')
 
+    # initiate metadata
+    metadata_main = []
+    metadata_sequence = [['lcs', 'upstream', 'sequence', 'downstream']]
+    metadata_translation = [['lcs', 'translation']]
+
     i_seq_record = 0
     for seq_record in seq_records:
-        metadata_main = []
-        metadata_sequence = [['lcs', 'upstream', 'sequence', 'downstream']]
-        metadata_translation = [['lcs', 'translation']]
 
         # open output files
         protein_fasta_file = open(config.database_path / 'protein' / f'{accession}', 'w')
