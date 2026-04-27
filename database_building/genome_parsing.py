@@ -114,6 +114,7 @@ def get_replicon_metadata(seq_record, n_seq_records):
     ]
 
     if not source_features:
+        logger.debug("no source!")
         if n_seq_records == 1:
             return ['single_replicon', 'main']
         else:
@@ -122,11 +123,8 @@ def get_replicon_metadata(seq_record, n_seq_records):
     source_feature = source_features[0]
 
     plasmid = source_feature.qualifiers.get('plasmid')
-    logger.debug(f'Plasmid: {plasmid}')
     segment = source_feature.qualifiers.get('segment')
-    logger.debug(f'Segment: {segment}')
     chromosome = source_feature.qualifiers.get('chromosome')
-    logger.debug(f'Chromosome: {chromosome}')
 
     if plasmid is not None:
         replicon_type = 'plasmid'
@@ -145,6 +143,7 @@ def get_replicon_metadata(seq_record, n_seq_records):
             replicon_type = "seq_record"
             replicon = seq_record.id
 
+    logger.debug(f'replicon_type: {replicon_type}, replicon: {replicon}')
     return [replicon_type, replicon]
 
 
