@@ -29,9 +29,9 @@ INPUT_FILES = [
     'data/genome_info/r232/ar53_metadata.tsv',
 ]
 
-FILTER_MIMAG_HIGH_QUALITY = True
-FILTER_COMPLETE_GENOME = True
-FILTER_GTDB_REPRESENTATIVE = False
+FILTER_MIMAG_HIGH_QUALITY = False
+FILTER_COMPLETE_GENOME = False
+FILTER_GTDB_REPRESENTATIVE = True
 FILTER_GTDB_TYPE_SPECIES_OF_GENUS = True
 
 # Options:
@@ -179,8 +179,13 @@ def build_report(df: pd.DataFrame, result_df: pd.DataFrame) -> pd.DataFrame:
         result_phylum_df = result_df[result_df['phylum'] == phylum]
 
         total = phylum_df.shape[0]
+
         mimag_high_quality = (phylum_df['mimag_high_quality'] == 't').sum()
-        complete = (phylum_df['ncbi_assembly_level'] == 'Complete Genome').sum()
+
+        complete = (
+            phylum_df['ncbi_assembly_level'] == 'Complete Genome'
+        ).sum()
+
         complete_high_quality = (
             (phylum_df['mimag_high_quality'] == 't')
             & (phylum_df['ncbi_assembly_level'] == 'Complete Genome')
@@ -202,6 +207,18 @@ def build_report(df: pd.DataFrame, result_df: pd.DataFrame) -> pd.DataFrame:
 
         passed_filtering = result_phylum_df.shape[0]
 
+        passed_filtering_gb = (
+            result_phylum_df['database'] == 'GB'
+        ).sum()
+
+        passed_filtering_not_hq = (
+            result_phylum_df['mimag_high_quality'] != 't'
+        ).sum()
+
+        passed_filtering_not_complete = (
+            result_phylum_df['ncbi_assembly_level'] != 'Complete Genome'
+        ).sum()
+
         report_rows.append({
             'phylum': phylum,
             'total': total,
@@ -213,6 +230,9 @@ def build_report(df: pd.DataFrame, result_df: pd.DataFrame) -> pd.DataFrame:
             'complete_RS': complete_rs,
             'complete_high_quality_RS': complete_high_quality_rs,
             'passed_filtering': passed_filtering,
+            'passed_filtering_GB': passed_filtering_gb,
+            'passed_filtering_not_hq': passed_filtering_not_hq,
+            'passed_filtering_not_complete': passed_filtering_not_complete,
         })
 
     total_row = {
@@ -236,6 +256,13 @@ def build_report(df: pd.DataFrame, result_df: pd.DataFrame) -> pd.DataFrame:
             & (df['ncbi_assembly_level'] == 'Complete Genome')
         ).sum(),
         'passed_filtering': result_df.shape[0],
+        'passed_filtering_GB': (result_df['database'] == 'GB').sum(),
+        'passed_filtering_not_hq': (
+            result_df['mimag_high_quality'] != 't'
+        ).sum(),
+        'passed_filtering_not_complete': (
+            result_df['ncbi_assembly_level'] != 'Complete Genome'
+        ).sum(),
     }
 
     report_df = pd.DataFrame(report_rows)
