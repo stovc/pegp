@@ -39,7 +39,7 @@ FILTER_GTDB_TYPE_SPECIES_OF_GENUS = True
 #   'RS'        -> keep only RefSeq
 #   'GB'        -> keep only GenBank
 #   ['RS','GB'] -> keep both; equivalent to no database filtering if only these exist
-DATABASE_FILTER = None
+DATABASE_FILTER = 'RS'
 
 # Applied last, after the filters above
 ENABLE_LIMIT_PER_TAXON = True
