@@ -15,4 +15,5 @@ source /nfs/scistore16/calingrp/sovchinn/miniforge3/etc/profile.d/mamba.sh
 mamba activate pegp
 
 cd /nfs/scistore16/calingrp/sovchinn/test/pegp
+mkdir -p slurm_output
 bash prepare_genomes/download_genomes.sh
