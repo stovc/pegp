@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=download_genomes
+#SBATCH --output=slurm_output/download_genomes_%j.out
+#SBATCH --error=slurm_output/download_genomes_%j.err
+#SBATCH --time=24:00:00
+#SBATCH --mem=4G
+#SBATCH --no-requeue
+#SBATCH --export=NONE
+unset SLURM_EXPORT_ENV
+#
+export OMP_NUM_THREADS=1
+#
+
+source /nfs/scistore16/calingrp/sovchinn/miniforge3/etc/profile.d/mamba.sh
+mamba activate pegp
+
+cd /nfs/scistore16/calingrp/sovchinn/test/pegp
+bash prepare_genomes/download_genomes.sh

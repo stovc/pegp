@@ -3,7 +3,7 @@
 #SBATCH --job-name=make_db
 #SBATCH --output=mk_db_out.txt
 #
-#SBATCH --time=72:00:00   # HOW LONG DO I NEED?
+#SBATCH --time=72:00:00
 #
 #SBATCH --mem=64G
 #
