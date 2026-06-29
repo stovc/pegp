@@ -1,9 +1,9 @@
 #!/bin/bash
 #
 #SBATCH --job-name=make_db
-#SBATCH --output=mk_db_out.txt
-#
-#SBATCH --time=72:00:00
+#SBATCH --output=slurm_output/mk_db_out_%j.out
+#SBATCH --error=slurm_output/mk_db_out_%j.err
+#SBATCH --time=48:00:00
 #
 #SBATCH --mem=64G
 #
