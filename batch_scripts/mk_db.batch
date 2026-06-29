@@ -18,4 +18,4 @@ export MAMBA_ROOT_PREFIX=/nfs/scistore16/calingrp/sovchinn/miniforge3
 eval "$(/nfs/scistore16/calingrp/sovchinn/miniforge3/bin/mamba shell hook --shell bash)"
 mamba activate pegp
 
-python3 database_building/mk_db.py /nfs/scistore16/calingrp/sovchinn/test/pegp/data/genomes/r232_rs_one_per_fam /test/pegp/data/genome_info/r232/meta.tsv /nfs/scistore16/calingrp/sovchinn/test/pegp/databases/r232_rs_one_per_fam
+python3 database_building/make_db.py /nfs/scistore16/calingrp/sovchinn/test/pegp/data/genomes/r232_rs_one_per_fam /test/pegp/data/genome_info/r232/meta.tsv /nfs/scistore16/calingrp/sovchinn/test/pegp/databases/r232_rs_one_per_fam
