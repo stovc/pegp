@@ -1,9 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=download_genomes
-#SBATCH --output=download_genomes_%j.out
-#SBATCH --error=download_genomes_%j.err
+#SBATCH --output=slurm_output/download_genomes_%j.out
+#SBATCH --error=slurm_output/download_genomes_%j.err
 #SBATCH --time=24:00:00
 #SBATCH --mem=4G
+#SBATCH --mem=16G
+#SBATCH -c 8
 #SBATCH --no-requeue
 #SBATCH --export=NONE
 unset SLURM_EXPORT_ENV
@@ -11,9 +13,9 @@ unset SLURM_EXPORT_ENV
 export OMP_NUM_THREADS=1
 #
 
-source /nfs/scistore16/calingrp/sovchinn/miniforge3/etc/profile.d/mamba.sh
+export MAMBA_ROOT_PREFIX=/nfs/scistore16/calingrp/sovchinn/miniforge3
+eval "$(/nfs/scistore16/calingrp/sovchinn/miniforge3/bin/mamba shell hook --shell bash)"
 mamba activate pegp
 
 cd /nfs/scistore16/calingrp/sovchinn/test/pegp
-mkdir -p slurm_output
 bash prepare_genomes/download_genomes.sh
