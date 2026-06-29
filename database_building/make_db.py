@@ -20,12 +20,9 @@ Output
 2) Phylogenetic trees of the genomes collapsed to various taxonomic ranks.
 [full, genus, family, order, class, phylum]."""
 
-from ete3 import NCBITaxa, PhyloNode
-
 from argparse import ArgumentParser, Namespace
 import logging
 import os
-import pandas as pd
 from pathlib import Path
 import sys
 
