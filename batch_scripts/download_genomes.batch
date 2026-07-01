@@ -11,12 +11,11 @@ unset SLURM_EXPORT_ENV
 #
 export OMP_NUM_THREADS=1
 #
-
 source /nfs/scistore16/calingrp/sovchinn/miniforge3/etc/profile.d/mamba.sh
 mamba activate pegp
-
+#
 which python
 python -c "import pandas, numpy, Bio; print('env ok')" || { echo "ENV ACTIVATION FAILED"; exit 1; }
-
+#
 cd /nfs/scistore16/calingrp/sovchinn/test/pegp
 bash prepare_genomes/download_genomes.sh
