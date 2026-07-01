@@ -1,24 +1,10 @@
 #!/bin/bash
-#
 #SBATCH --job-name=make_db
 #SBATCH --output=slurm_output/mk_db_out_%j.out
 #SBATCH --error=slurm_output/mk_db_out_%j.err
 #SBATCH --time=48:00:00
-#
 #SBATCH --mem=64G
-#
 #SBATCH --no-requeue
-#SBATCH --export=NONE
-#
-unset SLURM_EXPORT_ENV
+
 export OMP_NUM_THREADS=1
-#
-source /nfs/scistore16/calingrp/sovchinn/miniforge3/etc/profile.d/mamba.sh
-mamba activate pegp
-#
-which python
-python -c "import pandas; print('pandas ok')"
-python -c "import numpy; print('numpy ok')"
-python -c "import Bio; print('Bio ok')"
-#
 python3 database_building/make_db.py /nfs/scistore16/calingrp/sovchinn/test/pegp/data/genomes/r232_rs_one_per_fam /test/pegp/data/genome_info/r232/meta.tsv /nfs/scistore16/calingrp/sovchinn/test/pegp/databases/r232_rs_one_per_fam
