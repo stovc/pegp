@@ -7,4 +7,4 @@
 #SBATCH --no-requeue
 
 export OMP_NUM_THREADS=1
-python3 database_building/make_db.py /nfs/scistore16/calingrp/sovchinn/test/pegp/data/genomes/r232_rs_one_per_fam /test/pegp/data/genome_info/r232/meta.tsv /nfs/scistore16/calingrp/sovchinn/test/pegp/databases/r232_rs_one_per_fam
+python3 database_building/make_db.py /nfs/scistore16/calingrp/sovchinn/test/pegp/data/genomes/r232_rs_one_per_fam /nfs/scistore16/calingrp/sovchinn/test/pegp/data/genome_info/r232/meta.tsv /nfs/scistore16/calingrp/sovchinn/test/pegp/databases/r232_rs_one_per_fam
