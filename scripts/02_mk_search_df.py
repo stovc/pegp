@@ -1,10 +1,10 @@
 """Make the dataframe of BLAST hits with annotations.
 
 - input:
-    - `hits.txt` - BLASTP search output (from `project` specified in arguments)
+    - `hits.txt` - hmm search output (from `project` specified in arguments)
     - `annotation.csv` - .csv with annotations for each potential hit in the `database` specified in arguments
 
-- output `blastp_hits_data.csv` - dataframe containing hit ids, BLAST output properties (identity, query coverage,
+- output `blastp_hits_data.csv` - dataframe containing hit ids, hmmer output properties (identity, query coverage,
 hit length), and additional annotations from the database
 
 TODO: hit length can be precomputed and be a part of the database
@@ -19,37 +19,56 @@ from pathlib import Path
 import traceback
 from Bio import SearchIO
 import pandas as pd
-from ete3 import NCBITaxa
 
 
-def get_lineage(taxid):
-    """Get NCBI taxid of a species
-    Return the lineage of the species as a list of taxon names
-    The lineage includes taxonomic ranks according to the `filter_ranks` variable
+def get_lineage(gtdb_taxonomy):
+    """Parse GTDB taxonomy string and return lineage names.
 
     Example:
-        input: 511145
-        output: ['Bacteria', 'Pseudomonadota','Gammaproteobacteria','Enterobacterales','Enterobacteriaceae',
-        'Escherichia','Escherichia coli']
+        input:
+            d__Bacteria;p__Pseudomonadota;c__Alphaproteobacteria;o__Rhizobiales;
+            f__Xanthobacteraceae;g__Azorhizobium;s__Azorhizobium caulinodans
+
+        output:
+            [
+                "Bacteria",
+                "Pseudomonadota",
+                "Alphaproteobacteria",
+                "Rhizobiales",
+                "Xanthobacteraceae",
+                "Azorhizobium",
+                "Azorhizobium caulinodans",
+            ]
     """
-    # taxonomic ranks to keep in the lineage
-    filter_ranks = ['superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
 
-    # get the lineage as a list of taxids
-    lineage_taxid = ncbi.get_lineage(int(taxid))
-    # make the lineage as dictionary {taxid: taxon name}
-    lineage_names = ncbi.get_taxid_translator(lineage_taxid)
-    # make a dictionary {taxid: taxon rank}
-    lineage_ranks = ncbi.get_rank(lineage_taxid)
-    # dict {rank name: taxon name}
-    lineage_dict = {lineage_ranks[i]: lineage_names[i] for i in lineage_names}
+    rank_prefixes = {
+        "d": "kingdom",
+        "p": "phylum",
+        "c": "class",
+        "o": "order",
+        "f": "family",
+        "g": "genus",
+        "s": "species",
+    }
 
-    # filter lineage_dict by filter_ranks
-    lineage_names = []
-    for i in filter_ranks:
-        taxon = lineage_dict.get(i)
-        lineage_names.append(taxon)  # write organism
-    return lineage_names
+    output_ranks = ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
+
+    lineage = {rank: None for rank in output_ranks}
+
+    if pd.isna(gtdb_taxonomy):
+        return [lineage[rank] for rank in output_ranks]
+
+    for taxon in str(gtdb_taxonomy).split(";"):
+        if "__" not in taxon:
+            continue
+
+        prefix, name = taxon.split("__", 1)
+        rank = rank_prefixes.get(prefix)
+
+        if rank is not None:
+            lineage[rank] = name if name else None
+
+    return [lineage[rank] for rank in output_ranks]
 
 
 if __name__ == '__main__':
@@ -57,9 +76,6 @@ if __name__ == '__main__':
         # args
         project = sys.argv[1]
         database = sys.argv[2]
-
-        # NCBI taxonomy database
-        ncbi = NCBITaxa()
 
         # log start to exit log
         exitlog_path = Path('projects') / project / 'exit_log.txt'
@@ -77,7 +93,7 @@ if __name__ == '__main__':
 
         # open homology search output to be parsed
         search_result_path = Path('projects') / project / 'hits.txt'
-        search_result = SearchIO.read(search_result_path, "hmmer3-text")  # it is xml output of blast. to be custom later
+        search_result = SearchIO.read(search_result_path, "hmmer3-text")
 
         # parse homology search output (iterate hits and their HSPs) and make dataframe of hits
         for hit in search_result:
@@ -102,9 +118,11 @@ if __name__ == '__main__':
         # add annotations from `annotation.csv` to the hit dataframe
         out_df = pd.merge(out_df, prot_df, how='left', on='lcs')
 
-        # add columns with taxa of different taxonomic levels based on taxid
-        out_df['superkingdom'], out_df['phylum'], out_df['class'], out_df['order'], \
-            out_df['family'], out_df['genus'], out_df['species'] = zip(*map(get_lineage, out_df['taxid']))
+        # add columns with taxa of different taxonomic levels based on GTDB taxonomy
+        out_df['kingdom'], out_df['phylum'], out_df['class'], out_df['order'], \
+            out_df['family'], out_df['genus'], out_df['species'] = zip(
+            *map(get_lineage, out_df['gtdb_taxonomy'])
+        )
 
         # export output dataframe to csv
         out_df_path = Path('projects') / project / 'hits_df.csv'
