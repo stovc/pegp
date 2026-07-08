@@ -9,7 +9,7 @@ SCRIPTS_PATH = Path("scripts/")
 
 # configs
 DEFAULT_MODE = 'cluster'
-DEFAULT_DATABASE = 'test'
+DEFAULT_DATABASE = 'r232_rs_one_per_fam'
 
 # Scripts to be run in the default mode
 SCRIPTS = {
