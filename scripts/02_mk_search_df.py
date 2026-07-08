@@ -42,7 +42,7 @@ def get_lineage(gtdb_taxonomy):
     """
 
     rank_prefixes = {
-        "d": "kingdom",
+        "d": "domain",
         "p": "phylum",
         "c": "class",
         "o": "order",
@@ -51,7 +51,7 @@ def get_lineage(gtdb_taxonomy):
         "s": "species",
     }
 
-    output_ranks = ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
+    output_ranks = ["domain", "phylum", "class", "order", "family", "genus", "species"]
 
     lineage = {rank: None for rank in output_ranks}
 
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         out_df = pd.merge(out_df, prot_df, how='left', on='lcs')
 
         # add columns with taxa of different taxonomic levels based on GTDB taxonomy
-        out_df['kingdom'], out_df['phylum'], out_df['class'], out_df['order'], \
+        out_df['domain'], out_df['phylum'], out_df['class'], out_df['order'], \
             out_df['family'], out_df['genus'], out_df['species'] = zip(
             *map(get_lineage, out_df['gtdb_taxonomy'])
         )
