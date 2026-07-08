@@ -87,7 +87,8 @@ def plot_3d(data_points, df, color_axis, color_dict=None):
                      format='%.0e')
     plt.tight_layout()
 
-    plt.savefig('3df.jpg', dpi=400, bbox_inches='tight')
+    plt.savefig(Path('projects') / project / 'reports' / 'filter_report.jpg',
+                dpi=400, bbox_inches='tight')
     # pdf.savefig(dpi=400, bbox_inches='tight')
 
 
@@ -132,7 +133,7 @@ if __name__ == '__main__':
         txt = f"Number of filtering output hits: {filtering_output_hits_cnt}"
         page.text(0.1, 0.5, txt, transform=page.transFigure, size=20, ha="left")
 
-        plt.savefig('txt_f.jpg')
+        plt.savefig(Path('projects') / project / 'reports' / 'filter_report1.jpg')
         # pdf.savefig()
 
         # output information about clustering and genome consistancy 
@@ -172,7 +173,7 @@ if __name__ == '__main__':
         txt = f"Number of hits after genome consistency procedure: {genome_consistency_output_hits_cnt}"
         page.text(0.1, 0.4, txt, transform=page.transFigure, size=20, ha="left")
 
-        plt.savefig('txt2_f.jpg')
+        plt.savefig(Path('projects') / project / 'reports' / 'filter_report2.jpg')
         # pdf.savefig()
 
         # 3d plot of log_evalue, query coverage, length colored by filtering, clustering, and genome 

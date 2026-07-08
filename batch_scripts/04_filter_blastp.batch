@@ -5,5 +5,5 @@
 #SBATCH --time=2:00:00   # HOW LONG DO I NEED?
 #SBATCH --mem=32G
 
-python3 scripts/04_filter.py $1 $2 $3 $4
+python scripts/04_filter.py $1 $2 $3 $4
 echo 4 $? >> projects/$1/exit_log.txt
