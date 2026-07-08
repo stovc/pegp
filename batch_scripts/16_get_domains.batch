@@ -1,22 +1,8 @@
 #!/bin/bash
-#
 #SBATCH --job-name=domain_data
 #SBATCH --output=domain_data.out
-#
 #SBATCH --time=2:00:00   # HOW LONG DO I NEED?
-#
 #SBATCH --mem=64G
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-#
-export OMP_NUM_THREADS=1
-#
-#run the respective binary through SLURM's srun
-
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
 srun --cpu_bind=verbose python3 scripts/16_domain_data.py $1
 echo 16 $? >> projects/$1/exit_log.txt

@@ -1,23 +1,13 @@
 #!/bin/bash
-#
 #SBATCH --job-name=cluster
-#SBATCH --output=cluster.out
-#
+#SBATCH --output=slurm_output/cluster_%j.out
+#SBATCH --error=slurm_output/cluster_%j.err
 #SBATCH --time=2:00:00
 #SBATCH --mem=16G
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-export OMP_NUM_THREADS=1
-#
 
 module purge
 module load cdhit/4.8.1
 module list
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun bash scripts/05_cluster.sh $1 $2 $3
+bash scripts/05_cluster.sh $1 $2 $3
 echo 5 $? >> projects/$1/exit_log.txt

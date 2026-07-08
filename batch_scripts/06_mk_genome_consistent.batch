@@ -1,20 +1,11 @@
 #!/bin/bash
-#
-#SBATCH --job-name=filter_bp
-#SBATCH --output=mk_gen_consistent.out
-#
+#SBATCH --job-name=gen_conc
+#SBATCH --output=slurm_output/gen_conc_%j.out
+#SBATCH --error=slurm_output/gen_conc_%j.err
 #SBATCH --time=2:00:00
-#
+#SBATCH --mem=16G
+#SBATCH --time=2:00:00
 #SBATCH --mem=64G
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-#
-export OMP_NUM_THREADS=1
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun --cpu_bind=verbose python3 scripts/06_mk_genome_consistent.py $1
+python scripts/06_mk_genome_consistent.py $1
 echo 6 $? >> projects/$1/exit_log.txt

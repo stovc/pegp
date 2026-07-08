@@ -1,19 +1,8 @@
 #!/bin/bash
-#
 #SBATCH --job-name=trim
 #SBATCH --output=trim.out
-#
 #SBATCH --time=0:15:00
 #SBATCH --mem=8G
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-#
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun bash scripts/12_trim.sh $1 $2 $3
+bash scripts/12_trim.sh $1 $2 $3
 echo 12 $? >> projects/$1/exit_log.txt

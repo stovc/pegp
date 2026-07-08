@@ -1,19 +1,8 @@
 #!/bin/bash
-#
 #SBATCH --job-name=hmmscan
 #SBATCH --output=hmmscan.out
-#
 #SBATCH --time=4:00:00
 #SBATCH --mem=16G
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-export OMP_NUM_THREADS=1
-#
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun bash scripts/14_domain_search.sh $1
+bash scripts/14_domain_search.sh $1
 echo 14 $? >> projects/$1/exit_log.txt

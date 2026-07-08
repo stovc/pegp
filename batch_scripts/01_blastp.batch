@@ -1,21 +1,10 @@
 #!/bin/bash
-#
 #SBATCH --job-name=h_search
-#SBATCH --output=search.out
-#
+#SBATCH --output=slurm_output/h_search_%j.out
+#SBATCH --error=slurm_output/h_search_%j.err
 #SBATCH --time=1:00:00   # HOW LONG DO I NEED?
-#
 #SBATCH --mem=64G
-#
 #SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-#
-export OMP_NUM_THREADS=1
-#
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun bash scripts/01_search.sh $1 $2
+bash scripts/01_search.sh $1 $2
 echo 1 $? >> projects/$1/exit_log.txt

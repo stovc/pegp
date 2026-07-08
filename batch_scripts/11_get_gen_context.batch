@@ -1,21 +1,9 @@
 #!/bin/bash
-#
 #SBATCH --job-name=genome_context
 #SBATCH --output=genome_context.out
-#
 #SBATCH --time=60:00:00
-#
 #SBATCH --mem=128G
-#64 was not sufficient
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-#
-export OMP_NUM_THREADS=1
+#64G was not sufficient
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun --cpu_bind=verbose python3 scripts/11_get_gen_context.py $1 $2
+python scripts/11_get_gen_context.py $1 $2
 echo 11 $? >> projects/$1/exit_log.txt

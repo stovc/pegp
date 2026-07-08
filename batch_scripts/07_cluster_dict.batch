@@ -1,20 +1,8 @@
 #!/bin/bash
-#
 #SBATCH --job-name=filter_bp
 #SBATCH --output=cluster_dict.out
-#
 #SBATCH --time=2:00:00
-#
 #SBATCH --mem=64G
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-#
-export OMP_NUM_THREADS=1
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun --cpu_bind=verbose python3 scripts/07_cluster_dict.py $1
+python scripts/07_cluster_dict.py $1
 echo 7 $? >> projects/$1/exit_log.txt

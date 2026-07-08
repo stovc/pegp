@@ -6,17 +6,6 @@
 #SBATCH --time=2:00:00   # HOW LONG DO I NEED?
 #
 #SBATCH --mem=128G         # 64 was not sufficient
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-#
-export OMP_NUM_THREADS=1
-#
-#run the respective binary through SLURM's srun
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun --cpu_bind=verbose python3 scripts/02_mk_search_df.py $1 $2
+python scripts/02_mk_search_df.py $1 $2
 echo 2 $? >> projects/$1/exit_log.txt

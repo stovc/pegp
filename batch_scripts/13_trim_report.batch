@@ -1,20 +1,8 @@
 #!/bin/bash
-#
 #SBATCH --job-name=trim_report
 #SBATCH --output=trim_report.out
-#
 #SBATCH --time=1:00:00
-#
 #SBATCH --mem=8G
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-#
-export OMP_NUM_THREADS=1
 
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
-
-srun --cpu_bind=verbose python3 scripts/13_trim_report.py $1
+python scripts/13_trim_report.py $1
 echo 13 $? >> projects/$1/exit_log.txt

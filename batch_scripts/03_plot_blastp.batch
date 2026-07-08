@@ -1,22 +1,9 @@
 #!/bin/bash
-#
 #SBATCH --job-name=plot_search
-#SBATCH --output=plot_blastp_out.txt
-#
-#SBATCH --time=2:00:00   # HOW LONG DO I NEED?
-#
+#SBATCH --output=slurm_output/plot_search_%j.out
+#SBATCH --error=slurm_output/plot_search_%j.err
+#SBATCH --time=0:30:00
 #SBATCH --mem=32G
-#
-#SBATCH --no-requeue
-#SBATCH --export=NONE
-unset SLURM_EXPORT_ENV
-#
-export OMP_NUM_THREADS=1
-#
-#run the respective binary through SLURM's srun
-
-source /nfs/scistore16/calingrp/sovchinn/.bashrc
-conda activate /nfs/scistore16/calingrp/sovchinn/.local/share/mamba/envs/pegp
 
 srun --cpu_bind=verbose python3 scripts/03_plot_search.py $1 $2 $3 $4 $5
 echo 3 $? >> projects/$1/exit_log.txt
