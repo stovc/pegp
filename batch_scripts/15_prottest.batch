@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=prottest
-#SBATCH --output=hmmscan.out
+#SBATCH --output=slurm_output/prottest_%j.out
+#SBATCH --error=slurm_output/prottest_%j.err
 #SBATCH --time=1:00:00
 #SBATCH --mem=1G
 

@@ -1,6 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=filter_bp
-#SBATCH --output=cluster_dict.out
+#SBATCH --job-name=cluster_dict
+#SBATCH --output=slurm_output/cluster_dict_%j.out
+#SBATCH --error=slurm_output/cluster_dict_%j.err
 #SBATCH --time=2:00:00
 #SBATCH --mem=64G
 

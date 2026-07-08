@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=align
-#SBATCH --output=align.out
+#SBATCH --output=slurm_output/align_%j.out
+#SBATCH --error=slurm_output/align_%j.err
 #SBATCH -c 8
 #SBATCH --time=48:00:00
 #SBATCH --mem=32G

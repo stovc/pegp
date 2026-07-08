@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=trim
-#SBATCH --output=trim.out
+#SBATCH --output=slurm_output/trim_%j.out
+#SBATCH --error=slurm_output/trim_%j.err
 #SBATCH --time=0:15:00
 #SBATCH --mem=8G
 

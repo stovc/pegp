@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=plot_filter
-#SBATCH --output=plot_filter.out
+#SBATCH --output=slurm_output/plot_filter_%j.out
+#SBATCH --error=slurm_output/plot_filter_%j.err
 #SBATCH --time=2:00:00
 #SBATCH --mem=32G
 

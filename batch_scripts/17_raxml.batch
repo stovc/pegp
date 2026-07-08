@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=tree
-#SBATCH --output=tree.out
+#SBATCH --output=slurm_output/tree_%j.out
+#SBATCH --error=slurm_output/tree_%j.err
 #SBATCH -c 16
 #SBATCH --time=48:00:00
 #SBATCH --mem=32G

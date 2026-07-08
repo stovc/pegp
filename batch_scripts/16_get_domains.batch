@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=domain_data
-#SBATCH --output=domain_data.out
+#SBATCH --output=slurm_output/domain_data_%j.out
+#SBATCH --error=slurm_output/domain_data_%j.err
 #SBATCH --time=2:00:00   # HOW LONG DO I NEED?
 #SBATCH --mem=64G
 
