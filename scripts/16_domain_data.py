@@ -50,15 +50,19 @@ if __name__ == '__main__':
         target_domain_positions = prot_data['targ_dom_pos']
         protein_lengths = prot_data['protein_length']
 
-        out_df = pd.DataFrame()
+        predicted_rows = []
 
         for name, group in grouped:
             for row in group.itertuples():
                 mask = (row.evalue < group.evalue) & (row.start < group.stop) & (row.stop > group.start)
                 overlaps = bool(sum(mask))
                 if not overlaps:
-                    to_append = pd.DataFrame(row).T
-                    out_df = pd.concat([out_df, to_append], ignore_index=True)
+                    predicted_rows.append({
+                        'id': row.Index,
+                        'domain': row.domain,
+                        'start': row.start,
+                        'end': row.stop,
+                    })
 
         # add dummy annotations to align domain plot
         """for i in ids:
@@ -71,19 +75,27 @@ if __name__ == '__main__':
             to_append = {0: i, 1: '_', 2: 0, 3: 0, 4: protein_length}
             out_df = out_df.append(to_append, ignore_index=True)  # TODO: change append to concat"""
 
-        rows = []
+        dummy_rows = []
         for i in ids:
             # target domain positions
             position = target_domain_positions[i]
-            rows.append({0: i, 1: '.', 2: 0, 3: position, 4: position + 1})
+            dummy_rows.append({
+                'id': i,
+                'domain': '.',
+                'start': position,
+                'end': position + 1,
+            })
             # whole proteins
             protein_length = protein_lengths[i]
-            rows.append({0: i, 1: '_', 2: 0, 3: 0, 4: protein_length})
-        # now create the DataFrame at once
-        out_df = pd.DataFrame(rows)
+            dummy_rows.append({
+                'id': i,
+                'domain': '_',
+                'start': 0,
+                'end': protein_length,
+            })
 
-        out_df = out_df.drop(columns=[2])
-        out_df = out_df.rename(columns={0: 'id', 1: 'domain', 3: 'start', 4: 'end'})
+        out_df = pd.DataFrame(predicted_rows + dummy_rows,
+                              columns=['id', 'domain', 'start', 'end'])
         out_df = out_df.set_index('id')
         out_df.to_csv(out_path)
     except Exception as e:
