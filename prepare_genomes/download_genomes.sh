@@ -3,7 +3,7 @@ set -euo pipefail
 
 # -------- settings --------
 GENOME_INFO_DIR="data/genome_info/r232"
-OUT_DIR="data/genomes/r232_rs_one_per_fam"
+OUT_DIR="data/genomes/r232_rs_complete_max-fam1_min-phy3"
 URL_LIST="genome_urls.txt"
 FILETYPE="genomic_gbff"   # genomic_fna | genomic_gbff | protein_faa | gff | cds_from_genomic_fna
 PARALLEL_JOBS=8          # wget in parallel with xargs
