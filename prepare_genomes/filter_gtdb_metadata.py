@@ -13,6 +13,9 @@ Optionally, after all filters are applied, the script keeps only N genomes
 per selected taxonomic rank, prioritizing type species, representatives,
 RefSeq records, complete genomes, and higher quality_score.
 
+Taxa represented by fewer than a configurable number of eligible genomes can
+also be removed before the per-taxon limit is applied.
+
 Outputs per input file:
     *_filtered.tsv
     *_phylum_report.xlsx
@@ -40,6 +43,11 @@ FILTER_GTDB_TYPE_SPECIES_OF_GENUS = True
 #   'GB'        -> keep only GenBank
 #   ['RS','GB'] -> keep both; equivalent to no database filtering if only these exist
 DATABASE_FILTER = 'RS'
+
+# Applied after the filters above, before limiting genomes per taxon
+ENABLE_MIN_GENOMES_PER_TAXON = True
+MIN_GENOMES_TAXONOMIC_RANK = 'phylum'
+MIN_GENOMES_PER_TAXON = 3
 
 # Applied last, after the filters above
 ENABLE_LIMIT_PER_TAXON = True
@@ -119,6 +127,22 @@ def apply_basic_filters(df: pd.DataFrame) -> pd.DataFrame:
         filter_mask &= df['database'].isin(database_filter)
 
     return df[filter_mask].copy()
+
+
+def filter_taxa_by_min_genomes(df: pd.DataFrame) -> pd.DataFrame:
+    if not ENABLE_MIN_GENOMES_PER_TAXON:
+        return df.copy()
+
+    if MIN_GENOMES_PER_TAXON < 1:
+        raise ValueError('MIN_GENOMES_PER_TAXON must be at least 1')
+
+    taxa = extract_taxon(
+        df['gtdb_taxonomy'],
+        MIN_GENOMES_TAXONOMIC_RANK,
+    )
+    taxon_counts = taxa.groupby(taxa, dropna=False).transform('size')
+
+    return df[taxon_counts >= MIN_GENOMES_PER_TAXON].copy()
 
 
 def limit_genomes_per_taxon(df: pd.DataFrame) -> pd.DataFrame:
@@ -295,6 +319,7 @@ def process_file(input_path_str: str) -> None:
     df = add_helper_columns(df)
 
     filtered_df = apply_basic_filters(df)
+    filtered_df = filter_taxa_by_min_genomes(filtered_df)
     result_df = limit_genomes_per_taxon(filtered_df)
 
     output_tsv = input_path.with_name(input_path.stem + '_filtered.tsv')
