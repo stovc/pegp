@@ -21,41 +21,16 @@ Outputs per input file:
     *_phylum_report.xlsx
 """
 
+import argparse
 from pathlib import Path
 
 import pandas as pd
 
 
-# === CONFIGURATION ===
-INPUT_FILES = [
+DEFAULT_INPUT_FILES = [
     'data/genome_info/r232/bac120_metadata.tsv',
     'data/genome_info/r232/ar53_metadata.tsv',
 ]
-
-FILTER_MIMAG_HIGH_QUALITY = False
-FILTER_COMPLETE_GENOME = True
-FILTER_GTDB_REPRESENTATIVE = True
-FILTER_GTDB_TYPE_SPECIES_OF_GENUS = True
-
-# Options:
-#   None        -> no database filtering
-#   'RS'        -> keep only RefSeq
-#   'GB'        -> keep only GenBank
-#   ['RS','GB'] -> keep both; equivalent to no database filtering if only these exist
-DATABASE_FILTER = 'RS'
-
-# Applied last, after basic filtering and limiting genomes per taxon
-ENABLE_MIN_GENOMES_PER_TAXON = True
-MIN_GENOMES_TAXONOMIC_RANK = 'phylum'
-MIN_GENOMES_PER_TAXON = 3
-
-# Applied after the basic filters above
-ENABLE_LIMIT_PER_TAXON = True
-TAXONOMIC_RANK = 'family'
-GENOMES_PER_TAXON = 1
-
-QSCORE_CONTAM_MULT = 5
-
 
 RANK_PREFIXES = {
     'domain': 'd__',
@@ -77,21 +52,15 @@ def extract_taxon(taxonomy: pd.Series, rank: str) -> pd.Series:
     return taxonomy.str.extract(fr'{prefix}([^;]+)')[0].fillna('Unknown')
 
 
-def normalize_database_filter(database_filter):
-    if database_filter is None:
-        return None
-
-    if isinstance(database_filter, str):
-        return [database_filter]
-
-    return list(database_filter)
-
-
-def add_helper_columns(df: pd.DataFrame) -> pd.DataFrame:
+def add_helper_columns(
+    df: pd.DataFrame,
+    taxonomic_rank: str,
+    qscore_contam_mult: float,
+) -> pd.DataFrame:
     df = df.copy()
 
     df['phylum'] = extract_taxon(df['gtdb_taxonomy'], 'phylum')
-    df['selected_taxon'] = extract_taxon(df['gtdb_taxonomy'], TAXONOMIC_RANK)
+    df['selected_taxon'] = extract_taxon(df['gtdb_taxonomy'], taxonomic_rank)
 
     # Database is inferred from accession prefix: RS_..., GB_...
     df['database'] = df['accession'].astype(str).str[:2]
@@ -101,52 +70,54 @@ def add_helper_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     df['quality_score'] = (
         df['checkm_completeness']
-        - QSCORE_CONTAM_MULT * df['checkm_contamination']
+        - qscore_contam_mult * df['checkm_contamination']
     )
 
     return df
 
 
-def apply_basic_filters(df: pd.DataFrame) -> pd.DataFrame:
+def apply_basic_filters(df: pd.DataFrame, args: argparse.Namespace) -> pd.DataFrame:
     filter_mask = pd.Series(True, index=df.index)
 
-    if FILTER_MIMAG_HIGH_QUALITY:
+    if args.filter_mimag_high_quality:
         filter_mask &= df['mimag_high_quality'] == 't'
 
-    if FILTER_COMPLETE_GENOME:
+    if args.filter_complete_genome:
         filter_mask &= df['ncbi_assembly_level'] == 'Complete Genome'
 
-    if FILTER_GTDB_REPRESENTATIVE:
+    if args.filter_gtdb_representative:
         filter_mask &= df['gtdb_representative'] == 't'
 
-    if FILTER_GTDB_TYPE_SPECIES_OF_GENUS:
+    if args.filter_gtdb_type_species_of_genus:
         filter_mask &= df['gtdb_type_species_of_genus'] == 't'
 
-    database_filter = normalize_database_filter(DATABASE_FILTER)
-    if database_filter is not None:
-        filter_mask &= df['database'].isin(database_filter)
+    if args.database_filter:
+        filter_mask &= df['database'].isin(args.database_filter)
 
     return df[filter_mask].copy()
 
 
-def filter_taxa_by_min_genomes(df: pd.DataFrame) -> pd.DataFrame:
-    if not ENABLE_MIN_GENOMES_PER_TAXON:
+def filter_taxa_by_min_genomes(
+    df: pd.DataFrame,
+    enabled: bool,
+    rank: str,
+    minimum: int,
+) -> pd.DataFrame:
+    if not enabled:
         return df.copy()
 
-    if MIN_GENOMES_PER_TAXON < 1:
-        raise ValueError('MIN_GENOMES_PER_TAXON must be at least 1')
-
-    taxa = extract_taxon(
-        df['gtdb_taxonomy'],
-        MIN_GENOMES_TAXONOMIC_RANK,
-    )
+    taxa = extract_taxon(df['gtdb_taxonomy'], rank)
     taxon_counts = taxa.groupby(taxa, dropna=False).transform('size')
 
-    return df[taxon_counts >= MIN_GENOMES_PER_TAXON].copy()
+    return df[taxon_counts >= minimum].copy()
 
 
-def limit_genomes_per_taxon(df: pd.DataFrame) -> pd.DataFrame:
-    if not ENABLE_LIMIT_PER_TAXON:
+def limit_genomes_per_taxon(
+    df: pd.DataFrame,
+    enabled: bool,
+    genomes_per_taxon: int,
+) -> pd.DataFrame:
+    if not enabled:
         return df.copy()
 
     df = df.copy()
@@ -180,7 +151,7 @@ def limit_genomes_per_taxon(df: pd.DataFrame) -> pd.DataFrame:
 
     limited_df = (
         df.groupby('selected_taxon', group_keys=False, dropna=False)
-        .head(GENOMES_PER_TAXON)
+        .head(genomes_per_taxon)
         .copy()
     )
 
@@ -312,15 +283,22 @@ def build_report(df: pd.DataFrame, result_df: pd.DataFrame) -> pd.DataFrame:
     return report_df
 
 
-def process_file(input_path_str: str) -> None:
+def process_file(input_path_str: str, args: argparse.Namespace) -> None:
     input_path = Path(input_path_str)
 
     df = pd.read_csv(input_path, sep='\t')
-    df = add_helper_columns(df)
+    df = add_helper_columns(df, args.taxonomic_rank, args.qscore_contam_mult)
 
-    filtered_df = apply_basic_filters(df)
-    result_df = limit_genomes_per_taxon(filtered_df)
-    result_df = filter_taxa_by_min_genomes(result_df)
+    filtered_df = apply_basic_filters(df, args)
+    result_df = limit_genomes_per_taxon(
+        filtered_df, args.enable_limit_per_taxon, args.genomes_per_taxon
+    )
+    result_df = filter_taxa_by_min_genomes(
+        result_df,
+        args.enable_min_genomes_per_taxon,
+        args.min_genomes_taxonomic_rank,
+        args.min_genomes_per_taxon,
+    )
 
     output_tsv = input_path.with_name(input_path.stem + '_filtered.tsv')
     result_df.to_csv(output_tsv, sep='\t', index=False)
@@ -333,10 +311,58 @@ def process_file(input_path_str: str) -> None:
     print(f"[OK] Excel report saved: {output_xlsx}")
 
 
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError('must be at least 1')
+    return parsed
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        'input_files', nargs='*', default=DEFAULT_INPUT_FILES,
+        help='GTDB metadata TSV files (default: r232 bacterial and archaeal files)',
+    )
+
+    boolean_options = (
+        ('filter-mimag-high-quality', False, 'filter for MIMAG high-quality genomes'),
+        ('filter-complete-genome', True, 'filter for complete genomes'),
+        ('filter-gtdb-representative', True, 'filter for GTDB representatives'),
+        ('filter-gtdb-type-species-of-genus', True, 'filter for GTDB type species'),
+        ('enable-min-genomes-per-taxon', True, 'remove taxa below the minimum size'),
+        ('enable-limit-per-taxon', True, 'limit the number of genomes per taxon'),
+    )
+    for name, default, help_text in boolean_options:
+        parser.add_argument(
+            f'--{name}', action=argparse.BooleanOptionalAction,
+            default=default, help=help_text,
+        )
+
+    parser.add_argument(
+        '--database-filter', nargs='+', choices=('RS', 'GB'), default=['RS'],
+        metavar='{RS,GB}',
+        help='databases to retain; use --no-database-filter to disable (default: RS)',
+    )
+    parser.add_argument(
+        '--no-database-filter', dest='database_filter', action='store_const',
+        const=None, help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        '--min-genomes-taxonomic-rank', choices=RANK_PREFIXES, default='phylum',
+    )
+    parser.add_argument('--min-genomes-per-taxon', type=positive_int, default=3)
+    parser.add_argument('--taxonomic-rank', choices=RANK_PREFIXES, default='family')
+    parser.add_argument('--genomes-per-taxon', type=positive_int, default=1)
+    parser.add_argument('--qscore-contam-mult', type=float, default=5)
+    return parser
+
+
 def main() -> None:
-    for path in INPUT_FILES:
+    args = build_parser().parse_args()
+    for path in args.input_files:
         print(f"\nProcessing: {path}")
-        process_file(path)
+        process_file(path, args)
 
 
 if __name__ == "__main__":
