@@ -1,13 +1,75 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# -------- settings --------
 GENOME_INFO_DIR="data/genome_info/r232"
 OUT_DIR="data/genomes/r232_rs_complete_max-fam1_min-phy3"
 URL_LIST="genome_urls.txt"
-FILETYPE="genomic_gbff"   # genomic_fna | genomic_gbff | protein_faa | gff | cds_from_genomic_fna
-PARALLEL_JOBS=8          # wget in parallel with xargs
-# -------------------------
+FILETYPE="genomic_gbff"
+PARALLEL_JOBS=8
+
+usage() {
+  cat <<EOF
+Usage: $0 [OPTIONS]
+
+Options:
+  --genome-info-dir DIR  Genome metadata directory (default: $GENOME_INFO_DIR)
+  --out-dir DIR          Genome download directory (default: $OUT_DIR)
+  --url-list FILE        Generated URL list (default: $URL_LIST)
+  --filetype TYPE        genomic_fna, genomic_gbff, protein_faa, gff, or
+                         cds_from_genomic_fna (default: $FILETYPE)
+  --parallel-jobs N      Number of parallel wget jobs (default: $PARALLEL_JOBS)
+  -h, --help             Show this help message
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --genome-info-dir)
+      [[ $# -ge 2 ]] || { echo "ERROR: $1 requires a value" >&2; exit 2; }
+      GENOME_INFO_DIR="$2"
+      shift 2
+      ;;
+    --out-dir)
+      [[ $# -ge 2 ]] || { echo "ERROR: $1 requires a value" >&2; exit 2; }
+      OUT_DIR="$2"
+      shift 2
+      ;;
+    --url-list)
+      [[ $# -ge 2 ]] || { echo "ERROR: $1 requires a value" >&2; exit 2; }
+      URL_LIST="$2"
+      shift 2
+      ;;
+    --filetype)
+      [[ $# -ge 2 ]] || { echo "ERROR: $1 requires a value" >&2; exit 2; }
+      FILETYPE="$2"
+      shift 2
+      ;;
+    --parallel-jobs)
+      [[ $# -ge 2 ]] || { echo "ERROR: $1 requires a value" >&2; exit 2; }
+      PARALLEL_JOBS="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "ERROR: Unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+case "$FILETYPE" in
+  genomic_fna|genomic_gbff|protein_faa|gff|cds_from_genomic_fna) ;;
+  *) echo "ERROR: Invalid filetype: $FILETYPE" >&2; exit 2 ;;
+esac
+
+if [[ ! "$PARALLEL_JOBS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "ERROR: --parallel-jobs must be a positive integer" >&2
+  exit 2
+fi
 
 mkdir -p "$GENOME_INFO_DIR" "$OUT_DIR"
 
