@@ -62,7 +62,7 @@ For a test project:
 2. `s project 2`
 3. `s project 3 `
 4. `s project 4 70 0.00001` - query coverage percent, e-value cutoff
-5. `s project 5 0.9`
+5. `s project 5 0.9` - cd-hit "-c", clustering threshold
 6. `s project 6`
 7. `s project 7`
 8. `s project 8`
