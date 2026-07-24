@@ -60,6 +60,7 @@ Prompt:
 "s [project] [step]": start [project] [step]
 "a": start all ready steps in all projects
 "d [project]": delete [project]
+"db [database_name]": select and save the default database
 "q": quit
 '''
 

@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import pandas as pd
@@ -204,6 +205,31 @@ def quitx():
     quit()
 
 
+@call
+def change_database(database_name):
+    """Select and save the database used by subsequently started steps."""
+    global database
+
+    database_path = Path(__file__).parent / 'databases' / database_name
+    if not database_path.is_dir():
+        log.save_and_print(
+            f'Database "{database_name}" does not exist at {database_path}'
+        )
+        return
+
+    try:
+        save_user_database(database_name)
+    except OSError as error:
+        log.save_and_print(f'Could not save database selection: {error}')
+        return
+
+    database = database_name
+    log.save_and_print(
+        f'Changed database to {database} and saved the selection'
+    )
+    update_screen()
+
+
 class Log:
     """Log containing the history of the input and output of the session which is printed with screen update."""
     history = []
@@ -218,13 +244,40 @@ class Log:
 
 # Configs
 
+USER_CONFIG_PATH = Path(__file__).with_name('user_config.json')
+
+
+def load_user_database():
+    """Return the saved user database, or the repository default."""
+    if not USER_CONFIG_PATH.exists():
+        return DEFAULT_DATABASE
+
+    try:
+        user_config = json.loads(USER_CONFIG_PATH.read_text(encoding='utf-8'))
+        return user_config.get('database', DEFAULT_DATABASE)
+    except (OSError, json.JSONDecodeError, AttributeError) as error:
+        print(f'Could not read user config: {error}')
+        return DEFAULT_DATABASE
+
+
+def save_user_database(database_name):
+    """Atomically save the user's database selection."""
+    temporary_path = USER_CONFIG_PATH.with_suffix('.json.tmp')
+    user_config = {'database': database_name}
+    temporary_path.write_text(
+        json.dumps(user_config, indent=2) + '\n',
+        encoding='utf-8',
+    )
+    temporary_path.replace(USER_CONFIG_PATH)
+
+
 # Whether the mode is default or "cluster"
 # In default mode the scripts are run directly
 # In cluster mode batch scripts are run
 mode = DEFAULT_MODE
 
 # database for homology search with metadata
-database = DEFAULT_DATABASE  # this is hardcoded now! should be specified by user
+database = load_user_database()
 
 
 # Init
@@ -272,6 +325,7 @@ commands = {'a': start_all_steps,
             's': start_step,
             'n': create_project,
             'd': delete_project,
+            'db': change_database,
             'u': update,
             'q': quitx}
 
