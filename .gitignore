@@ -8,3 +8,5 @@ repr-genome-download*
 genomes_family*
 
 log.txt
+user_config.json
+user_config.json.tmp
