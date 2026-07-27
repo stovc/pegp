@@ -39,9 +39,20 @@ def finalize_database(database_path):
             folder,
             output_path,
         )
+
+        def report_progress(processed_files, total_folder_files, file_name):
+            LOGGER.info(
+                "[%s] Processed %d/%d files: %s",
+                folder_name,
+                processed_files,
+                total_folder_files,
+                file_name,
+            )
+
         concat_files_from_folder(
             folder=folder,
             extension=extension,
+            progress_callback=report_progress,
         )
         LOGGER.info("Finished processing '%s'", folder)
         total_files += file_count

@@ -53,21 +53,30 @@ def get_first(dict_arg, key):
         return get
 
 
-def concat_files_from_folder(folder, extension):
+def concat_files_from_folder(folder, extension, progress_callback=None):
     """Concatenates all files of 'folder' into a single file of 'extension' extension."""
     logging.info('concatenating folder %s', folder)
     record_list = os.listdir(folder)
     record_list.sort()
+    total_files = len(record_list)
 
     if extension == 'csv':
-        df_concat = pd.concat([pd.read_csv(folder / f, engine='python') for f in record_list], ignore_index=True)
+        dataframes = []
+        for processed_files, file_name in enumerate(record_list, start=1):
+            dataframes.append(pd.read_csv(folder / file_name, engine='python'))
+            if progress_callback is not None:
+                progress_callback(processed_files, total_files, file_name)
+
+        df_concat = pd.concat(dataframes, ignore_index=True)
         df_concat.to_csv(f'{folder}.csv', index=False)
 
     else:
         with open(f'{folder}.{extension}', 'w') as outfile:
-            for f in record_list:
-                with open(folder / f, 'r') as infile:
+            for processed_files, file_name in enumerate(record_list, start=1):
+                with open(folder / file_name, 'r') as infile:
                     outfile.write(infile.read())
+                if progress_callback is not None:
+                    progress_callback(processed_files, total_files, file_name)
 
     return None
 
