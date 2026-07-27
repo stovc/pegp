@@ -1,12 +1,14 @@
 """Concatenate database fragments and remove their source folders."""
 
 from argparse import ArgumentParser
+import logging
 from pathlib import Path
 
 from utils import concat_files_from_folder, delete_folder
 
 
 FOLDERS_TO_CONCATENATE_CSV = ["annotation", "sequence", "translation"]
+LOGGER = logging.getLogger(__name__)
 
 
 def parse_arguments():
@@ -22,21 +24,41 @@ def parse_arguments():
 
 def finalize_database(database_path):
     """Concatenate database fragments and delete the fragment folders."""
-    concat_files_from_folder(
-        folder=database_path / "protein",
-        extension="faa",
-    )
+    folders = [("protein", "faa")]
+    folders.extend((folder, "csv") for folder in FOLDERS_TO_CONCATENATE_CSV)
 
-    for folder in FOLDERS_TO_CONCATENATE_CSV:
-        concat_files_from_folder(
-            folder=database_path / folder,
-            extension="csv",
+    total_files = 0
+    for folder_name, extension in folders:
+        folder = database_path / folder_name
+        file_count = sum(path.is_file() for path in folder.iterdir())
+        output_path = database_path / f"{folder_name}.{extension}"
+
+        LOGGER.info(
+            "Concatenating %d files from '%s' into '%s'",
+            file_count,
+            folder,
+            output_path,
         )
+        concat_files_from_folder(
+            folder=folder,
+            extension=extension,
+        )
+        LOGGER.info("Finished processing '%s'", folder)
+        total_files += file_count
 
-    for folder in FOLDERS_TO_CONCATENATE_CSV + ["protein"]:
-        delete_folder(database_path / folder)
+    for folder_name, _ in folders:
+        folder = database_path / folder_name
+        LOGGER.info("Removing source folder '%s'", folder)
+        delete_folder(folder)
+
+    LOGGER.info(
+        "Finalization complete: processed %d folders and %d files",
+        len(folders),
+        total_files,
+    )
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     args = parse_arguments()
     finalize_database(Path(args.database))

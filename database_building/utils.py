@@ -55,7 +55,7 @@ def get_first(dict_arg, key):
 
 def concat_files_from_folder(folder, extension):
     """Concatenates all files of 'folder' into a single file of 'extension' extension."""
-    logging.info('concatenating folder', folder)
+    logging.info('concatenating folder %s', folder)
     record_list = os.listdir(folder)
     record_list.sort()
 
