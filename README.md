@@ -61,7 +61,7 @@ For a test project:
 1. `s project 1`
 2. `s project 2`
 3. `s project 3 `
-4. `s project 4 70 0.00001` - query coverage percent, e-value cutoff
+4. `s project 4 70 0.00001 [min protein length] [max protein length]` - query coverage percent, e-value cutoff, and optional inclusive protein-length bounds
 5. `s project 5 0.9` - cd-hit "-c", clustering threshold
 6. `s project 6`
 7. `s project 7`

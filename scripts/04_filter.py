@@ -1,9 +1,10 @@
-"""Filter HMMER hits by parameters: query coverage, e-value.
+"""Filter HMMER hits by query coverage, e-value, and optional protein length.
 
 - input:
     - "hits.txt" - hmmer report. needed to extract aligned parts of the hits
     - "hits_df.csv" - csv with annotations to subset
-    - parameters with filtering thresholds: [query coverage], [e-value]
+    - parameters with filtering thresholds: [query coverage], [e-value],
+      optionally [minimum protein length], [maximum protein length]
 
 - output:
     - 'filtered_hits.faa' - fasta file with filtered hits containing aligned parts of the proteins
@@ -29,6 +30,8 @@ if __name__ == '__main__':
         project = sys.argv[1]
         coverage_threshold = float(sys.argv[3])
         evalue_threshold = float(sys.argv[4])
+        min_protein_length_threshold = float(sys.argv[5]) if len(sys.argv) > 5 else None
+        max_protein_length_threshold = float(sys.argv[6]) if len(sys.argv) > 6 else None
 
         # construct input and output paths
         in_path = Path('projects') / project / 'hits.txt'
@@ -48,10 +51,15 @@ if __name__ == '__main__':
         out = open(out_faa_path, 'w')
 
         #  filter df by thresholds
-        df['filtered'] = [df['query_coverage'][i] > coverage_threshold and 
-                           df['evalue'][i] < evalue_threshold 
-                           for i in range(len(df['query_coverage']))
-                         ]
+        filtered = (
+            (df['query_coverage'] > coverage_threshold)
+            & (df['evalue'] < evalue_threshold)
+        )
+        if min_protein_length_threshold is not None:
+            filtered &= df['protein_length'] >= min_protein_length_threshold
+        if max_protein_length_threshold is not None:
+            filtered &= df['protein_length'] <= max_protein_length_threshold
+        df['filtered'] = filtered
 
         # retrieve aligned sequences of filtered hits
         ids_to_retrieve = list(df[df.filtered == True].index.values)
@@ -74,7 +82,16 @@ if __name__ == '__main__':
         filtering_log_path = Path('projects') / project / 'filtering_log.txt'
         with open(filtering_log_path, 'w') as filtering_log:
             filtering_log.write("Coverage threshold: " + str(coverage_threshold) + '\n')
-            filtering_log.write("e-value threshold: " + str(evalue_threshold))
+            filtering_log.write("e-value threshold: " + str(evalue_threshold) + '\n')
+            filtering_log.write(
+                "Minimum protein length threshold: "
+                + str(min_protein_length_threshold)
+                + '\n'
+            )
+            filtering_log.write(
+                "Maximum protein length threshold: "
+                + str(max_protein_length_threshold)
+            )
 
     except Exception as e:
         ecx_type = str(type(e))
