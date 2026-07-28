@@ -3,7 +3,7 @@
 #SBATCH --output=slurm_output/get_translations_%j.out
 #SBATCH --error=slurm_output/get_translations_%j.err
 #SBATCH --time=2:00:00
-#SBATCH --mem=64G
+#SBATCH --mem=128G
 
 python scripts/10_get_translations.py $1 $2
 echo 10 $? >> projects/$1/exit_log.txt
