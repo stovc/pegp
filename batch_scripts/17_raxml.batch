@@ -4,7 +4,7 @@
 #SBATCH --error=slurm_output/tree_%j.err
 #SBATCH -c 16
 #SBATCH --time=48:00:00
-#SBATCH --mem=32G
+#SBATCH --mem=16G
 
 bash scripts/17_tree.sh $1
 echo 17 $? >> projects/$1/exit_log.txt

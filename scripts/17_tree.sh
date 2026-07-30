@@ -17,7 +17,7 @@ echo 17 started >> projects/"$PROJECT"/exit_log.txt
 mkdir -p projects/"$PROJECT"/tree
 
 # make ML tree
-iqtree -s projects/"$PROJECT"/trimed.fa -B 1000 -T AUTO --prefix projects/"$PROJECT"/tree/tree
+iqtree -s projects/"$PROJECT"/trimed.fa -B 1000 -nm 5000 -T AUTO --prefix projects/"$PROJECT"/tree/tree
 
 # write step number and exit status to the exit log
 echo 17 $? >> projects/"$PROJECT"/exit_log.txt
